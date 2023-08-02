@@ -1,0 +1,5 @@
+module List
+
+type List[t] = extern
+
+-- def (<>): (right 5) = append

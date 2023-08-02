@@ -1,0 +1,24 @@
+module Tuple
+
+def pair[a, b] : (x: a -> y: b -> {a, b}) =
+  {x, y}
+
+def first[a, b] : (t: {a, b} -> a) =
+  select t
+    case {x, _} -> x
+
+def second[a, b] : (t: {a, b} -> b) =
+  select t
+    case {_, y} -> y
+
+def mapFirst[a, b, x] : (func: (a -> x) -> t: {a, b} -> {x, b}) =
+  select t
+    case {q, p} -> {func q, p}
+
+def mapSecond[a, b, y] : (func: (b -> y) -> t: {a, b} -> {a, y}) =
+  select t
+    case {q, p} -> {q, func p}
+
+def mapBoth[a, b, x, y] : (funcA: (a -> x) -> funcB: (b -> y) -> t: {a, b} -> {x, y}) =
+  select t
+    case {p, q} -> { funcA p, funcB q }

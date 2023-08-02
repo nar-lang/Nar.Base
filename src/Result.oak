@@ -1,0 +1,112 @@
+module Result
+
+import Basics exposing (Bool)
+import Maybe exposing (Maybe)
+
+type Result[error, value] =
+    | Ok value
+    | Err error
+
+def withDefault[x, a]: (default: a -> result: Result[x, a] -> a) =
+  select result
+    case Ok v -> v
+    case Err _ -> default
+
+def map[x, a, value]: (func: (a -> value) -> ra: Result[x, a] -> Result[x, value]) =
+  select ra
+    case Ok a -> Ok (func a)
+    case Err e -> Err e
+
+def map2[x, a, b, value]: (func: (a -> b -> value) -> ra: Result[x, a] -> rb: Result[x, b] -> Result[x, value]) =
+  select ra
+    case Err e -> Err e
+    case Ok a ->
+      select rb
+        case Err e -> Err e
+        case Ok b -> Ok (func a b)
+
+def map3[x, a, b, c, value] : (
+    func: (a -> b -> c -> value) ->
+    ra: Result[x, a] ->
+    rb: Result[x, b] ->
+    rc: Result[x, c] ->
+    Result[x, value]) =
+  select ra
+    case Err e -> Err e
+    case Ok a ->
+      select rb
+        case Err e -> Err e
+        case Ok b ->
+          select rc
+            case Err e -> Err e
+            case Ok c -> Ok (func a b c)
+
+def map4[x, a, b, c, d, value]: (
+    func: (a -> b -> c -> d -> value) ->
+    ra: Result[x, a] ->
+    rb: Result[x, b] ->
+    rc: Result[x, c] ->
+    rd: Result[x, d] ->
+    Result[x, value]) =
+  select ra
+    case Err e -> Err e
+    case Ok a ->
+      select rb
+        case Err e -> Err e
+        case Ok b ->
+          select rc
+            case Err e -> Err e
+            case Ok c ->
+              select rd
+                case Err e -> Err e
+                case Ok d -> Ok (func a b c d)
+
+
+def map5[x, a, b, c, d, e, value]: (
+    func: (a -> b -> c -> d -> e -> value) ->
+    ra: Result[x, a] ->
+    rb: Result[x, b] ->
+    rc: Result[x, c] ->
+    rd: Result[x, d] ->
+    re: Result[x, e] ->
+    Result[x, value]) =
+  select ra
+    case Err n -> Err n
+    case Ok a ->
+      select rb
+        case Err n -> Err n
+        case Ok b ->
+          select rc
+            case Err n -> Err n
+            case Ok c ->
+              select rd
+                case Err n -> Err n
+                case Ok d ->
+                  select re
+                    case Err n -> Err n
+                    case Ok e -> Ok (func a b c d e)
+
+def andThen[x, a, b]: (callback: (a -> Result[x, b]) -> result: Result[x,a] -> Result[x, b]) =
+  select result
+    case Ok value -> callback value
+    case Err msg -> Err msg
+
+def mapError[x, y, a]: (f: (x -> y) -> result: Result[x, a] -> Result[y, a]) =
+  select result
+    case Ok v -> Ok v
+    case Err e -> Err (f e)
+
+def toMaybe[x, a]: (result: Result[x, a] -> Maybe[a]) =
+  select result
+    case Ok v -> Just v
+    case Err _ -> Nothing
+
+def fromMaybe[x, a]: (err: x -> maybe: Maybe[a] -> Result[x, a]) =
+  select maybe
+    case Just v -> Ok v
+    case Nothing -> Err err
+
+def isOk[x, a]: (result: Result[x, a] -> Bool) =
+  select result
+    case Ok _ -> True
+    case Err _ -> False

@@ -1,0 +1,122 @@
+module Basics
+
+def (<|): (right 0) = apL
+def (|>): (left  0) = apR
+def (||): (right 2) = or
+def (&&): (right 3) = and
+def (==): (non   4) = eq
+def (/=): (non   4) = neq
+def (<) : (non   4) = lt
+def (>) : (non   4) = gt
+def (<=): (non   4) = le
+def (>=): (non   4) = ge
+def (+) : (left  6) = add
+def (-) : (left  6) = sub
+def (*) : (left  7) = mul
+def (/) : (left  7) = fdiv
+def (//): (left  7) = idiv
+def (^) : (right 8) = pow
+def (<<): (left  9) = composeL
+def (>>): (right 9) = composeR
+
+type Int = extern
+
+type Float = extern
+
+def add[n: Int + Float]: (n -> n -> n) = extern
+
+def sub[n: Int + Float]: (n -> n -> n) = extern
+
+def mul[n: Int + Float]: (n -> n -> n) = extern
+
+def fdiv: (Float -> Float -> Float) = extern
+
+def idiv: (Int -> Int -> Int) = extern
+
+-- INT TO FLOAT / FLOAT TO INT
+
+def toFloat: (Int -> Float) = extern
+
+def round: (Float -> Int) = extern
+
+def floor: (Float -> Int) = extern
+
+def ceiling: (Float -> Int) = extern
+
+def truncate: (Float -> Int) = extern
+
+-- EQUALITY
+
+def eq[eq: equatable]: (eq -> eq -> Bool) = extern
+
+def neq[eq: equatable]: (eq -> eq -> Bool) = extern
+
+-- COMPARISONS
+
+def lt[cmp: comparable]: (cmp -> cmp -> Bool) = extern
+
+def gt[cmp: comparable]: (cmp -> cmp -> Bool) = extern
+
+def le[cmp: comparable]: (cmp -> cmp -> Bool) = extern
+
+def ge[cmp: comparable]: (cmp -> cmp -> Bool) = extern
+
+def min[cmp: comparable]: (x: cmp -> y: cmp -> cmp) =
+  if lt x y then x else y
+
+def max[cmp: comparable]: (x: cmp -> y: cmp -> cmp) =
+  if gt x y then x else y
+
+def compare[cmp: comparable]: (cmp -> cmp -> Order) = extern
+
+type Order =
+  | LT
+  | EQ
+  | GT
+
+-- BOOLEANS
+
+type Bool =
+  | True
+  | False
+
+def not: (Bool -> Bool) = extern
+
+def and: (Bool -> Bool -> Bool) = extern
+
+def or: (Bool -> Bool -> Bool) = extern
+
+def xor: (Bool -> Bool -> Bool) = extern
+
+-- FUNCTION HELPERS
+
+def composeL[a, b, c]: (g: (b->c) -> f: (a->b) -> x: a -> c) =
+  g (f x)
+
+def composeR[a, b, c]: (f: (a->b) -> g: (b->c) -> x: a -> c) =
+  g (f x)
+
+def apR[a, b]: (x: a -> f: (a->b) -> b) =
+  f x
+
+def apL[a, b]: (f: (a->b) -> x: a -> b) =
+  f x
+
+def identity[a]: (x: a -> a) =
+  x
+
+def always[a, b]: (x: a -> b -> a) =
+  x
+
+def pi : Float = 3.1415
+
+{--
+compiler stack overflow
+
+type Never =
+  | JustOneMore Never
+
+def never[a]: (x: Never -> a) =
+  select x
+    case JustOneMore n -> never[a] n
+--}

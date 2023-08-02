@@ -1,0 +1,15 @@
+module Bitwise
+
+import Basics exposing (Int)
+
+def and : (Int -> Int -> Int) = extern
+
+def or : (Int -> Int -> Int) = extern
+
+def xor : (Int -> Int -> Int) = extern
+
+def complement : (Int -> Int) = extern
+
+def shiftLeftBy : (Int -> Int -> Int) = extern
+
+def shiftRightBy : (Int -> Int -> Int) = extern

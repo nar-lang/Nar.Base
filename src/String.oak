@@ -1,0 +1,218 @@
+module String
+
+import Basics exposing *
+import Bitwise
+import Char exposing (Char)
+import List exposing (List, (::))
+import Maybe exposing (Maybe)
+import Result exposing (Result)
+
+def (<>): (right 5) = append
+
+type String = extern
+
+def isEmpty: (string: String -> Bool) =
+  string == ""
+
+def length: (String -> Int) = extern
+
+def reverse: (String -> String) = extern
+{--
+def repeat: (n: Int -> chunk: String -> String) =
+  repeatHelp n chunk ""
+
+hidden def repeatHelp: (n: Int -> chunk: String -> result: String -> String) =
+  if n <= 0 then
+    result
+  else
+    repeatHelp (Bitwise.shiftRightBy 1 n) (chunk <> chunk) <|
+      if Bitwise.and n 1 == 0 then result else result <> chunk
+
+def replace : (before: String -> after: String -> string: String -> String) =
+  join after (split before string)
+
+
+-- BUILDING AND SPLITTING
+
+def append: (String -> String -> String) = extern
+
+
+def concat: (strings: List[String] -> String) =
+  join "" strings
+
+def split: (String -> String -> List[String]) = extern
+
+def join: (String -> List[String] -> String) = extern
+
+words : String -> List String
+words =
+  Elm.Kernel.String.words
+
+lines : String -> List String
+lines =
+  Elm.Kernel.String.lines
+
+-- SUBSTRINGS
+
+slice : Int -> Int -> String -> String
+slice =
+  Elm.Kernel.String.slice
+
+left : Int -> String -> String
+left n string =
+  if n < 1 then
+    ""
+  else
+    slice 0 n string
+
+right : Int -> String -> String
+right n string =
+  if n < 1 then
+    ""
+  else
+    slice -n (length string) string
+
+dropLeft : Int -> String -> String
+dropLeft n string =
+  if n < 1 then
+    string
+  else
+    slice n (length string) string
+
+dropRight : Int -> String -> String
+dropRight n string =
+  if n < 1 then
+    string
+  else
+    slice 0 -n string
+
+-- DETECT SUBSTRINGS
+
+contains : String -> String -> Bool
+contains =
+  Elm.Kernel.String.contains
+
+startsWith : String -> String -> Bool
+startsWith =
+  Elm.Kernel.String.startsWith
+
+endsWith : String -> String -> Bool
+endsWith =
+  Elm.Kernel.String.endsWith
+
+indexes : String -> String -> List Int
+indexes =
+  Elm.Kernel.String.indexes
+
+indices : String -> String -> List Int
+indices =
+  Elm.Kernel.String.indexes
+
+-- FORMATTING
+
+toUpper : String -> String
+toUpper =
+  Elm.Kernel.String.toUpper
+
+toLower : String -> String
+toLower =
+  Elm.Kernel.String.toLower
+
+pad : Int -> Char -> String -> String
+pad n char string =
+  let
+    half =
+      Basics.toFloat (n - length string) / 2
+  in
+    repeat (ceiling half) (fromChar char) ++ string ++ repeat (floor half) (fromChar char)
+
+padLeft : Int -> Char -> String -> String
+padLeft n char string =
+  repeat (n - length string) (fromChar char) ++ string
+
+padRight : Int -> Char -> String -> String
+padRight n char string =
+  string ++ repeat (n - length string) (fromChar char)
+
+trim : String -> String
+trim =
+  Elm.Kernel.String.trim
+
+trimLeft : String -> String
+trimLeft =
+  Elm.Kernel.String.trimLeft
+
+trimRight : String -> String
+trimRight =
+  Elm.Kernel.String.trimRight
+
+-- INT CONVERSIONS
+
+toInt : String -> Maybe Int
+toInt =
+  Elm.Kernel.String.toInt
+
+fromInt : Int -> String
+fromInt =
+  Elm.Kernel.String.fromNumber
+
+-- FLOAT CONVERSIONS
+
+toFloat : String -> Maybe Float
+toFloat =
+  Elm.Kernel.String.toFloat
+
+fromFloat : Float -> String
+fromFloat =
+  Elm.Kernel.String.fromNumber
+
+-- LIST CONVERSIONS
+
+toList : String -> List Char
+toList string =
+  foldr (::) [] string
+
+fromList : List Char -> String
+fromList =
+  Elm.Kernel.String.fromList
+
+-- CHAR CONVERSIONS
+
+fromChar : Char -> String
+fromChar char =
+  cons char ""
+
+cons : Char -> String -> String
+cons =
+  Elm.Kernel.String.cons
+
+uncons : String -> Maybe (Char, String)
+uncons =
+  Elm.Kernel.String.uncons
+
+-- HIGHER-ORDER FUNCTIONS
+
+map : (Char -> Char) -> String -> String
+map =
+  Elm.Kernel.String.map
+
+filter : (Char -> Bool) -> String -> String
+filter =
+  Elm.Kernel.String.filter
+
+foldl : (Char -> b -> b) -> b -> String -> b
+foldl =
+  Elm.Kernel.String.foldl
+
+foldr : (Char -> b -> b) -> b -> String -> b
+foldr =
+  Elm.Kernel.String.foldr
+
+any : (Char -> Bool) -> String -> Bool
+any =
+  Elm.Kernel.String.any
+
+all : (Char -> Bool) -> String -> Bool
+all =
+  Elm.Kernel.String.all
+--}
