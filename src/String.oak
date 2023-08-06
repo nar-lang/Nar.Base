@@ -17,7 +17,7 @@ def isEmpty: (string: String -> Bool) =
 def length: (String -> Int) = extern
 
 def reverse: (String -> String) = extern
-{--
+
 def repeat: (n: Int -> chunk: String -> String) =
   repeatHelp n chunk ""
 
@@ -28,7 +28,7 @@ hidden def repeatHelp: (n: Int -> chunk: String -> result: String -> String) =
     repeatHelp (Bitwise.shiftRightBy 1 n) (chunk <> chunk) <|
       if Bitwise.and n 1 == 0 then result else result <> chunk
 
-def replace : (before: String -> after: String -> string: String -> String) =
+def replace: (before: String -> after: String -> string: String -> String) =
   join after (split before string)
 
 
@@ -36,51 +36,40 @@ def replace : (before: String -> after: String -> string: String -> String) =
 
 def append: (String -> String -> String) = extern
 
-
 def concat: (strings: List[String] -> String) =
   join "" strings
 
-def split: (String -> String -> List[String]) = extern
+def split: (sep: String -> string: String -> List[String]) = extern
 
 def join: (String -> List[String] -> String) = extern
 
-words : String -> List String
-words =
-  Elm.Kernel.String.words
+def words: (String -> List[String]) = extern
 
-lines : String -> List String
-lines =
-  Elm.Kernel.String.lines
+def lines: (String -> List[String]) = extern
 
 -- SUBSTRINGS
 
-slice : Int -> Int -> String -> String
-slice =
-  Elm.Kernel.String.slice
+def slice: (begin: Int -> end: Int -> s: String -> String) = extern
 
-left : Int -> String -> String
-left n string =
+def left: (n: Int -> string: String -> String) =
   if n < 1 then
     ""
   else
     slice 0 n string
 
-right : Int -> String -> String
-right n string =
+def right: (n: Int -> string: String -> String) =
   if n < 1 then
     ""
   else
     slice -n (length string) string
 
-dropLeft : Int -> String -> String
-dropLeft n string =
+def dropLeft: (n: Int -> string: String -> String) =
   if n < 1 then
     string
   else
     slice n (length string) string
 
-dropRight : Int -> String -> String
-dropRight n string =
+def dropRight: (n: Int -> string: String -> String) =
   if n < 1 then
     string
   else
@@ -88,131 +77,76 @@ dropRight n string =
 
 -- DETECT SUBSTRINGS
 
-contains : String -> String -> Bool
-contains =
-  Elm.Kernel.String.contains
+def contains: (sub: String -> s: String -> Bool) = extern
 
-startsWith : String -> String -> Bool
-startsWith =
-  Elm.Kernel.String.startsWith
+def startsWith: (String -> String -> Bool) = extern
 
-endsWith : String -> String -> Bool
-endsWith =
-  Elm.Kernel.String.endsWith
+def endsWith: (String -> String -> Bool) = extern
 
-indexes : String -> String -> List Int
-indexes =
-  Elm.Kernel.String.indexes
-
-indices : String -> String -> List Int
-indices =
-  Elm.Kernel.String.indexes
+def indices: (String -> String -> List[Int]) = extern
 
 -- FORMATTING
 
-toUpper : String -> String
-toUpper =
-  Elm.Kernel.String.toUpper
+def toUpper: (String -> String) = extern
 
-toLower : String -> String
-toLower =
-  Elm.Kernel.String.toLower
+def toLower: (String -> String) = extern
 
-pad : Int -> Char -> String -> String
-pad n char string =
+def pad: (n: Int -> char: Char -> string: String -> String) =
   let
-    half =
-      Basics.toFloat (n - length string) / 2
+    half: Float = Basics.toFloat (n - length string) / 2.0
   in
-    repeat (ceiling half) (fromChar char) ++ string ++ repeat (floor half) (fromChar char)
+    repeat (ceiling half) (fromChar char) <> string <> repeat (floor half) (fromChar char)
 
-padLeft : Int -> Char -> String -> String
-padLeft n char string =
-  repeat (n - length string) (fromChar char) ++ string
+def padLeft: (n: Int -> char: Char -> string: String -> String) =
+  repeat (n - length string) (fromChar char) <> string
 
-padRight : Int -> Char -> String -> String
-padRight n char string =
-  string ++ repeat (n - length string) (fromChar char)
+def padRight: (n: Int -> char: Char -> string: String -> String) =
+  string <> repeat (n - length string) (fromChar char)
 
-trim : String -> String
-trim =
-  Elm.Kernel.String.trim
+def trim: (String -> String) = extern
 
-trimLeft : String -> String
-trimLeft =
-  Elm.Kernel.String.trimLeft
+def trimLeft: (String -> String) = extern
 
-trimRight : String -> String
-trimRight =
-  Elm.Kernel.String.trimRight
+def trimRight: (String -> String) = extern
 
 -- INT CONVERSIONS
 
-toInt : String -> Maybe Int
-toInt =
-  Elm.Kernel.String.toInt
+def toInt: (String -> Maybe[Int]) = extern
 
-fromInt : Int -> String
-fromInt =
-  Elm.Kernel.String.fromNumber
+def fromInt: (Int -> String) = extern
 
 -- FLOAT CONVERSIONS
 
-toFloat : String -> Maybe Float
-toFloat =
-  Elm.Kernel.String.toFloat
+def toFloat: (String -> Maybe[Float]) = extern
 
-fromFloat : Float -> String
-fromFloat =
-  Elm.Kernel.String.fromNumber
+def fromFloat: (Float -> String) = extern
 
 -- LIST CONVERSIONS
 
-toList : String -> List Char
-toList string =
+def toList: (string: String -> List[Char]) =
   foldr (::) [] string
 
-fromList : List Char -> String
-fromList =
-  Elm.Kernel.String.fromList
+def fromList: (List[Char] -> String) = extern
 
 -- CHAR CONVERSIONS
 
-fromChar : Char -> String
-fromChar char =
+def fromChar: (char: Char -> String) =
   cons char ""
 
-cons : Char -> String -> String
-cons =
-  Elm.Kernel.String.cons
+def cons: (Char -> String -> String) = extern
 
-uncons : String -> Maybe (Char, String)
-uncons =
-  Elm.Kernel.String.uncons
+def uncons: (String -> Maybe[{Char, String}]) = extern
 
 -- HIGHER-ORDER FUNCTIONS
 
-map : (Char -> Char) -> String -> String
-map =
-  Elm.Kernel.String.map
+def map: ((Char -> Char) -> String -> String) = extern
 
-filter : (Char -> Bool) -> String -> String
-filter =
-  Elm.Kernel.String.filter
+def filter: ((Char -> Bool) -> String -> String) = extern
 
-foldl : (Char -> b -> b) -> b -> String -> b
-foldl =
-  Elm.Kernel.String.foldl
+def foldl[b: any]: ((Char -> b -> b) -> b -> String -> b) = extern
 
-foldr : (Char -> b -> b) -> b -> String -> b
-foldr =
-  Elm.Kernel.String.foldr
+def foldr[b: any]: ((Char -> b -> b) -> b -> String -> b) = extern
 
-any : (Char -> Bool) -> String -> Bool
-any =
-  Elm.Kernel.String.any
+def any: ((Char -> Bool) -> String -> Bool) = extern
 
-all : (Char -> Bool) -> String -> Bool
-all =
-  Elm.Kernel.String.all
---}
+def all: ((Char -> Bool) -> String -> Bool) = extern

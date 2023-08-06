@@ -1,46 +1,50 @@
 package core
 
 import (
-	"golang.org/x/exp/constraints"
+	"github.com/oaklang/runtime"
 	"math"
 )
 
-type Basics_Int = int64
-type Basics_Float = float64
-type Number = interface{ Basics_Int | Basics_Float }
-type Comparable = constraints.Ordered
-type Equatable = comparable
+type Basics_Int = runtime.Int
+type Basics_Float = runtime.Float
 
-func Basics_add[num Number](a num) func(num) num {
+const IntBitSize = 64
+const FloatBitSize = 64
+
+func Basics_add[num runtime.Number](a num) func(num) num {
 	return func(b num) num {
 		return a + b
 	}
 }
 
-func Basics_sub[num Number](a num) func(num) num {
+func Basics_sub[num runtime.Number](a num) func(num) num {
 	return func(b num) num {
 		return a - b
 	}
 }
 
-func Basics_mul[num Number](a num) func(num) num {
+func Basics_mul[num runtime.Number](a num) func(num) num {
 	return func(b num) num {
 		return a * b
 	}
 }
 
-var Basics_fdiv = oak_F2(func(a, b Basics_Float) Basics_Float {
+var Basics_fdiv = runtime.F2(func(a, b Basics_Float) Basics_Float {
 	return a / b
 })
 
-var Basics_idiv = oak_F2(func(a, b Basics_Int) Basics_Int {
+var Basics_idiv = runtime.F2(func(a, b Basics_Int) Basics_Int {
 	return a / b
 })
 
-func Basics_pow[num Number](a num) func(num) num {
+func Basics_pow[num runtime.Number](a num) func(num) num {
 	return func(b num) num {
 		return num(math.Pow(float64(a), float64(b)))
 	}
+}
+
+func Basics_neg[num runtime.Number](a num) num {
+	return -a
 }
 
 func Basics_toFloat(x Basics_Int) Basics_Float {
@@ -48,22 +52,22 @@ func Basics_toFloat(x Basics_Int) Basics_Float {
 }
 
 func Basics_round(x Basics_Float) Basics_Int {
-	return Basics_Int(math.Round(x))
+	return Basics_Int(math.Round(float64(x)))
 }
 
 func Basics_floor(x Basics_Float) Basics_Int {
-	return Basics_Int(math.Floor(x))
+	return Basics_Int(math.Floor(float64(x)))
 }
 
 func Basics_ceiling(x Basics_Float) Basics_Int {
-	return Basics_Int(math.Ceil(x))
+	return Basics_Int(math.Ceil(float64(x)))
 }
 
 func Basics_truncate(x Basics_Float) Basics_Int {
-	return Basics_Int(math.Trunc(x))
+	return Basics_Int(math.Trunc(float64(x)))
 }
 
-func Basics_eq[c Equatable](a c) func(b c) Basics_Bool {
+func Basics_eq[c runtime.Equatable](a c) func(b c) Basics_Bool {
 	return func(b c) Basics_Bool {
 		if a == b {
 			return Basics_True()
@@ -72,7 +76,7 @@ func Basics_eq[c Equatable](a c) func(b c) Basics_Bool {
 	}
 }
 
-func Basics_neq[c Equatable](a c) func(b c) Basics_Bool {
+func Basics_neq[c runtime.Equatable](a c) func(b c) Basics_Bool {
 	return func(b c) Basics_Bool {
 		if a != b {
 			return Basics_True()
@@ -81,7 +85,7 @@ func Basics_neq[c Equatable](a c) func(b c) Basics_Bool {
 	}
 }
 
-func Basics_lt[c Comparable](a c) func(b c) Basics_Bool {
+func Basics_lt[c runtime.Comparable](a c) func(b c) Basics_Bool {
 	return func(b c) Basics_Bool {
 		if a < b {
 			return Basics_True()
@@ -90,7 +94,7 @@ func Basics_lt[c Comparable](a c) func(b c) Basics_Bool {
 	}
 }
 
-func Basics_gt[c Comparable](a c) func(b c) Basics_Bool {
+func Basics_gt[c runtime.Comparable](a c) func(b c) Basics_Bool {
 	return func(b c) Basics_Bool {
 		if a > b {
 			return Basics_True()
@@ -99,7 +103,7 @@ func Basics_gt[c Comparable](a c) func(b c) Basics_Bool {
 	}
 }
 
-func Basics_le[c Comparable](a c) func(b c) Basics_Bool {
+func Basics_le[c runtime.Comparable](a c) func(b c) Basics_Bool {
 	return func(b c) Basics_Bool {
 		if a <= b {
 			return Basics_True()
@@ -108,7 +112,7 @@ func Basics_le[c Comparable](a c) func(b c) Basics_Bool {
 	}
 }
 
-func Basics_ge[c Comparable](a c) func(b c) Basics_Bool {
+func Basics_ge[c runtime.Comparable](a c) func(b c) Basics_Bool {
 	return func(b c) Basics_Bool {
 		if a >= b {
 			return Basics_True()
@@ -117,7 +121,7 @@ func Basics_ge[c Comparable](a c) func(b c) Basics_Bool {
 	}
 }
 
-func Basics_compare[c Comparable](a c) func(b c) Basics_Order {
+func Basics_compare[c runtime.Comparable](a c) func(b c) Basics_Order {
 	return func(b c) Basics_Order {
 		if a < b {
 			return Basics_LT()
@@ -132,15 +136,15 @@ func Basics_not(x Basics_Bool) Basics_Bool {
 	return ToBool(!IsTrue(x))
 }
 
-var Basics_and = oak_F2(func(x, y Basics_Bool) Basics_Bool {
+var Basics_and = runtime.F2(func(x, y Basics_Bool) Basics_Bool {
 	return ToBool(IsTrue(x) && IsTrue(y))
 })
 
-var Basics_or = oak_F2(func(x, y Basics_Bool) Basics_Bool {
+var Basics_or = runtime.F2(func(x, y Basics_Bool) Basics_Bool {
 	return ToBool(IsTrue(x) || IsTrue(y))
 })
 
-var Basics_xor = oak_F2(func(x, y Basics_Bool) Basics_Bool {
+var Basics_xor = runtime.F2(func(x, y Basics_Bool) Basics_Bool {
 	return ToBool(IsTrue(x) != IsTrue(y))
 })
 

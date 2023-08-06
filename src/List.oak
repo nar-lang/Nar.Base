@@ -2,4 +2,16 @@ module List
 
 type List[t] = extern
 
--- def (<>): (right 5) = append
+def (++): (right 5) = append
+def (::): (right 5) = cons
+
+def append[a]: (xs: List[a] -> ys: List[a] -> List[a]) = extern
+{--  case ys of
+    [] ->
+      xs
+
+    _ ->
+      foldr cons ys xs
+--}
+
+def cons[a]: (a -> List[a] -> List[a]) = extern
