@@ -143,9 +143,9 @@ def map: ((Char -> Char) -> String -> String) = extern
 
 def filter: ((Char -> Bool) -> String -> String) = extern
 
-def foldl[b: any]: ((Char -> b -> b) -> b -> String -> b) = extern
+def foldl[B]: ((Char -> B -> B) -> B -> String -> B) = extern
 
-def foldr[b: any]: ((Char -> b -> b) -> b -> String -> b) = extern
+def foldr[B]: ((Char -> B -> B) -> B -> String -> B) = extern
 
 def any: ((Char -> Bool) -> String -> Bool) = extern
 

@@ -2,21 +2,21 @@ module Maybe
 
 import Basics exposing (Bool)
 
-type Maybe[a] =
-  | Just a
+type Maybe[A] =
+  | Just A
   | Nothing
 
-def withDefault[a]: (default: a -> maybe: Maybe[a] -> a) =
+def withDefault[A]: (default: A -> maybe: Maybe[A] -> A) =
   select maybe
     case Just value -> value
     case Nothing -> default
 
-def map[a, value]: (f: (a->value) -> ma:Maybe[a] -> Maybe[value]) =
+def map[A, Value]: (f: (A->Value) -> ma: Maybe[A] -> Maybe[Value]) =
   select ma
     case Nothing -> Nothing
     case Just va -> Just (f va)
 
-def map2[a, b, value]: (f: (a->b->value) -> ma: Maybe[a] -> mb:Maybe[b] -> Maybe[value]) =
+def map2[A, B, Value]: (f: (A->B->Value) -> ma: Maybe[A] -> mb:Maybe[B] -> Maybe[Value]) =
   select ma
     case Nothing -> Nothing
     case Just va ->
@@ -24,7 +24,7 @@ def map2[a, b, value]: (f: (a->b->value) -> ma: Maybe[a] -> mb:Maybe[b] -> Maybe
         case Nothing -> Nothing
         case Just vb -> Just (f va vb)
 
-def map3[a, b, c, value]: (f: (a->b->c->value) -> ma: Maybe[a] -> mb:Maybe[b] -> mc:Maybe[c] -> Maybe[value]) =
+def map3[A, B, C, Value]: (f: (A->B->C->Value) -> ma: Maybe[A] -> mb:Maybe[B] -> mc:Maybe[C] -> Maybe[Value]) =
   select ma
     case Nothing -> Nothing
     case Just va ->
@@ -35,13 +35,13 @@ def map3[a, b, c, value]: (f: (a->b->c->value) -> ma: Maybe[a] -> mb:Maybe[b] ->
             case Nothing -> Nothing
             case Just vc -> Just (f va vb vc)
 
-def map4[a, b, c, d, value]: (
-    f: (a->b->c->d->value)
-    -> ma: Maybe[a]
-    -> mb:Maybe[b]
-    -> mc:Maybe[c]
-    -> md:Maybe[d]
-    -> Maybe[value]) =
+def map4[A, B, C, D, Value]: (
+    f: (A->B->C->D->Value)
+    -> ma: Maybe[A]
+    -> mb:Maybe[B]
+    -> mc:Maybe[C]
+    -> md:Maybe[D]
+    -> Maybe[Value]) =
   select ma
     case Nothing -> Nothing
     case Just va ->
@@ -55,19 +55,19 @@ def map4[a, b, c, d, value]: (
                 case Nothing -> Nothing
                 case Just vd -> Just (f va vb vc vd)
 
-def andThen[a, b]: (callback:(a->Maybe[b]) -> maybeValue: Maybe[a] -> Maybe[b]) =
+def andThen[A, B]: (callback:(A->Maybe[B]) -> maybeValue: Maybe[A] -> Maybe[B]) =
   select maybeValue
     case Just value -> callback value
     case Nothing -> Nothing
 
-def isJust[a, b]: (maybe: Maybe[a] -> Bool) =
+def isJust[A]: (maybe: Maybe[A] -> Bool) =
   select maybe
     case Just _ ->
       True
     case Nothing ->
       False
 
-def destruct[a, b] : (default: b -> func: (a -> b) -> maybe: Maybe[a] -> b) =
+def destruct[A, B] : (default: B -> func: (A -> B) -> maybe: Maybe[A] -> B) =
   select maybe
     case Just x ->
       func x

@@ -1,24 +1,19 @@
 module Tuple
 
-def pair[a, b] : (x: a -> y: b -> {a, b}) =
+def pair[A, B] : (x: A -> y: B -> {A, B}) =
   {x, y}
 
-def first[a, b] : (t: {a, b} -> a) =
-  select t
-    case {x, _} -> x
+def first[A, B] : ({x, _}: {A, B} -> A) =
+  x
 
-def second[a, b] : (t: {a, b} -> b) =
-  select t
-    case {_, y} -> y
+def second[A, B] : ({_, y}: {A, B} -> B) =
+  y
 
-def mapFirst[a, b, x] : (func: (a -> x) -> t: {a, b} -> {x, b}) =
-  select t
-    case {q, p} -> {func q, p}
+def mapFirst[A, B, X] : (func: (A -> X) -> {p, q}: {A, B} -> {X, B}) =
+  {func p, q}
 
-def mapSecond[a, b, y] : (func: (b -> y) -> t: {a, b} -> {a, y}) =
-  select t
-    case {q, p} -> {q, func p}
+def mapSecond[A, B, Y] : (func: (B -> Y) -> {p, q}: {A, B} -> {A, Y}) =
+  {p, func q}
 
-def mapBoth[a, b, x, y] : (funcA: (a -> x) -> funcB: (b -> y) -> t: {a, b} -> {x, y}) =
-  select t
-    case {p, q} -> { funcA p, funcB q }
+def mapBoth[A, B, X, Y] : (funcA: (A -> X) -> funcB: (B -> Y) -> {p, q}: {A, B} -> {X, Y}) =
+  { funcA p, funcB q }

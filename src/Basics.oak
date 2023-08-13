@@ -23,17 +23,17 @@ type Int = extern
 
 type Float = extern
 
-def add[n: Int + Float]: (n -> n -> n) = extern
+def add[N: Number]: (N -> N -> N) = extern
 
-def sub[n: Int + Float]: (n -> n -> n) = extern
+def sub[N: Number]: (N -> N -> N) = extern
 
-def mul[n: Int + Float]: (n -> n -> n) = extern
+def mul[N: Number]: (N -> N -> N) = extern
 
 def fdiv: (Float -> Float -> Float) = extern
 
 def idiv: (Int -> Int -> Int) = extern
 
-def neg[n: Int + Float]: (n -> n) = extern
+def neg[N: Number]: (N -> N) = extern
 
 -- INT TO FLOAT / FLOAT TO INT
 
@@ -49,27 +49,27 @@ def truncate: (Float -> Int) = extern
 
 -- EQUALITY
 
-def eq[eq: equatable]: (eq -> eq -> Bool) = extern
+def eq[Eq: Equatable]: (Eq -> Eq -> Bool) = extern
 
-def neq[eq: equatable]: (eq -> eq -> Bool) = extern
+def neq[Eq: Equatable]: (Eq -> Eq -> Bool) = extern
 
 -- COMPARISONS
 
-def lt[cmp: comparable]: (cmp -> cmp -> Bool) = extern
+def lt[Cmp: Comparable]: (Cmp -> Cmp -> Bool) = extern
 
-def gt[cmp: comparable]: (cmp -> cmp -> Bool) = extern
+def gt[Cmp: Comparable]: (Cmp -> Cmp -> Bool) = extern
 
-def le[cmp: comparable]: (cmp -> cmp -> Bool) = extern
+def le[Cmp: Comparable]: (Cmp -> Cmp -> Bool) = extern
 
-def ge[cmp: comparable]: (cmp -> cmp -> Bool) = extern
+def ge[Cmp: Comparable]: (Cmp -> Cmp -> Bool) = extern
 
-def min[cmp: comparable]: (x: cmp -> y: cmp -> cmp) =
+def min[Cmp: Comparable]: (x: Cmp -> y: Cmp -> Cmp) =
   if lt x y then x else y
 
-def max[cmp: comparable]: (x: cmp -> y: cmp -> cmp) =
+def max[Cmp: Comparable]: (x: Cmp -> y: Cmp -> Cmp) =
   if gt x y then x else y
 
-def compare[cmp: comparable]: (cmp -> cmp -> Order) = extern
+def compare[Cmp: Comparable]: (Cmp -> Cmp -> Order) = extern
 
 type Order =
   | LT
@@ -92,22 +92,22 @@ def xor: (Bool -> Bool -> Bool) = extern
 
 -- FUNCTION HELPERS
 
-def composeL[a, b, c]: (g: (b->c) -> f: (a->b) -> x: a -> c) =
+def composeL[A, B, C]: (g: (B->C) -> f: (A->B) -> x: A -> C) =
   g (f x)
 
-def composeR[a, b, c]: (f: (a->b) -> g: (b->c) -> x: a -> c) =
+def composeR[A, B, C]: (f: (A->B) -> g: (B->C) -> x: A -> C) =
   g (f x)
 
-def apR[a, b]: (x: a -> f: (a->b) -> b) =
+def apR[A, B]: (x: A -> f: (A->B) -> B) =
   f x
 
-def apL[a, b]: (f: (a->b) -> x: a -> b) =
+def apL[A, B]: (f: (A->B) -> x: A -> B) =
   f x
 
-def identity[a]: (x: a -> a) =
+def identity[A]: (x: A -> A) =
   x
 
-def always[a, b]: (x: a -> _: b -> a) =
+def always[A, A]: (x: A -> _: B -> A) =
   x
 
 def pi : Float = 3.1415

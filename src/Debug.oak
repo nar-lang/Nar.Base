@@ -2,8 +2,8 @@ module Debug
 
 import String exposing (String)
 
-def toString[a] : (a -> String) = extern
+def toString[A] : (A -> String) = extern
 
-def log[a] : (String -> a -> a) = extern
+def log[A] : (String -> A -> A) = extern
 
-def todo[a] : (String -> a) = extern
+def todo[A] : (String -> A) = extern
