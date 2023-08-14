@@ -69,7 +69,7 @@ func Basics_truncate(x Basics_Float) Basics_Int {
 
 func Basics_eq[c runtime.Equatable](a c) func(b c) Basics_Bool {
 	return func(b c) Basics_Bool {
-		if a == b {
+		if runtime.AreEqual(a, b) {
 			return Basics_True()
 		}
 		return Basics_False()
@@ -78,10 +78,10 @@ func Basics_eq[c runtime.Equatable](a c) func(b c) Basics_Bool {
 
 func Basics_neq[c runtime.Equatable](a c) func(b c) Basics_Bool {
 	return func(b c) Basics_Bool {
-		if a != b {
-			return Basics_True()
+		if runtime.AreEqual(a, b) {
+			return Basics_False()
 		}
-		return Basics_False()
+		return Basics_True()
 	}
 }
 
