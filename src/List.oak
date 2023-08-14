@@ -3,31 +3,16 @@ module List
 import Basics exposing *
 import Maybe exposing (Maybe)
 
-
 def (++): (right 5) = append
 def (::): (right 5) = cons
 
-
 type List[T] = extern
 
--- CREATE
-
-{-| Create a list with only one element:
-
-    singleton 1234 == [1234]
-    singleton "hi" == ["hi"]
--}
 def singleton[A]: (value: A -> List[A]) =
   [value]
 
-
-{-| Create a list with *n* copies of a value:
-
-    repeat 3 (0,0) == [(0,0),(0,0),(0,0)]
--}
 def repeat[A]: (n: Int -> value: A -> List[A]) =
   repeatHelp [] n value
-
 
 hidden def repeatHelp[A]: (result: List[A] -> n: Int -> value: A -> List[A]) =
   if n <= 0 then
@@ -35,17 +20,8 @@ hidden def repeatHelp[A]: (result: List[A] -> n: Int -> value: A -> List[A]) =
   else
     repeatHelp (cons value result) (n-1) value
 
-
-{-| Create a list of numbers, every element increasing by one.
-You give the lowest and highest number that should be in the list.
-
-    range 3 6 == [3, 4, 5, 6]
-    range 3 3 == [3]
-    range 6 3 == []
--}
 def range: (lo: Int ->  hi: Int -> List[Int]) =
   rangeHelp lo hi []
-
 
 hidden def rangeHelp: (lo: Int -> hi: Int -> list: List[Int] -> List[Int]) =
   if lo <= hi then
@@ -53,29 +29,8 @@ hidden def rangeHelp: (lo: Int -> hi: Int -> list: List[Int] -> List[Int]) =
   else
     list
 
-
-{-| Add an element to the front of a list.
-
-    1 :: [2,3] == [1,2,3]
-    1 :: [] == [1]
-
-This operator is pronounced *cons* for historical reasons, but you can think
-of it like pushing an entry onto a stack.
--}
 def cons[A]: (A -> List[A] -> List[A]) = extern
 
-
--- TRANSFORM
-
-
-{-| Apply a function to every element of a list.
-
-    map sqrt [1,4,9] == [1,2,3]
-
-    map not [True,False,True] == [False,True,False]
-
-So `map func [ a, b, c ]` is the same as `[ func a, func b, func c ]`
--}
 def map[A,B]: (f: (A -> B) -> xs: List[A] -> List[B]) =
   let
     lambda: (x: A -> acc: List[B] -> List[B]) = cons (f x) acc
@@ -83,28 +38,9 @@ def map[A,B]: (f: (A -> B) -> xs: List[A] -> List[B]) =
     foldr lambda [] xs
     --foldr (\x acc -> cons (f x) acc) [] xs
 
-
-{-| Same as `map` but the function is also applied to the index of each
-element (starting at zero).
-
-    indexedMap Tuple.pair ["Tom","Sue","Bob"] == [ (0,"Tom"), (1,"Sue"), (2,"Bob") ]
--}
 def indexedMap[A,B]: (f: (Int -> A -> B) -> xs: List[A] -> List[B]) =
   map2 f (range 0 (length xs - 1)) xs
 
-
-{-| Reduce a list from the left.
-
-    foldl (+)  0  [1,2,3] == 6
-    foldl (::) [] [1,2,3] == [3,2,1]
-
-So `foldl step state [1,2,3]` is like saying:
-
-    state
-      |> step 1
-      |> step 2
-      |> step 3
--}
 def foldl[A,B]: (func: (A -> B -> B) -> acc: B -> list: List[A] -> B) =
   select list
     case [] ->
@@ -112,22 +48,8 @@ def foldl[A,B]: (func: (A -> B -> B) -> acc: B -> list: List[A] -> B) =
     case x :: xs ->
       foldl func (func x acc) xs
 
-
-{-| Reduce a list from the right.
-
-    foldr (+)  0  [1,2,3] == 6
-    foldr (::) [] [1,2,3] == [1,2,3]
-
-So `foldr step state [1,2,3]` is like saying:
-
-    state
-      |> step 3
-      |> step 2
-      |> step 1
--}
 def foldr[A,B]: (fn: (A -> B -> B) -> acc: B -> ls: List[A] -> B) =
     foldrHelper fn acc 0 ls
-
 
 hidden def foldrHelper[A, B]: (fn: (A -> B -> B) -> acc: B -> ctr: Int -> ls: List[A] -> B) =
     select ls
@@ -155,11 +77,6 @@ hidden def foldrHelper[A, B]: (fn: (A -> B -> B) -> acc: B -> ctr: Int -> ls: Li
                                     in
                                         fn a (fn b (fn c (fn d res)))
 
-
-{-| Keep elements that satisfy the test.
-
-    filter isEven [1,2,3,4,5,6] == [2,4,6]
--}
 def filter[A]: (isGood: (A -> Bool) -> list: List[A] -> List[A]) =
   let
     lambda : (x: A -> xs: List[A] -> List[A]) = if isGood x then cons x xs else xs
@@ -167,20 +84,8 @@ def filter[A]: (isGood: (A -> Bool) -> list: List[A] -> List[A]) =
     foldr lambda [] list
   --foldr (\x xs -> if isGood x then cons x xs else xs) [] list
 
-
-{-| Filter out certain values. For example, maybe you have a bunch of strings
-from an untrusted source and you want to turn them into numbers:
-
-    numbers: List[Int]
-    numbers =
-      filterMap String.toInt ["3", "hi", "12", "4th", "May"]
-
-    -- numbers == [3, 12]
-
--}
 def filterMap[A, B]: (f: (A -> Maybe[B]) -> xs: List[A] -> List[B]) =
   foldr (maybeCons f) [] xs
-
 
 def maybeCons[A, B]: (f: (A -> Maybe[B]) -> mx: A -> xs: List[B] -> List[B]) =
   select f mx
@@ -189,34 +94,15 @@ def maybeCons[A, B]: (f: (A -> Maybe[B]) -> mx: A -> xs: List[B] -> List[B]) =
     case Nothing ->
       xs
 
-
--- UTILITIES
-
-
-{-| Determine the length of a list.
-
-    length [1,2,3] == 3
--}
 def length[A]: (xs: List[A] -> Int) =
   let
     lambda : (_: A -> i: Int -> Int) = i + 1
   in
     foldl lambda 0 xs
 
-
-{-| Reverse a list.
-
-    reverse [1,2,3,4] == [4,3,2,1]
--}
 def reverse[A]: (list: List[A] -> List[A]) =
   foldl cons [] list
 
-
-{-| Figure out whether a list contains a value.
-
-    member 9 [1,2,3,4] == False
-    member 4 [1,2,3,4] == True
--}
 def member[A: Equatable]: (x: A -> xs: List[A] -> Bool) =
   let
     lambda : (y: A -> Bool) = x == y
@@ -224,23 +110,9 @@ def member[A: Equatable]: (x: A -> xs: List[A] -> Bool) =
     any lambda xs
   --any (\a -> a == x) xs
 
-
-{-| Determine if all elements satisfy some test.
-
-    all isEven [2,4] == True
-    all isEven [2,3] == False
-    all isEven [] == True
--}
 def all[A]: (isOkay: (A -> Bool) -> list: List[A] -> Bool) =
   not (any (not << isOkay) list)
 
-
-{-| Determine if any elements satisfy some test.
-
-    any isEven [2,3] == True
-    any isEven [1,3] == False
-    any isEven [] == False
--}
 def any[A]: (isOkay: (A -> Bool) -> list: List[A] -> Bool) =
   select list
     case [] ->
@@ -252,12 +124,6 @@ def any[A]: (isOkay: (A -> Bool) -> list: List[A] -> Bool) =
       else
         any isOkay xs
 
-
-{-| Find the maximum element in a non-empty list.
-
-    maximum [1,4,2] == Just 4
-    maximum []      == Nothing
--}
 def maximum[A: Comparable]: (list: List[A] -> Maybe[A]) =
   select list
     case x :: xs ->
@@ -265,12 +131,6 @@ def maximum[A: Comparable]: (list: List[A] -> Maybe[A]) =
     case _ ->
       Nothing
 
-
-{-| Find the minimum element in a non-empty list.
-
-    minimum [3,2,1] == Just 1
-    minimum []      == Nothing
--}
 def minimum[A: Comparable]: (list: List[A] -> Maybe[A]) =
   select list
     case x :: xs ->
@@ -278,40 +138,12 @@ def minimum[A: Comparable]: (list: List[A] -> Maybe[A]) =
     case _ ->
       Nothing
 
-
-{-| Get the sum of the list elements.
-
-    sum [1,2,3] == 6
-    sum [1,1,1] == 3
-    sum []      == 0
-
--}
 def sum[A: Number]: (numbers: List[A] -> A)=
   foldl (+) 0 numbers
 
-
-{-| Get the product of the list elements.
-
-    product [2,2,2] == 8
-    product [3,3,3] == 27
-    product []      == 1
-
--}
 def product[A: Number]: (numbers: List[A] -> A) =
   foldl (*) 1 numbers
 
-
-
--- COMBINE
-
-
-{-| Put two lists together.
-
-    append [1,1,2] [3,5,8] == [1,1,2,3,5,8]
-    append ['a','b'] ['c'] == ['a','b','c']
-
-You can also use [the `(++)` operator](Basics#++) to append lists.
--}
 def append[A]: (xs: List[A] -> ys: List[A] -> List[A]) =
   select ys
     case [] ->
@@ -319,27 +151,12 @@ def append[A]: (xs: List[A] -> ys: List[A] -> List[A]) =
     case _ ->
       foldr cons ys xs
 
-
-{-| Concatenate a bunch of lists into a single list:
-
-    concat [[1,2],[3],[4,5]] == [1,2,3,4,5]
--}
 def concat[A]: (lists: List[List[A]] -> List[A]) =
   foldr append [] lists
 
-
-{-| Map a given function onto a list and flatten the resulting lists.
-
-    concatMap f xs == concat (map f xs)
--}
 def concatMap[A, B]: (f: (A -> List[B]) -> list: List[A] -> List[B]) =
   concat (map f list)
 
-
-{-| Places the given value between all members of the given list.
-
-    intersperse "on" ["turtles","turtles","turtles"] == ["turtles","on","turtles","on","turtles"]
--}
 def intersperse[A]: (sep: A -> xs: List[A] -> List[A]) =
   select xs
     case [] ->
@@ -351,140 +168,47 @@ def intersperse[A]: (sep: A -> xs: List[A] -> List[A]) =
       in
         cons hd spersed
 
-
-{-| Combine two lists, combining them with the given function.
-If one list is longer, the extra elements are dropped.
-
-    totals: List[Int] -> List[Int] -> List[Int]
-    totals xs ys =
-      List.map2 (+) xs ys
-
-    -- totals [1,2,3] [4,5,6] == [5,7,9]
-
-    pairs: List[a] -> List[b] -> List (a,b)
-    pairs xs ys =
-      List.map2 Tuple.pair xs ys
-
-    -- pairs ["alice","bob","chuck"] [2,5,7,8]
-    --   == [("alice",2),("bob",5),("chuck",7)]
-
--}
 def map2[A, B, R]: (
   (A -> B -> R) ->
   List[A] -> List[B] -> List[R]
 ) = extern
 
-
-{-|-}
 def map3[A, B, C, R]: ((A -> B -> C -> R) -> List[A] -> List[B] -> List[C] -> List[R]) = extern
 
-
-{-|-}
 def map4[A, B, C, D, R]: (
   (A -> B -> C -> D -> R) ->
   List[A] -> List[B] -> List[C] -> List[D] -> List[R]
 ) = extern
 
-
-{-|-}
 def map5[A, B, C, D, E, R]: (
   (A -> B -> C -> D -> E -> R) ->
   List[A] -> List[B] -> List[C] -> List[D] -> List[E] -> List[R]
 ) = extern
 
-
--- SORT
-
-
-{-| Sort values from lowest to highest
-
-    sort [3,1,5] == [1,3,5]
--}
 def sort[A: Comparable]: (xs: List[A] -> List[A]) =
   sortBy identity xs
 
-
-{-| Sort values by a derived property.
-
-    alice = { name="Alice", height=1.62 }
-    bob   = { name="Bob"  , height=1.85 }
-    chuck = { name="Chuck", height=1.76 }
-
-    sortBy .name   [chuck,alice,bob] == [alice,bob,chuck]
-    sortBy .height [chuck,alice,bob] == [alice,chuck,bob]
-
-    sortBy String.length ["mouse","cat"] == ["cat","mouse"]
--}
 def sortBy[A, B: Comparable]: ((A -> B) -> List[A] -> List[A]) = extern
 
-
-{-| Sort values with a custom comparison function.
-
-    sortWith flippedComparison [1,2,3,4,5] == [5,4,3,2,1]
-
-    flippedComparison a b =
-        select compare a b
-          case LT -> GT
-          case EQ -> EQ
-          case GT -> LT
-
-This is also the most general sort function, allowing you
-to define any other: `sort == sortWith compare`
--}
 def sortWith[A]: ((A -> A -> Order) -> List[A] -> List[A]) = extern
 
-
--- DECONSTRUCT
-
-
-{-| Determine if a list is empty.
-
-    isEmpty [] == True
-
-**Note:** It is usually preferable to use a `select` to test this so you do not
-forget to handle the `(x :: xs)` case as well!
--}
 def isEmpty[A]: (xs: List[A] -> Bool) =
   select xs
     case [] -> True
     case _ -> False
 
-
-{-| Extract the first element of a list.
-
-    head [1,2,3] == Just 1
-    head [] == Nothing
-
-**Note:** It is usually preferable to use a `select` to deconstruct a `List`
-because it gives you `(x :: xs)` and you can work with both subparts.
--}
 def head[A]: (list: List[A] -> Maybe[A]) =
   select list
     case x :: _ -> Just x
     case [] -> Nothing
 
-
-{-| Extract the rest of the list.
-
-    tail [1,2,3] == Just [2,3]
-    tail [] == Nothing
-
-**Note:** It is usually preferable to use a `select` to deconstruct a `List`
-because it gives you `(x :: xs)` and you can work with both subparts.
--}
 def tail[A]: (list: List[A] -> Maybe[List[A]]) =
   select list
     case x :: xs -> Just xs
     case [] -> Nothing
 
-
-{-| Take the first *n* members of a list.
-
-    take 2 [1,2,3,4] == [1,2]
--}
 def take[A]: (n: Int -> list: List[A] -> List[A]) =
   takeFast 0 n list
-
 
 hidden def takeFast[A]: (ctr: Int -> n: Int -> list: List[A] -> List[A]) =
   if n <= 0 then
@@ -510,7 +234,6 @@ hidden def takeFast[A]: (ctr: Int -> n: Int -> list: List[A] -> List[A]) =
 hidden def takeTailRec[A]: (n: Int -> list: List[A] -> List[A]) =
   reverse (takeReverse n list [])
 
-
 hidden def takeReverse[A]: (n: Int -> list: List[A] -> kept: List[A] -> List[A]) =
   if n <= 0 then
     kept
@@ -521,11 +244,6 @@ hidden def takeReverse[A]: (n: Int -> list: List[A] -> kept: List[A] -> List[A])
       case x :: xs ->
         takeReverse (n - 1) xs (cons x kept)
 
-
-{-| Drop the first *n* members of a list.
-
-    drop 2 [1,2,3,4] == [3,4]
--}
 def drop[A]: (n: Int -> list:List[A] -> List[A]) =
   if n <= 0 then
     list
@@ -536,13 +254,6 @@ def drop[A]: (n: Int -> list:List[A] -> List[A]) =
       case x :: xs ->
         drop (n-1) xs
 
-
-{-| Partition a list based on some test. The first list contains all values
-that satisfy the test, and the second list contains all the value that do not.
-
-    partition (\x -> x < 3) [0,1,2,3,4,5] == ([0,1,2], [3,4,5])
-    partition isEven        [0,1,2,3,4,5] == ([0,2,4], [1,3,5])
--}
 def partition[A]: (pred: (A -> Bool) -> list: List[A] -> {List[A], List[A]}) =
   let
     step : (x: A -> {trues, falses}: {List[A], List[A]} -> {List[A], List[A]}) =
@@ -553,11 +264,6 @@ def partition[A]: (pred: (A -> Bool) -> list: List[A] -> {List[A], List[A]}) =
   in
     foldr step {[],[]} list
 
-
-{-| Decompose a list of tuples into a tuple of lists.
-
-    unzip [(0, True), (17, False), (1337, True)] == ([0,17,1337], [True,False,True])
--}
 def unzip[A,B]: (pairs: List[{A,B}] -> {List[A], List[B]}) =
   let
     step: ({x, y}: {A, B} -> {xs, ys}: {List[A], List[B]} -> {List[A], List[B]}) =
