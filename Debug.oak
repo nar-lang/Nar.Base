@@ -1,0 +1,9 @@
+module Debug
+
+import "./String.oak" exposing (String)
+
+def toString(x: ?a): String = extern
+
+def log(msg: String, a: ?a): ?a = extern
+
+def todo(msg: String): ?a = extern

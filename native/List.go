@@ -2,7 +2,7 @@ package core
 
 import "github.com/oaklang/runtime"
 
-type List_List[T any] runtime.List[T]
+definedType List_List[T any] runtime.List[T]
 
 func (xs List_List[T]) Head() T {
 	return runtime.List[T](xs).Head()

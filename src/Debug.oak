@@ -1,9 +1,0 @@
-module Debug
-
-import String exposing (String)
-
-def toString[A] : (A -> String) = extern
-
-def log[A] : (String -> A -> A) = extern
-
-def todo[A] : (String -> A) = extern

@@ -1,0 +1,69 @@
+module Maybe
+
+import "./Basics.oak" exposing (Bool)
+
+data Maybe[?a]
+  = Just(?a)
+  | Nothing
+
+def withDefault(default: ?a, maybe: Maybe[?a]): ?a =
+  select maybe
+    case Just(value) -> value
+    case Nothing -> default
+
+def map(f: (?a):?value, ma: Maybe[?a]): Maybe[?value] =
+  select ma
+    case Nothing -> Nothing
+    case Just(va) -> Just(f(va))
+
+def map2(f: (?a,?b):?value, ma: Maybe[?a], mb: Maybe[?b]): Maybe[?value] =
+  select ma
+    case Nothing -> Nothing
+    case Just(va) ->
+      select mb
+        case Nothing -> Nothing
+        case Just(vb) -> Just(f(va, vb))
+
+def map3(f: (?a,?b,?c):?value, ma: Maybe[?a], mb:Maybe[?b], mc:Maybe[?c]): Maybe[?value] =
+  select ma
+    case Nothing -> Nothing
+    case Just(va) ->
+      select mb
+        case Nothing -> Nothing
+        case Just(vb) ->
+          select mc
+            case Nothing -> Nothing
+            case Just(vc) -> Just(f(va, vb, vc))
+
+def map4(f: (?a,?b,?c,?d):?value, ma: Maybe[?a], mb:Maybe[?b], mc:Maybe[?c], md:Maybe[?d]): Maybe[?value] =
+  select ma
+    case Nothing -> Nothing
+    case Just(va) ->
+      select mb
+        case Nothing -> Nothing
+        case Just(vb) ->
+          select mc
+            case Nothing -> Nothing
+            case Just(vc) ->
+              select md
+                case Nothing -> Nothing
+                case Just(vd) -> Just(f(va, vb, vc, vd))
+
+def andThen(callback: (?a):Maybe[?b], maybeValue: Maybe[?a]): Maybe[?b] =
+  select maybeValue
+    case Just(value) -> callback(value)
+    case Nothing -> Nothing
+
+def isJust(maybe: Maybe[?a]): Bool =
+  select maybe
+    case Just(_) ->
+      True
+    case Nothing ->
+      False
+
+def destruct(default: ?b, func: (?a):?b, maybe: Maybe[?a]): ?b =
+  select maybe
+    case Just(x) ->
+      func(x)
+    case Nothing ->
+      default

@@ -7,7 +7,7 @@ import (
 	"unicode"
 )
 
-type String_String string
+definedType String_String string
 
 func String_length(s String_String) Basics_Int {
 	return Basics_Int(len(s))

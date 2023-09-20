@@ -1,0 +1,121 @@
+module Basics
+
+infix (<|): (right 0) = apL
+infix (|>): (left  0) = apR
+infix (||): (right 2) = or
+infix (&&): (right 3) = and
+infix (==): (non   4) = eq
+infix (/=): (non   4) = neq
+infix (<) : (non   4) = lt
+infix (>) : (non   4) = gt
+infix (<=): (non   4) = le
+infix (>=): (non   4) = ge
+infix (+) : (left  6) = add
+infix (-) : (left  6) = sub
+infix (*) : (left  7) = mul
+infix (/) : (left  7) = fdiv
+infix (#): (left  7) = idiv
+infix (^) : (right 8) = pow
+infix (<<): (left  9) = composeL
+infix (>>): (right 9) = composeR
+
+alias Int = extern
+
+alias Float = extern
+
+def add(x: ?num, y: ?num): ?num = extern
+
+def sub(x: ?num, y: ?num): ?num = extern
+
+def mul(x: ?num, y: ?num): ?num = extern
+
+def fdiv(x: Float, y: Float): Float = extern
+
+def idiv(x: Int, y: Int): Int = extern
+
+def neg(x: ?num): ?num = extern
+
+def pow(x: ?num, y: ?num): ?num = extern
+
+// INT TO FLOAT / FLOAT TO INT
+
+def toFloat(n: Int): Float = extern
+
+def round(n: Float): Int = extern
+
+def floor(n: Float): Int = extern
+
+def ceiling(n: Float): Int = extern
+
+def truncate(n: Float): Int = extern
+
+// EQUALITY
+
+def eq(a: ?eq, b: ?eq): Bool = extern
+
+def neq(a: ?eq, b: ?eq): Bool = extern
+
+// COMPARISONS
+
+def lt(l: ?cmp, r: ?cmp): Bool = extern
+
+def gt(l: ?cmp, r: ?cmp): Bool = extern
+
+def le(l: ?cmp, r: ?cmp): Bool = extern
+
+def ge(l: ?cmp, r: ?cmp): Bool = extern
+
+def min(x: ?cmp, y: ?cmp): ?cmp =
+  if lt(x, y) then x else y
+
+def max(x: ?cmp, y: ?cmp): ?cmp =
+  if gt(x, y) then x else y
+
+def compare(l: ?cmp, r: ?cmp): Order = extern
+
+data Order
+  = LT
+  | EQ
+  | GT
+
+// BOOLEANS
+
+data Bool
+  = True
+  | False
+
+def not(x: Bool): Bool = extern
+
+def and(x: Bool, y: Bool): Bool = extern
+
+def or(x: Bool, y: Bool): Bool = extern
+
+def xor(x: Bool, y: Bool): Bool = extern
+
+// FUNCTION HELPERS
+
+def composeL(g: (?b):?c, f: (?a):?b, x: ?a): ?c =
+  g(f(x))
+
+def composeR(f: (?a):?b, g: (?b):?c, x: ?a): ?c =
+  g(f(x))
+
+def apR(x: ?a, f: (?a):?b): ?b =
+  f(x)
+
+def apL(f: (?a):?b, x: ?a): ?b =
+  f(x)
+
+def identity(x: ?a): ?a =
+  x
+
+def always(a: ?a, _: ?b): ?a =
+  a
+
+def pi: Float = 3.1415
+
+data Never = JustOneMore(Never)
+
+def never(x: Never): ?a =
+  select x
+    case JustOneMore(n) -> never(n)

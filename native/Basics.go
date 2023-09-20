@@ -5,8 +5,8 @@ import (
 	"math"
 )
 
-type Basics_Int = runtime.Int
-type Basics_Float = runtime.Float
+definedType Basics_Int = runtime.Int
+definedType Basics_Float = runtime.Float
 
 const IntBitSize = 64
 const FloatBitSize = 64

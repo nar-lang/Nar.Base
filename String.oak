@@ -1,0 +1,152 @@
+module String
+
+import "./Basics.oak" exposing *
+import "./Bitwise.oak"
+import "./Char.oak" exposing (Char)
+import "./List.oak" exposing (List, (::))
+import "./Maybe.oak" exposing (Maybe)
+import "./Result.oak" exposing (Result)
+
+infix (<>): (right 5) = append
+
+alias String = extern
+
+def isEmpty(string: String): Bool =
+  string == ""
+
+def length(s: String): Int = extern
+
+def reverse(s: String): String = extern
+
+def repeat(n: Int, chunk: String): String =
+  repeatHelp(n, chunk, "")
+
+def hidden repeatHelp(n: Int, chunk: String, result: String): String =
+  if n <= 0 then
+    result
+  else
+    repeatHelp(Bitwise.shiftRightBy(1, n), chunk <> chunk) <|
+      if Bitwise.and(n, 1) == 0 then result else result <> chunk
+
+def replace(before: String, after: String, string: String): String =
+  join(after, split(before, string))
+
+
+// BUILDING AND SPLITTING
+
+def append(a: String, b: String): String = extern
+
+def concat(strings: List[String]): String =
+  join("", strings)
+
+def split(sep: String, string: String): List[String] = extern
+
+def join(sep: String, strings: List[String]): String = extern
+
+def words(string: String): List[String] = extern
+
+def lines(string: String): List[String] = extern
+
+// SUBSTRINGS
+
+def slice(begin: Int, end: Int, s: String): String = extern
+
+def left(n: Int, string: String): String =
+  if n < 1 then
+    ""
+  else
+    slice (0, n, string)
+
+def right(n: Int, string: String): String =
+  if n < 1 then
+    ""
+  else
+    slice(-n, length(string), string)
+
+def dropLeft(n: Int, string: String): String =
+  if n < 1 then
+    string
+  else
+    slice(n, length(string), string)
+
+def dropRight(n: Int, string: String): String =
+  if n < 1 then
+    string
+  else
+    slice(0, -n, string)
+
+// DETECT SUBSTRINGS
+
+def contains(sub: String, string: String): Bool = extern
+
+def startsWith(sub: String, string: String): Bool = extern
+
+def endsWith(sub: String, string: String): Bool = extern
+
+def indices(sub: String, string: String): List[Int] = extern
+
+// FORMATTING
+
+def toUpper(s: String): String = extern
+
+def toLower(s: String): String = extern
+
+def pad(n: Int, char: Char, string: String): String =
+  let
+    half = Basics.toFloat((n - length(string)) / 2.0)
+  in
+    repeat(ceiling(half), fromChar(char) <> string <> repeat(floor(half), fromChar(char)))
+
+def padLeft(n: Int, char: Char, string: String): String =
+  repeat(n - length(string), fromChar(char) <> string)
+
+def padRight(n: Int, char: Char, string: String): String =
+  string <> repeat(n - length(string), fromChar(char))
+
+def trim(s: String): String = extern
+
+def trimLeft(s: String): String = extern
+
+def trimRight(s: String): String = extern
+
+// INT CONVERSIONS
+
+def toInt(s: String): Maybe[Int] = extern
+
+def fromInt(n: Int): String = extern
+
+// FLOAT CONVERSIONS
+
+def toFloat(s: String): Maybe[Float] = extern
+
+def fromFloat(n: Float): String = extern
+
+// LIST CONVERSIONS
+
+def toList(string: String): List[Char] =
+  foldr((::), [], string)
+
+def fromList(chars: List[Char]): String = extern
+
+// CHAR CONVERSIONS
+
+def fromChar(char: Char): String =
+  cons(char, "")
+
+def cons(c: Char, s: String): String = extern
+
+def uncons(s: String): Maybe[( Char, String )] = extern
+
+// HIGHER-ORDER FUNCTIONS
+
+def map(f: (Char):Char, s: String): String = extern
+
+def filter(f: (Char): Bool, s: String): String = extern
+
+def foldl(f: (Char,?b):?b, acc: ?b, s: String): ?b = extern
+
+def foldr(f: (Char,?b):?b, acc: ?b, s: String): ?b = extern
+
+def any(f: (Char): Bool, s: String): Bool = extern
+
+def all(f: (Char): Bool, s: String): Bool = extern

@@ -4,7 +4,7 @@ import (
 	"unicode"
 )
 
-type Char_Char = rune
+definedType Char_Char = rune
 
 func Char_toUpper(char Char_Char) Char_Char {
 	return unicode.ToUpper(char)
