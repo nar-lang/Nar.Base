@@ -1,4 +1,4 @@
-module Basics
+module oak.core/Basics
 
 infix (<|): (right 0) = apL
 infix (|>): (left  0) = apR
@@ -19,51 +19,51 @@ infix (^) : (right 8) = pow
 infix (<<): (left  9) = composeL
 infix (>>): (right 9) = composeR
 
-alias Int = extern
+alias extern Int
 
-alias Float = extern
+alias extern Float
 
-def add(x: ?num, y: ?num): ?num = extern
+def extern add(x: ?num, y: ?num): ?num
 
-def sub(x: ?num, y: ?num): ?num = extern
+def extern sub(x: ?num, y: ?num): ?num
 
-def mul(x: ?num, y: ?num): ?num = extern
+def extern mul(x: ?num, y: ?num): ?num
 
-def fdiv(x: Float, y: Float): Float = extern
+def extern fdiv(x: Float, y: Float): Float
 
-def idiv(x: Int, y: Int): Int = extern
+def extern idiv(x: Int, y: Int): Int
 
-def neg(x: ?num): ?num = extern
+def extern neg(x: ?num): ?num
 
-def pow(x: ?num, y: ?num): ?num = extern
+def extern pow(x: ?num, y: ?num): ?num
 
 // INT TO FLOAT / FLOAT TO INT
 
-def toFloat(n: Int): Float = extern
+def extern toFloat(n: Int): Float
 
-def round(n: Float): Int = extern
+def extern round(n: Float): Int
 
-def floor(n: Float): Int = extern
+def extern floor(n: Float): Int
 
-def ceiling(n: Float): Int = extern
+def extern ceiling(n: Float): Int
 
-def truncate(n: Float): Int = extern
+def extern truncate(n: Float): Int
 
 // EQUALITY
 
-def eq(a: ?eq, b: ?eq): Bool = extern
+def extern eq(a: ?eq, b: ?eq): Bool
 
-def neq(a: ?eq, b: ?eq): Bool = extern
+def extern neq(a: ?eq, b: ?eq): Bool
 
 // COMPARISONS
 
-def lt(l: ?cmp, r: ?cmp): Bool = extern
+def extern lt(l: ?cmp, r: ?cmp): Bool
 
-def gt(l: ?cmp, r: ?cmp): Bool = extern
+def extern gt(l: ?cmp, r: ?cmp): Bool
 
-def le(l: ?cmp, r: ?cmp): Bool = extern
+def extern le(l: ?cmp, r: ?cmp): Bool
 
-def ge(l: ?cmp, r: ?cmp): Bool = extern
+def extern ge(l: ?cmp, r: ?cmp): Bool
 
 def min(x: ?cmp, y: ?cmp): ?cmp =
   if lt(x, y) then x else y
@@ -71,7 +71,7 @@ def min(x: ?cmp, y: ?cmp): ?cmp =
 def max(x: ?cmp, y: ?cmp): ?cmp =
   if gt(x, y) then x else y
 
-def compare(l: ?cmp, r: ?cmp): Order = extern
+def extern compare(l: ?cmp, r: ?cmp): Order
 
 data Order
   = LT
@@ -84,13 +84,13 @@ data Bool
   = True
   | False
 
-def not(x: Bool): Bool = extern
+def extern not(x: Bool): Bool
 
-def and(x: Bool, y: Bool): Bool = extern
+def extern and(x: Bool, y: Bool): Bool
 
-def or(x: Bool, y: Bool): Bool = extern
+def extern or(x: Bool, y: Bool): Bool
 
-def xor(x: Bool, y: Bool): Bool = extern
+def extern xor(x: Bool, y: Bool): Bool
 
 // FUNCTION HELPERS
 

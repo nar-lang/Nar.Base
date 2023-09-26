@@ -1,4 +1,4 @@
-module String
+module oak.core/String
 
 import "./Basics.oak" exposing *
 import "./Bitwise.oak"
@@ -9,14 +9,14 @@ import "./Result.oak" exposing (Result)
 
 infix (<>): (right 5) = append
 
-alias String = extern
+alias extern String
 
 def isEmpty(string: String): Bool =
   string == ""
 
-def length(s: String): Int = extern
+def extern length(s: String): Int
 
-def reverse(s: String): String = extern
+def extern reverse(s: String): String
 
 def repeat(n: Int, chunk: String): String =
   repeatHelp(n, chunk, "")
@@ -34,22 +34,22 @@ def replace(before: String, after: String, string: String): String =
 
 // BUILDING AND SPLITTING
 
-def append(a: String, b: String): String = extern
+def extern append(a: String, b: String): String
 
 def concat(strings: List[String]): String =
   join("", strings)
 
-def split(sep: String, string: String): List[String] = extern
+def extern split(sep: String, string: String): List[String]
 
-def join(sep: String, strings: List[String]): String = extern
+def extern join(sep: String, strings: List[String]): String
 
-def words(string: String): List[String] = extern
+def extern words(string: String): List[String]
 
-def lines(string: String): List[String] = extern
+def extern lines(string: String): List[String]
 
 // SUBSTRINGS
 
-def slice(begin: Int, end: Int, s: String): String = extern
+def extern slice(begin: Int, end: Int, s: String): String
 
 def left(n: Int, string: String): String =
   if n < 1 then
@@ -77,19 +77,19 @@ def dropRight(n: Int, string: String): String =
 
 // DETECT SUBSTRINGS
 
-def contains(sub: String, string: String): Bool = extern
+def extern contains(sub: String, string: String): Bool
 
-def startsWith(sub: String, string: String): Bool = extern
+def extern startsWith(sub: String, string: String): Bool
 
-def endsWith(sub: String, string: String): Bool = extern
+def extern endsWith(sub: String, string: String): Bool
 
-def indices(sub: String, string: String): List[Int] = extern
+def extern indices(sub: String, string: String): List[Int]
 
 // FORMATTING
 
-def toUpper(s: String): String = extern
+def extern toUpper(s: String): String
 
-def toLower(s: String): String = extern
+def extern toLower(s: String): String
 
 def pad(n: Int, char: Char, string: String): String =
   let
@@ -103,50 +103,50 @@ def padLeft(n: Int, char: Char, string: String): String =
 def padRight(n: Int, char: Char, string: String): String =
   string <> repeat(n - length(string), fromChar(char))
 
-def trim(s: String): String = extern
+def extern trim(s: String): String
 
-def trimLeft(s: String): String = extern
+def extern trimLeft(s: String): String
 
-def trimRight(s: String): String = extern
+def extern trimRight(s: String): String
 
 // INT CONVERSIONS
 
-def toInt(s: String): Maybe[Int] = extern
+def extern toInt(s: String): Maybe[Int]
 
-def fromInt(n: Int): String = extern
+def extern fromInt(n: Int): String
 
 // FLOAT CONVERSIONS
 
-def toFloat(s: String): Maybe[Float] = extern
+def extern toFloat(s: String): Maybe[Float]
 
-def fromFloat(n: Float): String = extern
+def extern fromFloat(n: Float): String
 
 // LIST CONVERSIONS
 
 def toList(string: String): List[Char] =
   foldr((::), [], string)
 
-def fromList(chars: List[Char]): String = extern
+def extern fromList(chars: List[Char]): String
 
 // CHAR CONVERSIONS
 
 def fromChar(char: Char): String =
   cons(char, "")
 
-def cons(c: Char, s: String): String = extern
+def extern cons(c: Char, s: String): String
 
-def uncons(s: String): Maybe[( Char, String )] = extern
+def extern uncons(s: String): Maybe[( Char, String )]
 
 // HIGHER-ORDER FUNCTIONS
 
-def map(f: (Char):Char, s: String): String = extern
+def extern map(f: (Char):Char, s: String): String
 
-def filter(f: (Char): Bool, s: String): String = extern
+def extern filter(f: (Char): Bool, s: String): String
 
-def foldl(f: (Char,?b):?b, acc: ?b, s: String): ?b = extern
+def extern foldl(f: (Char,?b):?b, acc: ?b, s: String): ?b
 
-def foldr(f: (Char,?b):?b, acc: ?b, s: String): ?b = extern
+def extern foldr(f: (Char,?b):?b, acc: ?b, s: String): ?b
 
-def any(f: (Char): Bool, s: String): Bool = extern
+def extern any(f: (Char): Bool, s: String): Bool
 
-def all(f: (Char): Bool, s: String): Bool = extern
+def extern all(f: (Char): Bool, s: String): Bool

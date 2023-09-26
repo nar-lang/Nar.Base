@@ -1,4 +1,4 @@
-module List
+module oak.core/List
 
 import "./Basics.oak" exposing *
 import "./Maybe.oak" exposing (Maybe)
@@ -6,7 +6,7 @@ import "./Maybe.oak" exposing (Maybe)
 infix (++): (right 5) = append
 infix (::): (right 5) = cons
 
-alias List[?a] = extern
+alias extern List[?a]
 
 def singleton(value: ?a): List[?a] =
   [value]
@@ -29,7 +29,7 @@ def hidden rangeHelp(lo: Int, hi: Int, list: List[Int]): List[Int] =
   else
     list
 
-def cons(head: ?a, tail: List[?a]): List[?a] = extern
+def extern cons(head: ?a, tail: List[?a]): List[?a]
 
 def map(f: (?a):?b, xs: List[?a]): List[?b] =
   foldr(\(x, acc) -> cons(f(x), acc), [], xs)
@@ -152,20 +152,20 @@ def intersperse(sep: ?a, xs: List[?a]): List[?a] =
       in
         cons(hd, spersed)
 
-def map2(f: (?a, ?b):?r, a: List[?a], b: List[?b]): List[?r] = extern
+def extern map2(f: (?a, ?b):?r, a: List[?a], b: List[?b]): List[?r]
 
-def map3(f: (?a, ?b, ?c):?r, a: List[?a], b: List[?b], c: List[?c]): List[?r] = extern
+def extern map3(f: (?a, ?b, ?c):?r, a: List[?a], b: List[?b], c: List[?c]): List[?r]
 
-def map4(f: (?a, ?b, ?c, ?d):?r, a: List[?a], b: List[?b], c: List[?c], d: List[?d]): List[?r] = extern
+def extern map4(f: (?a, ?b, ?c, ?d):?r, a: List[?a], b: List[?b], c: List[?c], d: List[?d]): List[?r]
 
-def map5(f: (?a, ?b, ?c, ?d, ?e):?r, a: List[?a], b: List[?b], c: List[?c], d: List[?d], e: List[?e]): List[?r] = extern
+def extern map5(f: (?a, ?b, ?c, ?d, ?e):?r, a: List[?a], b: List[?b], c: List[?c], d: List[?d], e: List[?e]): List[?r]
 
 def sort(xs: List[?a]): List[?a] =
   sortBy(identity, xs)
 
-def sortBy(f: (?a):?b, xs: List[?a]): List[?a] = extern
+def extern sortBy(f: (?a):?b, xs: List[?a]): List[?a]
 
-def sortWith(f: (?a, ?a):Order, xs: List[?a]): List[?a] = extern
+def extern sortWith(f: (?a, ?a):Order, xs: List[?a]): List[?a]
 
 def isEmpty(xs: List[?a]): Bool =
   select xs

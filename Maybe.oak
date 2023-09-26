@@ -1,4 +1,4 @@
-module Maybe
+module oak.core/Maybe
 
 import "./Basics.oak" exposing (Bool)
 

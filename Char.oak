@@ -1,8 +1,8 @@
-module Char
+module oak.core/Char
 
 import "./Basics.oak" exposing (Bool, Int, (&&), (||), (>=), (<=))
 
-alias Char = extern
+alias extern Char
 
 def isUpper(char: Char): Bool =
   let code = toCode(char)
@@ -34,10 +34,10 @@ def isHexDigit(char: Char): Bool =
     || (0x61 <= code && code <= 0x66)
 
 
-def toUpper(char: Char): Char = extern
+def extern toUpper(char: Char): Char
 
-def toLower(char: Char): Char = extern
+def extern toLower(char: Char): Char
 
-def toCode(char: Char): Int = extern
+def extern toCode(char: Char): Int
 
-def fromCode(char: Int): Char = extern
+def extern fromCode(char: Int): Char

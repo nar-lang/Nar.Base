@@ -1,15 +1,15 @@
-module Bitwise
+module oak.core/Bitwise
 
 import "./Basics.oak" exposing (Int)
 
-def and(x: Int, y: Int): Int = extern
+def extern and(x: Int, y: Int): Int
 
-def or(x: Int, y: Int): Int = extern
+def extern or(x: Int, y: Int): Int
 
-def xor(x: Int, y: Int): Int = extern
+def extern xor(x: Int, y: Int): Int
 
-def complement(x: Int): Int = extern
+def extern complement(x: Int): Int
 
-def shiftLeftBy(x: Int, y: Int): Int = extern
+def extern shiftLeftBy(x: Int, y: Int): Int
 
-def shiftRightBy(x: Int, y: Int): Int = extern
+def extern shiftRightBy(x: Int, y: Int): Int
