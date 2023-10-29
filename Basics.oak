@@ -1,4 +1,4 @@
-module oak.core/Basics
+module Oak.Core.Basics
 
 infix (<|): (right 0) = apL
 infix (|>): (left  0) = apR
@@ -22,6 +22,8 @@ infix (>>): (right 9) = composeR
 alias extern Int
 
 alias extern Float
+
+alias extern Unit
 
 def extern add(x: ?num, y: ?num): ?num
 

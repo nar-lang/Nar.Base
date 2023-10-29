@@ -1,4 +1,4 @@
-module oak.core/Tuple
+module Oak.Core.Tuple
 
 def pair(x: ?x, y: ?y): ( ?x, ?y ) =
   ( x, y )

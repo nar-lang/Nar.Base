@@ -1,4 +1,4 @@
-module oak.core/String
+module Oak.Core.String
 
 import "./Basics.oak" exposing *
 import "./Bitwise.oak"

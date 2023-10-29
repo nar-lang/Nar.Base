@@ -1,4 +1,4 @@
-module oak.core/Result
+module Oak.Core.Result
 
 import "./Basics.oak" exposing (Bool)
 import "./Maybe.oak" exposing (Maybe)

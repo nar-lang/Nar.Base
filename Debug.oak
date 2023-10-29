@@ -1,4 +1,4 @@
-module oak.core/Debug
+module Oak.Core.Debug
 
 import "./String.oak" exposing (String)
 

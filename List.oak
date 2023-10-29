@@ -1,4 +1,4 @@
-module oak.core/List
+module Oak.Core.List
 
 import "./Basics.oak" exposing *
 import "./Maybe.oak" exposing (Maybe)
@@ -147,7 +147,7 @@ def intersperse(sep: ?a, xs: List[?a]): List[?a] =
     case [] ->
       []
     case hd | tl ->
-      let step(x) = cons(sep, cons(x, rest))
+      let step(x, rest) = cons(sep, cons(x, rest))
       let spersed = foldr(step, [], tl)
       in
         cons(hd, spersed)
@@ -231,7 +231,7 @@ def drop(n: Int, list: List[?a]): List[?a] =
 
 def partition(pred: (?a, Bool), list: List[?a]): ( List[?a], List[?a] ) =
   let
-    step =
+    step(x, (trues, falses) ) =
       if pred(x) then
         ( cons( x, trues), falses )
       else
@@ -241,7 +241,7 @@ def partition(pred: (?a, Bool), list: List[?a]): ( List[?a], List[?a] ) =
 
 def unzip(pairs: List[( ?a, ?b )]): ( List[?a], List[?b] ) =
   let
-    step =
+    step(( x, y ), ( xs, ys )) =
       ( cons(x, xs), cons(y, ys) )
   in
     foldr(step, ( [], [] ), pairs)

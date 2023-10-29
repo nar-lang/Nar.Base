@@ -1,4 +1,4 @@
-module oak.core/Dict
+module Oak.Core.Dict
 
 import "./Basics.oak" exposing *
 import "./Maybe.oak" exposing *

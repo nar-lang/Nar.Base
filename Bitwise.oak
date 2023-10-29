@@ -1,4 +1,4 @@
-module oak.core/Bitwise
+module Oak.Core.Bitwise
 
 import "./Basics.oak" exposing (Int)
 

@@ -1,4 +1,4 @@
-module oak.core/Char
+module Oak.Core.Char
 
 import "./Basics.oak" exposing (Bool, Int, (&&), (||), (>=), (<=))
 
