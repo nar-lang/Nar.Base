@@ -143,9 +143,9 @@ def extern map(f: (Char):Char, s: String): String
 
 def extern filter(f: (Char): Bool, s: String): String
 
-def extern foldl(f: (Char,?b):?b, acc: ?b, s: String): ?b
+def extern foldl(f: (Char,b):b, acc: b, s: String): b
 
-def extern foldr(f: (Char,?b):?b, acc: ?b, s: String): ?b
+def extern foldr(f: (Char,b):b, acc: b, s: String): b
 
 def extern any(f: (Char): Bool, s: String): Bool
 

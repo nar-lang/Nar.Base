@@ -14,7 +14,7 @@ infix (+) : (left  6) = add
 infix (-) : (left  6) = sub
 infix (*) : (left  7) = mul
 infix (/) : (left  7) = fdiv
-infix (#): (left  7) = idiv
+infix (#) : (left  7) = idiv
 infix (^) : (right 8) = pow
 infix (<<): (left  9) = composeL
 infix (>>): (right 9) = composeR
@@ -23,21 +23,22 @@ alias extern Int
 
 alias extern Float
 
+
 alias extern Unit
 
-def extern add(x: ?num, y: ?num): ?num
+def extern add(x: num, y: num): num
 
-def extern sub(x: ?num, y: ?num): ?num
+def extern sub(x: num, y: num): num
 
-def extern mul(x: ?num, y: ?num): ?num
+def extern mul(x: num, y: num): num
 
 def extern fdiv(x: Float, y: Float): Float
 
 def extern idiv(x: Int, y: Int): Int
 
-def extern neg(x: ?num): ?num
+def extern neg(x: num): num
 
-def extern pow(x: ?num, y: ?num): ?num
+def extern pow(x: num, y: num): num
 
 // INT TO FLOAT / FLOAT TO INT
 
@@ -53,27 +54,27 @@ def extern truncate(n: Float): Int
 
 // EQUALITY
 
-def extern eq(a: ?eq, b: ?eq): Bool
+def extern eq(a: eq, b: eq): Bool
 
-def extern neq(a: ?eq, b: ?eq): Bool
+def extern neq(a: eq, b: eq): Bool
 
 // COMPARISONS
 
-def extern lt(l: ?cmp, r: ?cmp): Bool
+def extern lt(l: cmp, r: cmp): Bool
 
-def extern gt(l: ?cmp, r: ?cmp): Bool
+def extern gt(l: cmp, r: cmp): Bool
 
-def extern le(l: ?cmp, r: ?cmp): Bool
+def extern le(l: cmp, r: cmp): Bool
 
-def extern ge(l: ?cmp, r: ?cmp): Bool
+def extern ge(l: cmp, r: cmp): Bool
 
-def min(x: ?cmp, y: ?cmp): ?cmp =
+def min(x: cmp, y: cmp): cmp =
   if lt(x, y) then x else y
 
-def max(x: ?cmp, y: ?cmp): ?cmp =
+def max(x: cmp, y: cmp): cmp =
   if gt(x, y) then x else y
 
-def extern compare(l: ?cmp, r: ?cmp): Order
+def extern compare(l: cmp, r: cmp): Order
 
 data Order
   = LT
@@ -96,28 +97,30 @@ def extern xor(x: Bool, y: Bool): Bool
 
 // FUNCTION HELPERS
 
-def composeL(g: (?b):?c, f: (?a):?b, x: ?a): ?c =
+def composeL(g: (b):c, f: (a):b, x: a): c =
   g(f(x))
 
-def composeR(f: (?a):?b, g: (?b):?c, x: ?a): ?c =
+def composeR(f: (a):b, g: (b):c, x: a): c =
   g(f(x))
 
-def apR(x: ?a, f: (?a):?b): ?b =
+def apR(x: a, f: (a):b): b =
   f(x)
 
-def apL(f: (?a):?b, x: ?a): ?b =
+def apL(f: (a):b, x: a): b =
   f(x)
 
-def identity(x: ?a): ?a =
+def identity(x: a): a =
   x
 
-def always(a: ?a, _: ?b): ?a =
+def always(a: a, _: b): a =
   a
 
 def pi: Float = 3.1415
 
+/* causes compiler stack overflow
 data Never = JustOneMore(Never)
 
-def never(x: Never): ?a =
+def never(x: Never): a =
   select x
     case JustOneMore(n) -> never(n)
+*/

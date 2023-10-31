@@ -8,14 +8,14 @@ data hidden NColor
     = Red
     | Black
 
-data Dict[?k,?v]
-    = hidden RBNode(color: NColor, key: ?k, value: ?v, left: Dict[?k,?v], right: Dict[?k,?v])
+data Dict[k,v]
+    = hidden RBNode(color: NColor, key: k, value: v, left: Dict[k,v], right: Dict[k,v])
     | hidden RBEmpty
 
-const empty: Dict[?k,?v] =
+const empty: Dict[k,v] =
   RBEmpty
 
-def get(targetKey: ?cmp, dict: Dict[?cmp,?v]): Maybe[?v] =
+def get(targetKey: cmp, dict: Dict[cmp,v]): Maybe[v] =
   select dict
     case RBEmpty ->
       Nothing
@@ -28,31 +28,31 @@ def get(targetKey: ?cmp, dict: Dict[?cmp,?v]): Maybe[?v] =
         case GT ->
           get(targetKey, right)
 
-def member(key: ?cmp, dict: Dict[?cmp,?v]): Bool =
+def member(key: cmp, dict: Dict[cmp,v]): Bool =
   select get(key, dict)
     case Just(_) ->
       True
     case Nothing ->
       False
 
-def size(dict: Dict[?k,?v]): Int =
+def size(dict: Dict[k,v]): Int =
   sizeHelp(0, dict)
 
-def hidden sizeHelp(n: Int, dict: Dict[?k,?v]): Int =
+def hidden sizeHelp(n: Int, dict: Dict[k,v]): Int =
   select dict
     case RBEmpty ->
       n
     case RBNode(_, _, _, left, right) ->
       sizeHelp(sizeHelp(n+1, right), left)
 
-def isEmpty(dict: Dict[?k,?v]): Bool =
+def isEmpty(dict: Dict[k,v]): Bool =
   select dict
     case RBEmpty ->
       True
     case RBNode(_,_,_,_,_) ->
       False
 
-def insert(key: ?cmp, value: ?v, dict: Dict[?cmp,?v]): Dict[?cmp,?v] =
+def insert(key: cmp, value: v, dict: Dict[cmp,v]): Dict[cmp,v] =
   // Root node is always Black
   select insertHelp(key, value, dict)
     case RBNode(Red, k, v, l, r) ->
@@ -60,7 +60,7 @@ def insert(key: ?cmp, value: ?v, dict: Dict[?cmp,?v]): Dict[?cmp,?v] =
     case x ->
       x
 
-def hidden insertHelp(key: ?cmp, value: ?v, dict: Dict[?k,?v]): Dict[?k,?v] =
+def hidden insertHelp(key: cmp, value: v, dict: Dict[k,v]): Dict[k,v] =
   select dict
     case RBEmpty ->
       // New nodes are always red. If it violates the rules, it will be fixed
@@ -75,7 +75,7 @@ def hidden insertHelp(key: ?cmp, value: ?v, dict: Dict[?k,?v]): Dict[?k,?v] =
         case GT ->
           balance(nColor, nKey, nValue, nLeft, insertHelp(key, value, nRight))
 
-def hidden balance(color: NColor, key: ?k, value: ?v, left: Dict[?k,?v], right: Dict[?k,?v]): Dict[?k,?v] =
+def hidden balance(color: NColor, key: k, value: v, left: Dict[k,v], right: Dict[k,v]): Dict[k,v] =
   select right
     case RBNode(Red, rK, rV, rLeft, rRight) ->
       select left
@@ -102,7 +102,7 @@ def hidden balance(color: NColor, key: ?k, value: ?v, left: Dict[?k,?v], right: 
         case _ ->
           RBNode(color, key, value, left, right)
 
-def remove(key: ?k, dict: Dict[?k,?v]): Dict[?k,?v] =
+def remove(key: k, dict: Dict[k,v]): Dict[k,v] =
   // Root node is always Black
   select removeHelp(key, dict)
     case RBNode(Red, k, v, l, r) ->
@@ -110,7 +110,7 @@ def remove(key: ?k, dict: Dict[?k,?v]): Dict[?k,?v] =
     case x ->
       x
 
-def hidden removeHelp(targetKey: ?k, dict: Dict[?k,?v]): Dict[?k,?v] =
+def hidden removeHelp(targetKey: k, dict: Dict[k,v]): Dict[k,v] =
   select dict
     case RBEmpty ->
       RBEmpty
@@ -133,10 +133,10 @@ def hidden removeHelp(targetKey: ?k, dict: Dict[?k,?v]): Dict[?k,?v] =
         removeHelpEQGT(targetKey, removeHelpPrepEQGT(targetKey, dict, color, key, value, left, right))
 
 def hidden removeHelpPrepEQGT(
-    targetKey: ?k, dict: Dict[?k,?v], color: NColor,
-    key: ?k, value: ?v,
-    left: Dict[?k,?v], right: Dict[?k,?v]
-): Dict[?k,?v] =
+    targetKey: k, dict: Dict[k,v], color: NColor,
+    key: k, value: v,
+    left: Dict[k,v], right: Dict[k,v]
+): Dict[k,v] =
   select left
     case RBNode(Red, lK, lV, lLeft, lRight) ->
       RBNode(color, lK, lV, lLeft, RBNode(Red, key, value, lRight, right))
@@ -150,7 +150,7 @@ def hidden removeHelpPrepEQGT(
           dict
 
 
-def hidden removeHelpEQGT(targetKey: ?cmp, dict: Dict[?cmp,?v]): Dict[?cmp,?v] =
+def hidden removeHelpEQGT(targetKey: cmp, dict: Dict[cmp,v]): Dict[cmp,v] =
   select dict
     case RBNode(color, key, value, left, right) ->
       if targetKey == key then
@@ -164,14 +164,14 @@ def hidden removeHelpEQGT(targetKey: ?cmp, dict: Dict[?cmp,?v]): Dict[?cmp,?v] =
     case RBEmpty ->
       RBEmpty
 
-def hidden getMin(dict: Dict[?k,?v]): Dict[?k,?v] =
+def hidden getMin(dict: Dict[k,v]): Dict[k,v] =
   select dict
     case RBNode(_, _, _, RBNode(_, _, _, _, _) as left, _) ->
       getMin(left)
     case _ ->
       dict
 
-def hidden removeMin(dict: Dict[?k,?v]): Dict[?k,?v] =
+def hidden removeMin(dict: Dict[k,v]): Dict[k,v] =
   select dict
     case RBNode(color, key, value, RBNode(lColor, _, _, lLeft, _) as left, right) ->
       select lColor
@@ -190,7 +190,7 @@ def hidden removeMin(dict: Dict[?k,?v]): Dict[?k,?v] =
     case _ ->
       RBEmpty
 
-def hidden moveRedLeft(dict: Dict[?k,?v]): Dict[?k,?v] =
+def hidden moveRedLeft(dict: Dict[k,v]): Dict[k,v] =
   select dict
     case RBNode(
         clr,
@@ -233,7 +233,7 @@ def hidden moveRedLeft(dict: Dict[?k,?v]): Dict[?k,?v] =
     case _ ->
       dict
 
-def hidden moveRedRight(dict: Dict[?k,?v]): Dict[?k,?v] =
+def hidden moveRedRight(dict: Dict[k,v]): Dict[k,v] =
   select dict
     case RBNode(
       clr,
@@ -276,31 +276,31 @@ def hidden moveRedRight(dict: Dict[?k,?v]): Dict[?k,?v] =
     case _ ->
       dict
 
-def update(targetKey: ?k, alter:(Maybe[?v]):Maybe[?v], dict: Dict[?k,?v]): Dict[?k,?v] =
+def update(targetKey: k, alter:(Maybe[v]):Maybe[v], dict: Dict[k,v]): Dict[k,v] =
   select alter(get(targetKey,dict))
     case Just(value) ->
       insert(targetKey, value, dict)
     case Nothing ->
       remove(targetKey, dict)
 
-def singleton(key: ?cmp, value: ?v): Dict[?k,?v] =
+def singleton(key: cmp, value: v): Dict[k,v] =
   // Root node is always Black
   RBNode(Black, key, value, RBEmpty, RBEmpty)
 
-def union(t1: Dict[?cmp,?v], t2: Dict[?cmp,?v]): Dict[?cmp,?v] =
+def union(t1: Dict[cmp,v], t2: Dict[cmp,v]): Dict[cmp,v] =
   foldl(insert, t2, t1)
 
-def intersect(t1: Dict[?cmp,?v], t2: Dict[?cmp,?v]): Dict[?cmp,?v] =
+def intersect(t1: Dict[cmp,v], t2: Dict[cmp,v]): Dict[cmp,v] =
   filter(\(k, _) -> member(k, t2), t1)
 
-def diff(t1: Dict[?k,A], t2: Dict[?k,B]): Dict[?k,A] =
+def diff(t1: Dict[k,A], t2: Dict[k,B]): Dict[k,A] =
   foldl(\(k, _, t) -> remove(k, t), t1, t2)
 
 def merge(
-    leftStep:(?k, ?a, ?r): ?r, bothStep:(?k, ?a, ?b, ?r): ?r, rightStep:(?k, ?b, ?r) : ?r,
-    leftDict: Dict[?k,?a], rightDict: Dict[?k,?b], initialResult: ?r
-): ?r =
-  // :(rKey: ?k -> rValue: B ->(list, result):(List[(?k, A)], R) ->(List[(?k, A)], R))
+    leftStep:(k, a, r): r, bothStep:(k, a, b, r): r, rightStep:(k, b, r) : r,
+    leftDict: Dict[k,a], rightDict: Dict[k,b], initialResult: r
+): r =
+  // :(rKey: k -> rValue: B ->(list, result):(List[(k, A)], R) ->(List[(k, A)], R))
   let stepState =
     select list
       case [] ->
@@ -317,31 +317,31 @@ def merge(
   in
     List.foldl(\((k,v), result) -> leftStep(k, v, result), intermediateResult, leftovers)
 
-def map(func:(?k,?a):?b, dict: Dict[?k,?b]): Dict[?k,?b] =
+def map(func:(k,a):b, dict: Dict[k,b]): Dict[k,b] =
   select dict
     case RBEmpty ->
       RBEmpty
     case RBNode(color, key, value, left, right) ->
       RBNode(color, key, func(key, value), map(func, left), map(func, right))
 
-def foldl(func:(?k, ?v, ?b):?b, acc: ?b, dict: Dict[?k,?v]): ?b =
+def foldl(func:(k, v, b):b, acc: b, dict: Dict[k,v]): b =
   select dict
     case RBEmpty ->
       acc
     case RBNode(_, key, value, left, right) ->
       foldl(func, func(key, value, foldl(func, acc, left)), right)
 
-def foldr(func:(?k, ?v, ?b):?b, acc: ?b, t: Dict[?k,?v]): ?b =
+def foldr(func:(k, v, b):b, acc: b, t: Dict[k,v]): b =
   select t
     case RBEmpty ->
       acc
     case RBNode(_, key, value, left, right) ->
       foldr(func, func(key, value, foldr(func, acc, right)), left)
 
-def filter(isGood:(?k, ?v):Bool, dict: Dict[?k,?v]): Dict[?k,?v] =
+def filter(isGood:(k, v):Bool, dict: Dict[k,v]): Dict[k,v] =
   foldl(\(k, v, d) -> if isGood(k, v) then insert(k, v, d) else d, empty, dict)
 
-def partition(isGood:(?k, ?v):Bool, dict:Dict[?k,?v]): ( Dict[?k,?v], Dict[?k,?v] ) =
+def partition(isGood:(k, v):Bool, dict:Dict[k,v]): ( Dict[k,v], Dict[k,v] ) =
   let
     add =
       if isGood(key, value) then
@@ -351,14 +351,14 @@ def partition(isGood:(?k, ?v):Bool, dict:Dict[?k,?v]): ( Dict[?k,?v], Dict[?k,?v
   in
     foldl(add, ( empty, empty ), dict)
 
-def keys(dict: Dict[?k,?v]): List[?k] =
+def keys(dict: Dict[k,v]): List[k] =
   foldr(\(key, value, keyList) -> key :: keyList, [], dict)
 
-def values(dict: Dict[?k,?v]): List[?v] =
+def values(dict: Dict[k,v]): List[v] =
   foldr(\(key, value, valueList) -> value :: valueList, [], dict)
 
-def toList(dict: Dict[?k,?v]): List[( ?k, ?v )] =
+def toList(dict: Dict[k,v]): List[( k, v )] =
   foldr(\(key, value, list) -> ( key, value ) :: list, [], dict)
 
-def fromList(assocs: List[( ?cmp, ?v )]): Dict[?cmp,?v] =
+def fromList(assocs: List[( cmp, v )]): Dict[cmp,v] =
   List.foldl(\((key, value), dict) -> insert(key, value, dict), empty, assocs)

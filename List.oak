@@ -6,15 +6,15 @@ import "./Maybe.oak" exposing (Maybe)
 infix (++): (right 5) = append
 infix (::): (right 5) = cons
 
-alias extern List[?a]
+alias extern List[a]
 
-def singleton(value: ?a): List[?a] =
+def singleton(value: a): List[a] =
   [value]
 
-def repeat(n: Int, value: ?a): List[?a] =
+def repeat(n: Int, value: a): List[a] =
   repeatHelp([], n, value)
 
-def hidden repeatHelp(result: List[?a], n: Int, value: ?a): List[?a] =
+def hidden repeatHelp(result: List[a], n: Int, value: a): List[a] =
   if n <= 0 then
     result
   else
@@ -29,25 +29,25 @@ def hidden rangeHelp(lo: Int, hi: Int, list: List[Int]): List[Int] =
   else
     list
 
-def extern cons(head: ?a, tail: List[?a]): List[?a]
+def extern cons(head: a, tail: List[a]): List[a]
 
-def map(f: (?a):?b, xs: List[?a]): List[?b] =
+def map(f: (a):b, xs: List[a]): List[b] =
   foldr(\(x, acc) -> cons(f(x), acc), [], xs)
 
-def indexedMap(f: (Int, ?a):?b, xs: List[?a]): List[?b] =
+def indexedMap(f: (Int, a):b, xs: List[a]): List[b] =
   map2(f, range(0, length(xs) - 1), xs)
 
-def foldl(func: (?a, ?b):?b, acc: ?b, list: List[?a]): ?b =
+def foldl(func: (a, b):b, acc: b, list: List[a]): b =
   select list
     case [] ->
       acc
     case x | xs ->
       foldl(func, func(x, acc), xs)
 
-def foldr(fn: (?a, ?b):?b, acc: ?b, ls: List[?a]): ?b =
+def foldr(fn: (a, b):b, acc: b, ls: List[a]): b =
     foldrHelper(fn, acc, 0, ls)
 
-def hidden foldrHelper(fn: (?a, ?b):?b, acc: ?b, ctr: Int, ls: List[?a]): ?b =
+def hidden foldrHelper(fn: (a, b):b, acc: b, ctr: Int, ls: List[a]): b =
   select ls
     case [] ->
       acc
@@ -65,7 +65,7 @@ def hidden foldrHelper(fn: (?a, ?b):?b, acc: ?b, ctr: Int, ls: List[?a]): ?b =
                   fn(a, fn(b, fn(c, acc)))
                 case d | r4 ->
                   let
-                    res: ?b =
+                    res: b =
                       if ctr > 500 then
                         foldl(fn, acc, reverse(r4))
                       else
@@ -73,32 +73,32 @@ def hidden foldrHelper(fn: (?a, ?b):?b, acc: ?b, ctr: Int, ls: List[?a]): ?b =
                   in
                     fn(a, fn(b, fn(c, fn(d, res))))
 
-def filter(isGood: (?a):Bool, list: List[?a]): List[?a] =
+def filter(isGood: (a):Bool, list: List[a]): List[a] =
   foldr(\(x, xs) -> if isGood(x) then cons(x, xs) else xs, [], list)
 
-def filterMap(f: (?a):Maybe[?b], xs: List[?a]): List[?b] =
+def filterMap(f: (a):Maybe[b], xs: List[a]): List[b] =
   foldr(maybeCons(f), [], xs)
 
-def maybeCons(f: (?a):Maybe[?b], mx: ?a, xs: List[?b]): List[?b] =
+def maybeCons(f: (a):Maybe[b], mx: a, xs: List[b]): List[b] =
   select f(mx)
     case Just(x) ->
       cons(x, xs)
     case Nothing ->
       xs
 
-def length(xs: List[?a]): Int =
+def length(xs: List[a]): Int =
   foldl(\(_, c) -> c + 1, 0, xs)
 
-def reverse(list: List[?a]): List[?a] =
+def reverse(list: List[a]): List[a] =
   foldl(cons, [], list)
 
-def member(x: ?eq, xs: List[?eq]): Bool =
+def member(x: eq, xs: List[eq]): Bool =
   any(\(a) -> a == x, xs)
 
-def all(isOkay: (?a):Bool, list: List[?a]): Bool =
+def all(isOkay: (a):Bool, list: List[a]): Bool =
   not(any(not << isOkay, list))
 
-def any(isOkay: (?a):Bool, list: List[?a]): Bool =
+def any(isOkay: (a):Bool, list: List[a]): Bool =
   select list
     case [] ->
       False
@@ -109,40 +109,40 @@ def any(isOkay: (?a):Bool, list: List[?a]): Bool =
       else
         any(isOkay, xs)
 
-def maximum(list: List[?cmp]): Maybe[?cmp] =
+def maximum(list: List[cmp]): Maybe[cmp] =
   select list
     case x | xs ->
       Just(foldl(max, x, xs))
     case _ ->
       Nothing
 
-def minimum(list: List[?cmp]): Maybe[?cmp] =
+def minimum(list: List[cmp]): Maybe[cmp] =
   select list
     case x | xs ->
       Just(foldl(min, x, xs))
     case _ ->
       Nothing
 
-def sum(numbers: List[?num]): ?num =
+def sum(numbers: List[num]): num =
   foldl((+), 0, numbers)
 
-def product(numbers: List[?num]): ?num =
+def product(numbers: List[num]): num =
   foldl((*), 1, numbers)
 
-def append(xs: List[?a], ys: List[?a]): List[?a] =
+def append(xs: List[a], ys: List[a]): List[a] =
   select ys
     case [] ->
       xs
     case _ ->
       foldr(cons, ys, xs)
 
-def concat(lists: List[List[?a]]): List[?a] =
+def concat(lists: List[List[a]]): List[a] =
   foldr(append, [], lists)
 
-def concatMap(f: (?a):List[?b], list: List[?a]): List[?b] =
+def concatMap(f: (a):List[b], list: List[a]): List[b] =
   concat(map(f, list))
 
-def intersperse(sep: ?a, xs: List[?a]): List[?a] =
+def intersperse(sep: a, xs: List[a]): List[a] =
   select xs
     case [] ->
       []
@@ -152,40 +152,40 @@ def intersperse(sep: ?a, xs: List[?a]): List[?a] =
       in
         cons(hd, spersed)
 
-def extern map2(f: (?a, ?b):?r, a: List[?a], b: List[?b]): List[?r]
+def extern map2(f: (a, b):r, a: List[a], b: List[b]): List[r]
 
-def extern map3(f: (?a, ?b, ?c):?r, a: List[?a], b: List[?b], c: List[?c]): List[?r]
+def extern map3(f: (a, b, c):r, a: List[a], b: List[b], c: List[c]): List[r]
 
-def extern map4(f: (?a, ?b, ?c, ?d):?r, a: List[?a], b: List[?b], c: List[?c], d: List[?d]): List[?r]
+def extern map4(f: (a, b, c, d):r, a: List[a], b: List[b], c: List[c], d: List[d]): List[r]
 
-def extern map5(f: (?a, ?b, ?c, ?d, ?e):?r, a: List[?a], b: List[?b], c: List[?c], d: List[?d], e: List[?e]): List[?r]
+def extern map5(f: (a, b, c, d, e):r, a: List[a], b: List[b], c: List[c], d: List[d], e: List[e]): List[r]
 
-def sort(xs: List[?a]): List[?a] =
+def sort(xs: List[a]): List[a] =
   sortBy(identity, xs)
 
-def extern sortBy(f: (?a):?b, xs: List[?a]): List[?a]
+def extern sortBy(f: (a):b, xs: List[a]): List[a]
 
-def extern sortWith(f: (?a, ?a):Order, xs: List[?a]): List[?a]
+def extern sortWith(f: (a, a):Order, xs: List[a]): List[a]
 
-def isEmpty(xs: List[?a]): Bool =
+def isEmpty(xs: List[a]): Bool =
   select xs
     case [] -> True
     case _ -> False
 
-def head(list: List[?a]): Maybe[?a] =
+def head(list: List[a]): Maybe[a] =
   select list
     case x | _ -> Just(x)
     case [] -> Nothing
 
-def tail(list: List[?a]): Maybe[List[?a]] =
+def tail(list: List[a]): Maybe[List[a]] =
   select list
     case x | xs -> Just(xs)
     case [] -> Nothing
 
-def take(n: Int, list: List[?a]): List[?a] =
+def take(n: Int, list: List[a]): List[a] =
   takeFast(0, n, list)
 
-def hidden takeFast(ctr: Int, n: Int, list: List[?a]): List[?a] =
+def hidden takeFast(ctr: Int, n: Int, list: List[a]): List[a] =
   if n <= 0 then
     []
   else
@@ -206,10 +206,10 @@ def hidden takeFast(ctr: Int, n: Int, list: List[?a]): List[?a] =
       case _ ->
         list
 
-def hidden takeTailRec(n: Int, list: List[?a]): List[?a] =
+def hidden takeTailRec(n: Int, list: List[a]): List[a] =
   reverse(takeReverse(n, list, []))
 
-def hidden takeReverse(n: Int, list: List[?a], kept: List[?a]): List[?a] =
+def hidden takeReverse(n: Int, list: List[a], kept: List[a]): List[a] =
   if n <= 0 then
     kept
   else
@@ -219,7 +219,7 @@ def hidden takeReverse(n: Int, list: List[?a], kept: List[?a]): List[?a] =
       case x | xs ->
         takeReverse(n - 1, xs, cons(x, kept))
 
-def drop(n: Int, list: List[?a]): List[?a] =
+def drop(n: Int, list: List[a]): List[a] =
   if n <= 0 then
     list
   else
@@ -229,7 +229,7 @@ def drop(n: Int, list: List[?a]): List[?a] =
       case x | xs ->
         drop(n-1, xs)
 
-def partition(pred: (?a, Bool), list: List[?a]): ( List[?a], List[?a] ) =
+def partition(pred: (a, Bool), list: List[a]): ( List[a], List[a] ) =
   let
     step(x, (trues, falses) ) =
       if pred(x) then
@@ -239,7 +239,7 @@ def partition(pred: (?a, Bool), list: List[?a]): ( List[?a], List[?a] ) =
   in
     foldr(step, ( [], [] ), list)
 
-def unzip(pairs: List[( ?a, ?b )]): ( List[?a], List[?b] ) =
+def unzip(pairs: List[( a, b )]): ( List[a], List[b] ) =
   let
     step(( x, y ), ( xs, ys )) =
       ( cons(x, xs), cons(y, ys) )

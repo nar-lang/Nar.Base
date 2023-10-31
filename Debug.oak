@@ -2,8 +2,8 @@ module Oak.Core.Debug
 
 import "./String.oak" exposing (String)
 
-def extern toString(x: ?a): String
+def extern toString(x: a): String
 
-def extern log(msg: String, a: ?a): ?a
+def extern log(msg: String, a: a): a
 
-def extern todo(msg: String): ?a
+def extern todo(msg: String): a
