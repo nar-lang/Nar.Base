@@ -117,10 +117,8 @@ def always(a: a, _: b): a =
 
 def pi: Float = 3.1415
 
-/* causes compiler stack overflow
 data Never = JustOneMore(Never)
 
 def never(x: Never): a =
   select x
     case JustOneMore(n) -> never(n)
-*/
