@@ -16,8 +16,8 @@ infix (*) : (left  7) = mul
 infix (/) : (left  7) = fdiv
 infix (#) : (left  7) = idiv
 infix (^) : (right 8) = pow
-infix (<<): (left  9) = composeL
-infix (>>): (right 9) = composeR
+infix (<~): (left  9) = composeL
+infix (~>): (right 9) = composeR
 
 alias extern Int
 

@@ -12,7 +12,7 @@ data Dict[k,v]
     = hidden RBNode(color: NColor, key: k, value: v, left: Dict[k,v], right: Dict[k,v])
     | hidden RBEmpty
 
-const empty: Dict[k,v] =
+def empty: Dict[k,v] =
   RBEmpty
 
 def get(targetKey: cmp, dict: Dict[cmp,v]): Maybe[v] =
@@ -59,6 +59,7 @@ def insert(key: cmp, value: v, dict: Dict[cmp,v]): Dict[cmp,v] =
       RBNode(Black, k, v, l, r)
     case x ->
       x
+
 
 def hidden insertHelp(key: cmp, value: v, dict: Dict[k,v]): Dict[k,v] =
   select dict
@@ -148,7 +149,6 @@ def hidden removeHelpPrepEQGT(
           moveRedRight(dict)
         case _ ->
           dict
-
 
 def hidden removeHelpEQGT(targetKey: cmp, dict: Dict[cmp,v]): Dict[cmp,v] =
   select dict
@@ -293,29 +293,29 @@ def union(t1: Dict[cmp,v], t2: Dict[cmp,v]): Dict[cmp,v] =
 def intersect(t1: Dict[cmp,v], t2: Dict[cmp,v]): Dict[cmp,v] =
   filter(\(k, _) -> member(k, t2), t1)
 
-def diff(t1: Dict[k,A], t2: Dict[k,B]): Dict[k,A] =
+def diff(t1: Dict[k,a], t2: Dict[k,b]): Dict[k,a] =
   foldl(\(k, _, t) -> remove(k, t), t1, t2)
 
 def merge(
     leftStep:(k, a, r): r, bothStep:(k, a, b, r): r, rightStep:(k, b, r) : r,
     leftDict: Dict[k,a], rightDict: Dict[k,b], initialResult: r
 ): r =
-  // :(rKey: k -> rValue: B ->(list, result):(List[(k, A)], R) ->(List[(k, A)], R))
-  let stepState =
+  let stepState(rKey, rValue, ( list, result )) =
     select list
       case [] ->
         (list, rightStep(rKey, rValue, result))
       case (lKey, lValue) | rest ->
         if lKey < rKey then
-          stepState(rKey, rValue(rest, leftStep(lKey, lValue, result)))
+          stepState(rKey, rValue, (rest, leftStep(lKey, lValue, result)))
         else if lKey > rKey then
           (list, rightStep(rKey, rValue, result))
         else
           (rest, bothStep(lKey, lValue, rValue, result))
   let (leftovers, intermediateResult) =
-    foldl(stepState(toList, leftDict), initialResult, rightDict)
+    foldl(stepState, (toList(leftDict), initialResult), rightDict)
   in
-    List.foldl(\((k,v), result) -> leftStep(k, v, result), intermediateResult, leftovers)
+    List.foldl(\(( k, v ), result) -> leftStep(k, v, result), intermediateResult, leftovers)
+
 
 def map(func:(k,a):b, dict: Dict[k,b]): Dict[k,b] =
   select dict
@@ -341,9 +341,9 @@ def foldr(func:(k, v, b):b, acc: b, t: Dict[k,v]): b =
 def filter(isGood:(k, v):Bool, dict: Dict[k,v]): Dict[k,v] =
   foldl(\(k, v, d) -> if isGood(k, v) then insert(k, v, d) else d, empty, dict)
 
-def partition(isGood:(k, v):Bool, dict:Dict[k,v]): ( Dict[k,v], Dict[k,v] ) =
+def partition(isGood:(cmp, v):Bool, dict:Dict[cmp,v]): ( Dict[cmp,v], Dict[cmp,v] ) =
   let
-    add =
+    add(key, value, ( t1, t2 )) =
       if isGood(key, value) then
         ( insert(key, value, t1), t2 )
       else

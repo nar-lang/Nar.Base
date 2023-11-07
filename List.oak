@@ -96,7 +96,7 @@ def member(x: eq, xs: List[eq]): Bool =
   any(\(a) -> a == x, xs)
 
 def all(isOkay: (a):Bool, list: List[a]): Bool =
-  not(any(not << isOkay, list))
+  not(any(not <~ isOkay, list))
 
 def any(isOkay: (a):Bool, list: List[a]): Bool =
   select list
@@ -229,7 +229,7 @@ def drop(n: Int, list: List[a]): List[a] =
       case x | xs ->
         drop(n-1, xs)
 
-def partition(pred: (a, Bool), list: List[a]): ( List[a], List[a] ) =
+def partition(pred: (a): Bool, list: List[a]): ( List[a], List[a] ) =
   let
     step(x, (trues, falses) ) =
       if pred(x) then

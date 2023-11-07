@@ -93,7 +93,7 @@ def extern toLower(s: String): String
 
 def pad(n: Int, char: Char, string: String): String =
   let
-    half = Basics.toFloat((n - length(string)) / 2.0)
+    half = Basics.toFloat(n - length(string)) / 2.0
   in
     repeat(ceiling(half), fromChar(char) <> string <> repeat(floor(half), fromChar(char)))
 
