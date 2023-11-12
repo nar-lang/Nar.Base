@@ -13,8 +13,7 @@ infix (>=): (non   4) = ge
 infix (+) : (left  6) = add
 infix (-) : (left  6) = sub
 infix (*) : (left  7) = mul
-infix (/) : (left  7) = fdiv
-infix (#) : (left  7) = idiv
+infix (/) : (left  7) = div
 infix (^) : (right 8) = pow
 infix (<~): (left  9) = composeL
 infix (~>): (right 9) = composeR
@@ -32,9 +31,7 @@ def extern sub(x: num, y: num): num
 
 def extern mul(x: num, y: num): num
 
-def extern fdiv(x: Float, y: Float): Float
-
-def extern idiv(x: Int, y: Int): Int
+def extern div(x: num, y: num): num
 
 def extern neg(x: num): num
 
