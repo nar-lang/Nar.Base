@@ -3,6 +3,7 @@ module Oak.Core.Basics
 infix (<|): (right 0) = apL
 infix (|>): (left  0) = apR
 infix (||): (right 2) = or
+infix (^^): (right 2) = xor
 infix (&&): (right 3) = and
 infix (==): (non   4) = eq
 infix (/=): (non   4) = neq
@@ -14,14 +15,13 @@ infix (+) : (left  6) = add
 infix (-) : (left  6) = sub
 infix (*) : (left  7) = mul
 infix (/) : (left  7) = div
-infix (^) : (right 8) = pow
+infix (**) : (right 8) = pow //TODO: move to math
 infix (<~): (left  9) = composeL
 infix (~>): (right 9) = composeR
 
 alias extern Int
 
 alias extern Float
-
 
 alias extern Unit
 
@@ -45,9 +45,9 @@ def extern round(n: Float): Int
 
 def extern floor(n: Float): Int
 
-def extern ceiling(n: Float): Int
+def extern ceil(n: Float): Int
 
-def extern truncate(n: Float): Int
+def extern trunc(n: Float): Int
 
 // EQUALITY
 
@@ -71,7 +71,10 @@ def min(x: cmp, y: cmp): cmp =
 def max(x: cmp, y: cmp): cmp =
   if gt(x, y) then x else y
 
-def extern compare(l: cmp, r: cmp): Order
+def compare(l: cmp, r: cmp): Order =
+  if eq(l, r)
+  then EQ
+  else if lt(l, r) then LT else GT
 
 data Order
   = LT

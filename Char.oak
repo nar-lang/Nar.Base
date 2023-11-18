@@ -33,11 +33,10 @@ def isHexDigit(char: Char): Bool =
     || (0x41 <= code && code <= 0x46)
     || (0x61 <= code && code <= 0x66)
 
-
 def extern toUpper(char: Char): Char
 
 def extern toLower(char: Char): Char
 
 def extern toCode(char: Char): Int
 
-def extern fromCode(char: Int): Char
+def extern fromCode(code: Int): Char

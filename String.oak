@@ -95,7 +95,7 @@ def pad(n: Int, char: Char, string: String): String =
   let
     half = Basics.toFloat(n - length(string)) / 2.0
   in
-    repeat(ceiling(half), fromChar(char) <> string <> repeat(floor(half), fromChar(char)))
+    repeat(ceil(half), fromChar(char) <> string <> repeat(floor(half), fromChar(char)))
 
 def padLeft(n: Int, char: Char, string: String): String =
   repeat(n - length(string), fromChar(char) <> string)
