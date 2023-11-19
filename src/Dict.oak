@@ -1,8 +1,8 @@
 module Oak.Core.Dict
 
-import "./Basics.oak" exposing *
-import "./Maybe.oak" exposing *
-import "./List.oak" exposing *
+import Oak.Core.Basics exposing *
+import Oak.Core.Maybe exposing *
+import Oak.Core.List exposing *
 
 data hidden NColor
     = Red

@@ -1,11 +1,11 @@
 module Oak.Core.String
 
-import "./Basics.oak" exposing *
-import "./Bitwise.oak"
-import "./Char.oak" exposing (Char)
-import "./List.oak" exposing (List, (::))
-import "./Maybe.oak" exposing (Maybe)
-import "./Result.oak" exposing (Result)
+import Oak.Core.Basics exposing *
+import Oak.Core.Bitwise
+import Oak.Core.Char exposing (Char)
+import Oak.Core.List exposing (List, (::))
+import Oak.Core.Maybe exposing (Maybe)
+import Oak.Core.Result exposing (Result)
 
 infix (<>): (right 5) = append
 

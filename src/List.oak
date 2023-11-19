@@ -1,7 +1,7 @@
 module Oak.Core.List
 
-import "./Basics.oak" exposing *
-import "./Maybe.oak" exposing (Maybe)
+import Oak.Core.Basics exposing *
+import Oak.Core.Maybe exposing (Maybe)
 
 infix (++): (right 5) = append
 infix (::): (right 5) = cons

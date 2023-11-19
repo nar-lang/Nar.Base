@@ -1,6 +1,6 @@
 module Oak.Core.Maybe
 
-import "./Basics.oak" exposing (Bool)
+import Oak.Core.Basics exposing (Bool)
 
 data Maybe[a]
   = Just(a)

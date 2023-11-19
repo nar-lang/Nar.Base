@@ -1,6 +1,6 @@
 module Oak.Core.Debug
 
-import "./String.oak" exposing (String)
+import Oak.Core.String exposing (String)
 
 def extern toString(x: a): String
 

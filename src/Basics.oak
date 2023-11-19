@@ -15,7 +15,6 @@ infix (+) : (left  6) = add
 infix (-) : (left  6) = sub
 infix (*) : (left  7) = mul
 infix (/) : (left  7) = div
-infix (**) : (right 8) = pow //TODO: move to math
 infix (<~): (left  9) = composeL
 infix (~>): (right 9) = composeR
 

@@ -1,7 +1,7 @@
 module Oak.Core.Result
 
-import "./Basics.oak" exposing (Bool)
-import "./Maybe.oak" exposing (Maybe)
+import Oak.Core.Basics exposing (Bool)
+import Oak.Core.Maybe exposing (Maybe)
 
 data Result[error, value]
   = Ok(value)
