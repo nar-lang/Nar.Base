@@ -3,7 +3,7 @@ module Oak.Core.String
 import Oak.Core.Basics exposing *
 import Oak.Core.Bitwise
 import Oak.Core.Char exposing (Char)
-import Oak.Core.List exposing (List, (::))
+import Oak.Core.List exposing (List, (|))
 import Oak.Core.Maybe exposing (Maybe)
 import Oak.Core.Result exposing (Result)
 
@@ -124,7 +124,7 @@ def extern fromFloat(n: Float): String
 // LIST CONVERSIONS
 
 def toList(string: String): List[Char] =
-  foldr((::), [], string)
+  foldr((|), [], string)
 
 def extern fromList(chars: List[Char]): String
 

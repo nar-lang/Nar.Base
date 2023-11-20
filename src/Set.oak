@@ -2,7 +2,7 @@ module Oak.Core.Set
 
 import Oak.Core.Basics exposing (Bool, Int)
 import Oak.Core.Dict exposing (Dict)
-import Oak.Core.List exposing (List, (::))
+import Oak.Core.List exposing (List, (|))
 import Oak.Core.Maybe exposing (Maybe)
 
 data Set[t]
@@ -51,7 +51,7 @@ def foldr(func:(a,b):b, initialState: b, (OSet(dict)): Set[a]): b =
   Dict.foldr(\(key, _, state) -> func(key, state), initialState, dict)
 
 def map(func:(cmp):cmp2, set: Set[cmp]): Set[cmp2] =
-  fromList(foldl(\(x, xs) -> func(x) :: xs, [], set))
+  fromList(foldl(\(x, xs) -> func(x) | xs, [], set))
 
 def filter(isGood: (cmp):Bool, (OSet(dict)): Set[cmp]): Set[cmp] =
   OSet(Dict.filter(\(key, _) -> isGood(key), dict))

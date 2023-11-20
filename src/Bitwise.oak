@@ -4,7 +4,7 @@ import Oak.Core.Basics exposing (Int)
 
 infix (<<): (left 5) = shiftLeft
 infix (>>): (left 5) = shiftRight
-infix (|) : (left 6) = or
+infix (%) : (left 6) = or
 infix (^) : (left 6) = xor
 infix (&) : (left 7) = and
 

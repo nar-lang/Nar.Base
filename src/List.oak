@@ -4,7 +4,7 @@ import Oak.Core.Basics exposing *
 import Oak.Core.Maybe exposing (Maybe)
 
 infix (++): (right 5) = append
-infix (::): (right 5) = cons
+infix (|): (right 5) = cons
 
 alias extern List[a]
 

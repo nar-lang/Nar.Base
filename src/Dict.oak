@@ -352,13 +352,13 @@ def partition(isGood:(cmp, v):Bool, dict:Dict[cmp,v]): ( Dict[cmp,v], Dict[cmp,v
     foldl(add, ( empty, empty ), dict)
 
 def keys(dict: Dict[k,v]): List[k] =
-  foldr(\(key, value, keyList) -> key :: keyList, [], dict)
+  foldr(\(key, value, keyList) -> key | keyList, [], dict)
 
 def values(dict: Dict[k,v]): List[v] =
-  foldr(\(key, value, valueList) -> value :: valueList, [], dict)
+  foldr(\(key, value, valueList) -> value | valueList, [], dict)
 
 def toList(dict: Dict[k,v]): List[( k, v )] =
-  foldr(\(key, value, list) -> ( key, value ) :: list, [], dict)
+  foldr(\(key, value, list) -> ( key, value ) | list, [], dict)
 
 def fromList(assocs: List[( cmp, v )]): Dict[cmp,v] =
   List.foldl(\((key, value), dict) -> insert(key, value, dict), empty, assocs)
