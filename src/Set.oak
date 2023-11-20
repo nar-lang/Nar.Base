@@ -1,0 +1,64 @@
+module Oak.Core.Set
+
+import Oak.Core.Basics exposing (Bool, Int)
+import Oak.Core.Dict exposing (Dict)
+import Oak.Core.List exposing (List, (::))
+import Oak.Core.Maybe exposing (Maybe)
+
+data Set[t]
+  = hidden OSet(Dict[t, ()])
+
+def empty: Set[a] =
+  OSet(Dict.empty)
+
+def singleton(key: cmp): Set[cmp] =
+  OSet(Dict.singleton(key, ()))
+
+def insert(key: cmp, (OSet(dict)): Set[cmp]): Set[cmp] =
+  OSet(Dict.insert(key, (), dict))
+
+def remove(key: cmp, (OSet(dict)): Set[cmp]): Set[cmp] =
+  OSet(Dict.remove(key, dict))
+
+def isEmpty(OSet(dict): Set[a]): Bool =
+  Dict.isEmpty(dict)
+
+def member(key: cmp, (OSet(dict)): Set[cmp]): Bool =
+  Dict.member(key, dict)
+
+def size((OSet(dict)): Set[a]): Int =
+  Dict.size(dict)
+
+def union((OSet(dict1)): Set[cmp], (OSet(dict2)): Set[cmp]): Set[cmp] =
+  OSet(Dict.union(dict1, dict2))
+
+def intersect((OSet(dict1)): Set[cmp], (OSet(dict2)): Set[cmp]): Set[cmp] =
+  OSet (Dict.intersect(dict1, dict2))
+
+def diff((OSet(dict1)): Set[cmp], (OSet(dict2)): Set[cmp]): Set[cmp] =
+  OSet (Dict.diff(dict1, dict2))
+
+def toList((OSet(dict)): Set[a]): List[a] =
+  Dict.keys(dict)
+
+def fromList(list: List[cmp]): Set[cmp] =
+  List.foldl(insert, empty, list)
+
+def foldl(func:(a,b):b, initialState: b, (OSet(dict)): Set[a]): b =
+  Dict.foldl(\(key, _, state) -> func(key, state), initialState, dict)
+
+def foldr(func:(a,b):b, initialState: b, (OSet(dict)): Set[a]): b =
+  Dict.foldr(\(key, _, state) -> func(key, state), initialState, dict)
+
+def map(func:(cmp):cmp2, set: Set[cmp]): Set[cmp2] =
+  fromList(foldl(\(x, xs) -> func(x) :: xs, [], set))
+
+def filter(isGood: (cmp):Bool, (OSet(dict)): Set[cmp]): Set[cmp] =
+  OSet(Dict.filter(\(key, _) -> isGood(key), dict))
+
+def partition(isGood:(cmp):Bool, (OSet(dict)): Set[cmp]): (Set[cmp], Set[cmp]) =
+  let
+    (dict1, dict2) =
+      Dict.partition(\(key, _) -> isGood(key), dict)
+  in
+    (OSet(dict1), OSet(dict2))
