@@ -104,7 +104,7 @@ export default function (runtime) {
         fromCode: (code) => runtime.char(Number(code.value)),
     });
     runtime.register("Oak.Core.Debug", {
-        toString: (x) => runtime.unwrap(x).toString(),
+        toString: (x) => runtime.string(runtime.unwrap(x).toString()),
         log: (msg, a) => {
             console.log(runtime.unwrap(msg));
             return a;
