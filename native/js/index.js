@@ -225,9 +225,9 @@ export default function (runtime) {
         toInt: (s) => {
             const maybe = runtime.qualifierIdentifier("Oak.Core.Maybe", "Maybe");
             try {
-                return runtime.option(maybe, "Just", [runtime.int(BigInt(runtime.unwrap(s)))]);
+                return runtime.optionShallow(maybe, "Just", [runtime.int(BigInt(runtime.unwrap(s)))]);
             } catch {
-                return runtime.option(maybe, "Nothing");
+                return runtime.optionShallow(maybe, "Nothing");
             }
         },
         fromInt: (n) => runtime.string(runtime.unwrap(n).toString()),
@@ -235,9 +235,9 @@ export default function (runtime) {
             const maybe = runtime.qualifierIdentifier("Oak.Core.Maybe", "Maybe");
             const f = parseFloat(runtime.unwrap(s));
             if (isNaN(f)) {
-                return runtime.option(maybe, "Nothing");
+                return runtime.optionShallow(maybe, "Nothing");
             } else {
-                return runtime.option(maybe, "Just", [runtime.float(f)]);
+                return runtime.optionShallow(maybe, "Just", [runtime.float(f)]);
             }
         },
         fromFloat: (n) => runtime.string(runtime.unwrap(n).toString()),
@@ -247,9 +247,9 @@ export default function (runtime) {
             const maybe = runtime.qualifierIdentifier("Oak.Core.Maybe", "Maybe");
             const s = runtime.unwrap(str);
             if (s.length === 0) {
-                return runtime.option(maybe, "Nothing");
+                return runtime.optionShallow(maybe, "Nothing");
             } else {
-                return runtime.option(maybe, "Just", [runtime.tuple([
+                return runtime.optionShallow(maybe, "Just", [runtime.tuple([
                     runtime.char(s.charCodeAt(0)),
                     runtime.string(s.substring(1)),
                 ])]);
