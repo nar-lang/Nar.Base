@@ -27,8 +27,8 @@ export default function (runtime) {
                 return (a.value < b.value) ? -1 : (a.value > b.value ? 1 : 0);
             case runtime.INSTANCE_KIND_LIST:
             case runtime.INSTANCE_KIND_TUPLE:
-                const la = runtime.unwrap(a.value);
-                const lb = runtime.unwrap(b.value);
+                const la = runtime.unwrapShallow(a);
+                const lb = runtime.unwrapShallow(b);
                 return cmpList(la, lb);
             case runtime.INSTANCE_KIND_UNIT:
                 return 0;
@@ -84,7 +84,7 @@ export default function (runtime) {
         gt: (a, b) => runtime.bool(cmp(a, b) > 0),
         le: (a, b) => runtime.bool(cmp(a, b) <= 0),
         ge: (a, b) => runtime.bool(cmp(a, b) >= 0),
-        not: (x) => runtime.bool(!x.value),
+        not: (x) => runtime.bool(!runtime.unwrap(x)),
         and: (x, y) => runtime.bool(runtime.unwrap(x) && runtime.unwrap(y)),
         or: (x, y) => runtime.bool(runtime.unwrap(x) || runtime.unwrap(y)),
         xor: (x, y) => runtime.bool(runtime.unwrap(x) ^ runtime.unwrap(y)),
@@ -106,7 +106,7 @@ export default function (runtime) {
     runtime.register("Oak.Core.Debug", {
         toString: (x) => runtime.string(runtime.unwrap(x).toString()),
         log: (msg, a) => {
-            console.log(runtime.unwrap(msg));
+            console.log(runtime.unwrap(msg)+runtime.unwrap(a));
             return a;
         },
         todo: (msg) => {
