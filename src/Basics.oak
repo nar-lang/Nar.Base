@@ -11,45 +11,15 @@ infix (<) : (non   4) = lt
 infix (>) : (non   4) = gt
 infix (<=): (non   4) = le
 infix (>=): (non   4) = ge
-infix (+) : (left  6) = add
-infix (-) : (left  6) = sub
-infix (*) : (left  7) = mul
-infix (/) : (left  7) = div
 infix (<~): (left  9) = composeL
 infix (~>): (right 9) = composeR
+
 
 alias extern Int
 
 alias extern Float
 
 alias extern Unit
-
-def extern add(x: num, y: num): num
-
-def extern sub(x: num, y: num): num
-
-def extern mul(x: num, y: num): num
-
-def extern div(x: num, y: num): num
-
-def extern neg(x: num): num
-
-def extern pow(x: num, y: num): num
-
-def abs(x: num): num =
-  if lt(x, 0) then neg(x) else x
-
-// INT TO FLOAT / FLOAT TO INT
-
-def extern toFloat(n: Int): Float
-
-def extern round(n: Float): Int
-
-def extern floor(n: Float): Int
-
-def extern ceil(n: Float): Int
-
-def extern trunc(n: Float): Int
 
 // EQUALITY
 
@@ -116,8 +86,6 @@ def identity(x: a): a =
 
 def always(a: a, _: b): a =
   a
-
-def pi: Float = 3.1415
 
 data Never = JustOneMore(Never)
 

@@ -1,0 +1,45 @@
+module Oak.Core.Math
+
+import Oak.Core.Basics exposing *
+
+infix (+) : (left  6) = add
+infix (-) : (left  6) = sub
+infix (*) : (left  7) = mul
+infix (/) : (left  7) = div
+
+def extern add(x: num, y: num): num
+
+def extern sub(x: num, y: num): num
+
+def extern mul(x: num, y: num): num
+
+def extern div(x: num, y: num): num
+
+def extern neg(x: num): num
+
+def extern toFloat(n: Int): Float
+
+def extern round(n: Float): Int
+
+def extern floor(n: Float): Int
+
+def extern ceil(n: Float): Int
+
+def extern trunc(n: Float): Int
+
+def extern toPower(pow: num, n: num): num
+
+def extern sqrt(n: Float): Float
+
+def extern remainderBy(n: Int, x: Int): Int
+
+def extern modBy(n: Int, x: Int): Int
+
+def extern logBase(base: Float, n: Float): Float
+
+def abs(x: num): num =
+  if lt(x, 0) then neg(x) else x
+
+def pi: Float = 3.141592653589793
+
+def e: Float = 2.718281828459045

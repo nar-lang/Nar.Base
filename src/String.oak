@@ -1,6 +1,8 @@
 module Oak.Core.String
 
 import Oak.Core.Basics exposing *
+import Oak.Core.Math exposing ((+),(-),(*),(/))
+import Oak.Core.Math exposing *
 import Oak.Core.Bitwise
 import Oak.Core.Char exposing (Char)
 import Oak.Core.List exposing (List, (|))
@@ -93,7 +95,7 @@ def extern toLower(s: String): String
 
 def pad(n: Int, char: Char, string: String): String =
   let
-    half = Basics.toFloat(n - length(string)) / 2.0
+    half = Math.toFloat(n - length(string)) / 2.0
   in
     repeat(ceil(half), fromChar(char) <> string <> repeat(floor(half), fromChar(char)))
 

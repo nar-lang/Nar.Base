@@ -16,7 +16,9 @@ export default function (runtime) {
     }
 
     function cmp(a, b) {
-        if (a.kind !== b.kind) {
+        if (a.kind !== b.kind &&
+            (a.kind !== runtime.INSTANCE_KIND_INT || b.kind !== runtime.INSTANCE_KIND_FLOAT) &&
+            (a.kind !== runtime.INSTANCE_KIND_FLOAT || b.kind !== runtime.INSTANCE_KIND_INT)) {
             throw "types are not equal";
         }
         switch (a.kind) {
@@ -67,17 +69,25 @@ export default function (runtime) {
         }
     }
 
+    function toString(x) {
+        switch (x.kind) {
+            case runtime.INSTANCE_KIND_CHAR:
+                return `'${String.fromCharCode(x.value).replaceAll("'", "\\\\'")}'`;
+            case runtime.INSTANCE_KIND_STRING:
+                return `"${x.value.replaceAll('"', '\\\\"')}"`;
+            case runtime.INSTANCE_KIND_LIST:
+                return `[${runtime.unwrapShallow(x).map(toString).join(", ")}]`;
+            case runtime.INSTANCE_KIND_TUPLE:
+                return `( ${runtime.unwrapShallow(x).map(toString).join(", ")} )`;
+            case runtime.INSTANCE_KIND_RECORD:
+                const r = runtime.unwrapShallow(x);
+                return `{ ${Object.keys(r).map(k => k + " = " + toString(r[k])).join(", ")} }`;
+            default:
+                return runtime.unwrap(x).toString();
+        }
+    }
+
     runtime.register("Oak.Core.Basics", {
-        add: (x, y) => runtime.wrap(x.value + y.value),
-        sub: (x, y) => runtime.wrap(x.value - y.value),
-        mul: (x, y) => runtime.wrap(x.value * y.value),
-        div: (x, y) => runtime.wrap(x.value / y.value),
-        neg: (x) => runtime.wrap(-x.value),
-        pow: (x, y) => runtime.wrap(Math.pow(Number(x.value), Number(y.value))),
-        toFloat: (n) => runtime.float(Number(n.value)),
-        round: (n) => runtime.int(BigInt(Math.round(n))),
-        floor: (n) => runtime.int(BigInt(Math.floor(n))),
-        ceil: (n) => runtime.int(BigInt(Math.trunc(n))),
         eq: (a, b) => runtime.bool(cmp(a, b) === 0),
         neq: (a, b) => runtime.bool(cmp(a, b) !== 0),
         lt: (a, b) => runtime.bool(cmp(a, b) < 0),
@@ -88,6 +98,34 @@ export default function (runtime) {
         and: (x, y) => runtime.bool(runtime.unwrap(x) && runtime.unwrap(y)),
         or: (x, y) => runtime.bool(runtime.unwrap(x) || runtime.unwrap(y)),
         xor: (x, y) => runtime.bool(runtime.unwrap(x) ^ runtime.unwrap(y)),
+    });
+    runtime.register("Oak.Core.Math", {
+        add: (x, y) => runtime.wrap(x.value + y.value),
+        sub: (x, y) => runtime.wrap(x.value - y.value),
+        mul: (x, y) => runtime.wrap(x.value * y.value),
+        div: (x, y) => {
+            if (x.kind === runtime.INSTANCE_KIND_INT && y.kind === runtime.INSTANCE_KIND_INT) {
+                return runtime.int((x.value / y.value) | 0);
+            } else {
+                return runtime.wrap(x.value / y.value);
+            }
+        },
+        neg: (x) => runtime.wrap(-x.value),
+        toFloat: (n) => runtime.float(n.value),
+        round: (n) => runtime.int(Math.round(n)),
+        floor: (n) => runtime.int(Math.floor(n)),
+        ceil: (n) => runtime.int(Math.trunc(n)),
+        toPower: (pow, num) => runtime.wrap(runtime.unwrap(num) ** runtime.unwrap(pow)),
+        sqrt: (n) => runtime.float(Math.sqrt(runtime.unwrap(n))),
+        remainderBy: (n, x) => runtime.int(runtime.unwrap(x) % runtime.unwrap(n)),
+        modBy: (modulus, x) => {
+            const answer = x % modulus;
+            if (modulus === 0) {
+                throw "modBy: division by zero";
+            }
+            return runtime.wrap(((answer > 0 && modulus < 0) || (answer < 0 && modulus > 0)) ? answer + modulus : answer);
+        },
+        logBase: (base, n) => runtime.float(Math.log(runtime.unwrap(n)) / Math.log(runtime.unwrap(base))),
     });
     runtime.register("Oak.Core.Bitwise", {
         and: (x, y) => runtime.int(x.value & y.value),
@@ -100,13 +138,13 @@ export default function (runtime) {
     runtime.register("Oak.Core.Char", {
         toUpper: (char) => runtime.char(String.fromCharCode(char.value).toLocaleUpperCase().charCodeAt(0)),
         toLower: (char) => runtime.char(String.fromCharCode(char.value).toLocaleLowerCase().charCodeAt(0)),
-        toCode: (char) => runtime.int(BigInt(char.value)),
-        fromCode: (code) => runtime.char(Number(code.value)),
+        toCode: (char) => runtime.int(char.value),
+        fromCode: (code) => runtime.char(code.value),
     });
     runtime.register("Oak.Core.Debug", {
-        toString: (x) => runtime.string(runtime.unwrap(x).toString()),
+        toString: (x) => runtime.string(toString(x)),
         log: (msg, a) => {
-            console.log(runtime.unwrap(msg)+runtime.unwrap(a));
+            console.log(runtime.unwrap(msg) + runtime.unwrap(a));
             return a;
         },
         todo: (msg) => {
@@ -201,7 +239,7 @@ export default function (runtime) {
         join: (sep, strings) => runtime.string(runtime.unwrap(strings).join(runtime.unwrap(sep))),
         words: (string) => runtime.list(runtime.unwrap(string).trim().split(/\s+/).map(runtime.string)),
         lines: (string) => runtime.list(runtime.unwrap(string).trim().split(/\r?\n/).map(runtime.string)),
-        slice: (begin, end, s) => runtime.string(runtime.unwrap(s).slice(Number(runtime.unwrap(begin)), Number(runtime.unwrap(end)))),
+        slice: (begin, end, s) => runtime.string(runtime.unwrap(s).slice(runtime.unwrap(begin), runtime.unwrap(end))),
         contains: (sub, string) => runtime.bool(runtime.unwrap(string).includes(runtime.unwrap(sub))),
         startsWith: (sub, string) => runtime.bool(runtime.unwrap(string).startsWith(runtime.unwrap(sub))),
         endsWith: (sub, string) => runtime.bool(runtime.unwrap(string).endsWith(runtime.unwrap(sub))),
@@ -224,10 +262,11 @@ export default function (runtime) {
         trimRight: (s) => runtime.string(runtime.unwrap(s).trimEnd()),
         toInt: (s) => {
             const maybe = runtime.qualifierIdentifier("Oak.Core.Maybe", "Maybe");
-            try {
-                return runtime.optionShallow(maybe, "Just", [runtime.int(BigInt(runtime.unwrap(s)))]);
-            } catch {
+            const n = parseInt(runtime.unwrap(s));
+            if (isNaN(n)) {
                 return runtime.optionShallow(maybe, "Nothing");
+            } else {
+                return runtime.optionShallow(maybe, "Just", [runtime.int(n)]);
             }
         },
         fromInt: (n) => runtime.string(runtime.unwrap(n).toString()),

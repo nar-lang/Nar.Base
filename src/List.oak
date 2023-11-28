@@ -1,6 +1,7 @@
 module Oak.Core.List
 
 import Oak.Core.Basics exposing *
+import Oak.Core.Math exposing *
 import Oak.Core.Maybe exposing (Maybe)
 
 infix (++): (right 5) = append
