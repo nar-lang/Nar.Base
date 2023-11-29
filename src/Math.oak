@@ -43,3 +43,7 @@ def abs(x: num): num =
 def pi: Float = 3.141592653589793
 
 def e: Float = 2.718281828459045
+
+def extern isNan(x: num): Bool
+
+def extern isInf(x: num): Bool

@@ -104,7 +104,7 @@ export default function (runtime) {
         sub: (x, y) => runtime.wrap(x.value - y.value),
         mul: (x, y) => runtime.wrap(x.value * y.value),
         div: (x, y) => {
-            if (x.kind === runtime.INSTANCE_KIND_INT && y.kind === runtime.INSTANCE_KIND_INT) {
+            if (x.kind === runtime.INSTANCE_KIND_INT && y.kind === runtime.INSTANCE_KIND_INT && y.value !== 0) {
                 return runtime.int((x.value / y.value) | 0);
             } else {
                 return runtime.wrap(x.value / y.value);
@@ -114,18 +114,24 @@ export default function (runtime) {
         toFloat: (n) => runtime.float(n.value),
         round: (n) => runtime.int(Math.round(n)),
         floor: (n) => runtime.int(Math.floor(n)),
-        ceil: (n) => runtime.int(Math.trunc(n)),
+        ceil: (n) => runtime.int(Math.ceil(n)),
+        trunc: (n) => runtime.int(Math.trunc(n)),
         toPower: (pow, num) => runtime.wrap(runtime.unwrap(num) ** runtime.unwrap(pow)),
         sqrt: (n) => runtime.float(Math.sqrt(runtime.unwrap(n))),
         remainderBy: (n, x) => runtime.int(runtime.unwrap(x) % runtime.unwrap(n)),
         modBy: (modulus, x) => {
             const answer = x % modulus;
             if (modulus === 0) {
-                throw "modBy: division by zero";
+                return NaN;
             }
             return runtime.wrap(((answer > 0 && modulus < 0) || (answer < 0 && modulus > 0)) ? answer + modulus : answer);
         },
         logBase: (base, n) => runtime.float(Math.log(runtime.unwrap(n)) / Math.log(runtime.unwrap(base))),
+        isNan: (n) => runtime.bool(isNaN(runtime.unwrap(n))),
+        isInf: (n) => {
+            const x =runtime.unwrap(n);
+            return runtime.bool(x === Infinity || x === -Infinity);
+        },
     });
     runtime.register("Oak.Core.Bitwise", {
         and: (x, y) => runtime.int(x.value & y.value),
