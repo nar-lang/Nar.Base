@@ -150,7 +150,7 @@ export default function (runtime) {
     runtime.register("Oak.Core.Debug", {
         toString: (x) => runtime.string(toString(x)),
         log: (msg, a) => {
-            console.log(runtime.unwrap(msg) + runtime.unwrap(a));
+            console.log(runtime.unwrap(msg) + toString(a));
             return a;
         },
         todo: (msg) => {
