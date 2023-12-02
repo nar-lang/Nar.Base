@@ -11,11 +11,13 @@ def withDefault(default: a, result: Result[x, a]): a =
   select result
     case Ok(v) -> v
     case Err(_) -> default
+  end
 
 def map(func: (a):value, ra: Result[x, a]): Result[x, value] =
   select ra
     case Ok(a) -> Ok(func(a))
     case Err(e) -> Err(e)
+  end
 
 def map2(func: (a,b):value, ra: Result[x, a], rb: Result[x, b]): Result[x, value] =
   select ra
@@ -24,6 +26,8 @@ def map2(func: (a,b):value, ra: Result[x, a], rb: Result[x, b]): Result[x, value
       select rb
         case Err(e) -> Err(e)
         case Ok(b) -> Ok(func(a, b))
+      end
+  end
 
 def map3(func: (a,b,c):value, ra: Result[x, a], rb: Result[x, b], rc: Result[x, c]): Result[x, value] =
   select ra
@@ -35,6 +39,9 @@ def map3(func: (a,b,c):value, ra: Result[x, a], rb: Result[x, b], rc: Result[x, 
           select rc
             case Err(e) -> Err(e)
             case Ok(c) -> Ok (func(a, b, c))
+          end
+      end
+  end
 
 def map4(
     func: (a,b,c,d):value,
@@ -52,6 +59,10 @@ def map4(
               select rd
                 case Err(e) -> Err(e)
                 case Ok(d) -> Ok (func(a, b, c, d))
+              end
+          end
+      end
+  end
 
 
 def map5(
@@ -73,28 +84,38 @@ def map5(
                   select re
                     case Err(n) -> Err(n)
                     case Ok(e) -> Ok (func(a, b, c, d, e))
+                  end
+              end
+          end
+      end
+  end
 
 def andThen(callback: (a):Result[x, b], result: Result[x,a]): Result[x, b] =
   select result
     case Ok(value) -> callback(value)
     case Err(msg) -> Err(msg)
+  end
 
 def mapError(f: (x):y, result: Result[x, a]): Result[y, a] =
   select result
     case Ok(v) -> Ok(v)
     case Err(e) -> Err (f(e))
+  end
 
 def toMaybe(result: Result[x, a]): Maybe[a] =
   select result
     case Ok(v) -> Just(v)
     case Err(_) -> Nothing
+  end
 
 def fromMaybe(err: x, maybe: Maybe[a]): Result[x, a] =
   select maybe
     case Just(v) -> Ok(v)
     case Nothing -> Err(err)
+  end
 
 def isOk(result: Result[x, a]): Bool =
   select result
     case Ok(_) -> True
     case Err(_) -> False
+  end

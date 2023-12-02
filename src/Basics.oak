@@ -88,3 +88,4 @@ data Never = JustOneMore(Never)
 def never(x: Never): a =
   select x
     case JustOneMore(n) -> never(n)
+  end

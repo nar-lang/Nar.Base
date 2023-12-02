@@ -44,6 +44,7 @@ def foldl(func: (a, b):b, acc: b, list: List[a]): b =
       acc
     case x | xs ->
       foldl(func, func(x, acc), xs)
+  end
 
 def foldr(fn: (a, b):b, acc: b, ls: List[a]): b =
     foldrHelper(fn, acc, 0, ls)
@@ -73,6 +74,10 @@ def hidden foldrHelper(fn: (a, b):b, acc: b, ctr: Int, ls: List[a]): b =
                         foldrHelper(fn, acc, ctr + 1, r4)
                   in
                     fn(a, fn(b, fn(c, fn(d, res))))
+              end
+          end
+      end
+  end
 
 def filter(isGood: (a):Bool, list: List[a]): List[a] =
   foldr(\(x, xs) -> if isGood(x) then cons(x, xs) else xs, [], list)
@@ -86,6 +91,7 @@ def maybeCons(f: (a):Maybe[b], mx: a, xs: List[b]): List[b] =
       cons(x, xs)
     case Nothing ->
       xs
+  end
 
 def length(xs: List[a]): Int =
   foldl(\(_, c) -> c + 1, 0, xs)
@@ -109,6 +115,7 @@ def any(isOkay: (a):Bool, list: List[a]): Bool =
         True
       else
         any(isOkay, xs)
+  end
 
 def maximum(list: List[cmp]): Maybe[cmp] =
   select list
@@ -116,6 +123,7 @@ def maximum(list: List[cmp]): Maybe[cmp] =
       Just(foldl(max, x, xs))
     case _ ->
       Nothing
+  end
 
 def minimum(list: List[cmp]): Maybe[cmp] =
   select list
@@ -123,6 +131,7 @@ def minimum(list: List[cmp]): Maybe[cmp] =
       Just(foldl(min, x, xs))
     case _ ->
       Nothing
+  end
 
 def sum(numbers: List[number]): number =
   foldl((+), 0, numbers)
@@ -136,6 +145,7 @@ def append(xs: List[a], ys: List[a]): List[a] =
       xs
     case _ ->
       foldr(cons, ys, xs)
+  end
 
 def concat(lists: List[List[a]]): List[a] =
   foldr(append, [], lists)
@@ -152,6 +162,7 @@ def intersperse(sep: a, xs: List[a]): List[a] =
       let spersed = foldr(step, [], tl)
       in
         cons(hd, spersed)
+  end
 
 def extern map2(f: (a, b):r, a: List[a], b: List[b]): List[r]
 
@@ -172,16 +183,19 @@ def isEmpty(xs: List[a]): Bool =
   select xs
     case [] -> True
     case _ -> False
+  end
 
 def head(list: List[a]): Maybe[a] =
   select list
     case x | _ -> Just(x)
     case [] -> Nothing
+  end
 
 def tail(list: List[a]): Maybe[List[a]] =
   select list
     case x | xs -> Just(xs)
     case [] -> Nothing
+  end
 
 def take(n: Int, list: List[a]): List[a] =
   takeFast(0, n, list)
@@ -206,6 +220,7 @@ def hidden takeFast(ctr: Int, n: Int, list: List[a]): List[a] =
           cons(x, cons(y, cons(z, cons(w, takeFast(ctr + 1, n - 4, tl)))))
       case _ ->
         list
+    end
 
 def hidden takeTailRec(n: Int, list: List[a]): List[a] =
   reverse(takeReverse(n, list, []))
@@ -219,6 +234,7 @@ def hidden takeReverse(n: Int, list: List[a], kept: List[a]): List[a] =
         kept
       case x | xs ->
         takeReverse(n - 1, xs, cons(x, kept))
+    end
 
 def drop(n: Int, list: List[a]): List[a] =
   if n <= 0 then
@@ -229,6 +245,7 @@ def drop(n: Int, list: List[a]): List[a] =
         list
       case x | xs ->
         drop(n-1, xs)
+    end
 
 def partition(pred: (a): Bool, list: List[a]): ( List[a], List[a] ) =
   let
