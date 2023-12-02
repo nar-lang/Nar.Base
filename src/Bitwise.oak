@@ -1,6 +1,6 @@
 module Oak.Core.Bitwise
 
-import Oak.Core.Basics exposing (Int)
+import Oak.Core.Math exposing (Int)
 
 infix (<<): (left 5) = shiftLeft
 infix (>>): (left 5) = shiftRight

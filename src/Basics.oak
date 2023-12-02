@@ -15,10 +15,6 @@ infix (<~): (left  9) = composeL
 infix (~>): (right 9) = composeR
 
 
-alias extern Int
-
-alias extern Float
-
 alias extern Unit
 
 // EQUALITY

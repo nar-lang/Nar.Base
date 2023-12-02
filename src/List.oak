@@ -124,10 +124,10 @@ def minimum(list: List[cmp]): Maybe[cmp] =
     case _ ->
       Nothing
 
-def sum(numbers: List[num]): num =
+def sum(numbers: List[number]): number =
   foldl((+), 0, numbers)
 
-def product(numbers: List[num]): num =
+def product(numbers: List[number]): number =
   foldl((*), 1, numbers)
 
 def append(xs: List[a], ys: List[a]): List[a] =

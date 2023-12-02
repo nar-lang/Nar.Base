@@ -1,6 +1,7 @@
 module Oak.Core.Char
 
-import Oak.Core.Basics exposing (Bool, Int, (&&), (||), (>=), (<=))
+import Oak.Core.Basics exposing (Bool, (&&), (||), (>=), (<=))
+import Oak.Core.Math exposing (Int)
 
 alias extern Char
 

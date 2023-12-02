@@ -1,9 +1,10 @@
 module Oak.Core.Set
 
-import Oak.Core.Basics exposing (Bool, Int)
+import Oak.Core.Basics exposing (Bool)
 import Oak.Core.Dict exposing (Dict)
 import Oak.Core.List exposing (List, (|))
 import Oak.Core.Maybe exposing (Maybe)
+import Oak.Core.Math exposing (Int)
 
 data Set[t]
   = hidden SetImpl(Dict[t, ()])
