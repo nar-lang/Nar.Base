@@ -24,13 +24,13 @@ def dec =
 def oct =
     List.take(8, dec)
 
-def hexLower = Debug.log("hexLower=") <|
+def hexLower =
     List.take(6, lower)
 
-def hexUpper = Debug.log("hexUpper=") <|
+def hexUpper =
     List.take(6, upper)
 
-def hex = Debug.log("hex=") <|
+def hex =
      List.append(dec, List.append(hexLower, hexUpper))
 
 def lowerCodes =

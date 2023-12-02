@@ -19,7 +19,8 @@ export default function (runtime) {
         if (a.kind !== b.kind &&
             (a.kind !== runtime.INSTANCE_KIND_INT || b.kind !== runtime.INSTANCE_KIND_FLOAT) &&
             (a.kind !== runtime.INSTANCE_KIND_FLOAT || b.kind !== runtime.INSTANCE_KIND_INT)) {
-            throw "types are not equal";
+            throw "types are not equal"; //TODO: int-float should not be compared like this
+            //possible source of error: int constants are always int
         }
         switch (a.kind) {
             case runtime.INSTANCE_KIND_INT:
@@ -120,11 +121,11 @@ export default function (runtime) {
         sqrt: (n) => runtime.float(Math.sqrt(runtime.unwrap(n))),
         remainderBy: (n, x) => runtime.int(runtime.unwrap(x) % runtime.unwrap(n)),
         modBy: (modulus, x) => {
-            const answer = x % modulus;
-            if (modulus === 0) {
-                return NaN;
+            if (modulus.value === 0) {
+                return runtime.wrap(NaN);
             }
-            return runtime.wrap(((answer > 0 && modulus < 0) || (answer < 0 && modulus > 0)) ? answer + modulus : answer);
+            const answer = x.value % modulus.value;
+            return runtime.wrap(((answer > 0 && modulus.value < 0) || (answer < 0 && modulus.value > 0)) ? answer + modulus.value : answer);
         },
         logBase: (base, n) => runtime.float(Math.log(runtime.unwrap(n)) / Math.log(runtime.unwrap(base))),
         isNan: (n) => runtime.bool(isNaN(runtime.unwrap(n))),
@@ -162,79 +163,76 @@ export default function (runtime) {
     runtime.register("Oak.Core.List", {  //TODO: optimize all list functions
         cons: (head, tail) => runtime._listItem(head, tail),
         map2: (f, a, b) => {
-            const la = runtime.unwrap(a);
-            const lb = runtime.unwrap(b);
+            const la = runtime.unwrapShallow(a);
+            const lb = runtime.unwrapShallow(b);
             const r = [];
             const n = Math.min(la.length, lb.length);
             for (let i = 0; i < n; i++) {
                 r.push(runtime.executeFn(f, [la[i], lb[i]]));
             }
-            return runtime.list(r);
+            return runtime.listShallow(r);
         },
         map3: (f, a, b, c) => {
-            const la = runtime.unwrap(a);
-            const lb = runtime.unwrap(b);
-            const lc = runtime.unwrap(c);
+            const la = runtime.unwrapShallow(a);
+            const lb = runtime.unwrapShallow(b);
+            const lc = runtime.unwrapShallow(c);
             const r = [];
             const n = Math.min(la.length, lb.length, lc.length);
             for (let i = 0; i < n; i++) {
                 r.push(runtime.executeFn(f, [la[i], lb[i], lc[i]]));
             }
-            return runtime.list(r);
+            return runtime.listShallow(r);
         },
         map4: (f, a, b, c, d) => {
-            const la = runtime.unwrap(a);
-            const lb = runtime.unwrap(b);
-            const lc = runtime.unwrap(c);
-            const ld = runtime.unwrap(d);
+            const la = runtime.unwrapShallow(a);
+            const lb = runtime.unwrapShallow(b);
+            const lc = runtime.unwrapShallow(c);
+            const ld = runtime.unwrapShallow(d);
             const r = [];
             const n = Math.min(la.length, lb.length, lc.length, ld.length);
             for (let i = 0; i < n; i++) {
                 r.push(runtime.executeFn(f, [la[i], lb[i], lc[i], ld[i]]));
             }
-            return runtime.list(r);
+            return runtime.listShallow(r);
         },
         map5: (f, a, b, c, d, e) => {
-            const la = runtime.unwrap(a);
-            const lb = runtime.unwrap(b);
-            const lc = runtime.unwrap(c);
-            const ld = runtime.unwrap(d);
-            const le = runtime.unwrap(e);
+            const la = runtime.unwrapShallow(a);
+            const lb = runtime.unwrapShallow(b);
+            const lc = runtime.unwrapShallow(c);
+            const ld = runtime.unwrapShallow(d);
+            const le = runtime.unwrapShallow(e);
             const r = [];
             const n = Math.min(la.length, lb.length, lc.length, ld.length, le.length);
             for (let i = 0; i < n; i++) {
                 r.push(runtime.executeFn(f, [la[i], lb[i], lc[i], ld[i], le[i]]));
             }
-            return runtime.list(r);
-        },
-        sortBy: (f, xs) => {
-            const l = runtime.unwrap(xs);
-            l.sort((a, b) => {
-                const res = runtime.executeFn(f, [a, b]);
-                if (res.name === "LT") {
-                    return -1;
-                }
-                if (res.name === "GT") {
-                    return 1;
-                }
-                return 0;
-            });
-            return runtime.list(l);
+            return runtime.listShallow(r);
         },
         sortWith: (f, xs) => {
-            const l = runtime.unwrap(xs);
+            const l = runtime.unwrapShallow(xs);
             l.sort((a, b) => {
-                const xa = runtime.executeFn(f, [a]);
-                const xb = runtime.executeFn(f, [a]);
-                if (lt(xa, xb).value) {
+                const res = runtime.executeFn(f, [a, b]);
+                if (res.name === "Oak.Core.Basics.Order#LT") {
                     return -1;
                 }
-                if (gt(xa, xb).value) {
+                if (res.name === "Oak.Core.Basics.Order#GT") {
                     return 1;
                 }
-                return 0;
+                if (res.name === "Oak.Core.Basics.Order#EQ") {
+                    return 0;
+                }
+                throw "expected Oak.Core.Basics.Order";
             });
-            return runtime.list(l);
+            return runtime.listShallow(l);
+        },
+        sortBy: (f, xs) => {
+            const l = runtime.unwrapShallow(xs);
+            l.sort((a, b) => {
+                const xa = runtime.executeFn(f, [a]);
+                const xb = runtime.executeFn(f, [b]);
+                return cmp(xa, xb);
+            });
+            return runtime.listShallow(l);
         },
     });
     runtime.register("Oak.Core.String", {
