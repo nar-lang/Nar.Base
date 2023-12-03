@@ -44,25 +44,38 @@ export default function (runtime) {
                     return cmpList(a.values, b.values);
                 }
             case runtime.INSTANCE_KIND_RECORD:
-                if (a.key === undefined && b.key === undefined) {
-                    return 0;
-                } else if (a.key === undefined) {
+                //TODO: slow
+                const ra = runtime.unwrapShallow(a);
+                const rb = runtime.unwrapShallow(b);
+                const ka = Object.keys(ra);
+                const kb = Object.keys(rb);
+                if (ka.length < kb.length) {
                     return -1;
-                } else if (b.key === undefined) {
+                } else if (ka.length > kb.length) {
                     return 1;
                 } else {
-                    if (a.key < b.key) {
+                    ka.sort();
+                    kb.sort();
+                    if (ka.length < kb.length) {
                         return -1;
-                    } else if (a.key > b.key) {
+                    } else if (ka.length > kb.length) {
                         return 1;
                     } else {
-                        const v = cmp(a.value, b.value);
-                        if (v !== 0) {
-                            return v;
+                        for (let i = 0; i < ka.length; i++) {
+                            if (ka[i] !== kb[i]) {
+                                return ka[i] < kb ? -1 : 1;
+                            }
                         }
-                        return cmp(a.parent, b.parent);
                     }
+                    for (let i = 0; i < ka.length; i++) {
+                        const c = cmp(ra[ka[i]], rb[kb[i]]);
+                        if (c !== 0) {
+                            return c;
+                        }
+                    }
+                    return 0;
                 }
+
             case runtime.INSTANCE_KIND_FUNC:
                 return (a.index < b.index) ? -1 : (a.index > b.index ? 1 : 0);
             default:
@@ -130,7 +143,7 @@ export default function (runtime) {
         logBase: (base, n) => runtime.float(Math.log(runtime.unwrap(n)) / Math.log(runtime.unwrap(base))),
         isNan: (n) => runtime.bool(isNaN(runtime.unwrap(n))),
         isInf: (n) => {
-            const x =runtime.unwrap(n);
+            const x = runtime.unwrap(n);
             return runtime.bool(x === Infinity || x === -Infinity);
         },
     });
