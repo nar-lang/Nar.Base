@@ -60,6 +60,28 @@ def map4(f: (a,b,c,d):value, ma: Maybe[a], mb:Maybe[b], mc:Maybe[c], md:Maybe[d]
       end
   end
 
+def map5(f: (a,b,c,d,e):value, ma: Maybe[a], mb:Maybe[b], mc:Maybe[c], md:Maybe[d], me:Maybe[e]): Maybe[value] =
+  select ma
+    case Nothing -> Nothing
+    case Just(va) ->
+      select mb
+        case Nothing -> Nothing
+        case Just(vb) ->
+          select mc
+            case Nothing -> Nothing
+            case Just(vc) ->
+              select md
+                case Nothing -> Nothing
+                case Just(vd) ->
+                  select me
+                    case Nothing -> Nothing
+                    case Just(ve) -> Just(f(va, vb, vc, vd, ve))
+                  end
+              end
+          end
+      end
+  end
+
 def andThen(callback: (a):Maybe[b], maybeValue: Maybe[a]): Maybe[b] =
   select maybeValue
     case Just(value) -> callback(value)
