@@ -17,7 +17,7 @@ def tests: Test =
         , testListOfN(1)
         , testListOfN(2)
         , testListOfN(7)
-        , testListOfN(50)
+        , testListOfN(500)
         ]
 
 def testListOfN(n: Int): Test =
