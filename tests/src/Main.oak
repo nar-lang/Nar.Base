@@ -7,9 +7,10 @@ import Tests.Oak.Core.Bitwise
 import Tests.Oak.Core.Char
 import Tests.Oak.Core.Debug
 import Tests.Oak.Core.Dict
+import Tests.Oak.Core.Equality
 import Tests.Oak.Core.List
 import Tests.Oak.Core.Math
-import Tests.Oak.Core.Equality
+import Tests.Oak.Core.Maybe
 import Oak.Tests.Runner
 
 def main = Oak.Tests.Runner.runDisplayed <|
@@ -18,8 +19,9 @@ def main = Oak.Tests.Runner.runDisplayed <|
     , Tests.Oak.Core.Bitwise.tests
     , Tests.Oak.Core.Char.tests
     , Tests.Oak.Core.Debug.tests
-    , Tests.Oak.Core.Equality.tests
     , Tests.Oak.Core.Dict.tests
+    , Tests.Oak.Core.Equality.tests
     , Tests.Oak.Core.List.tests
     , Tests.Oak.Core.Math.tests
+    , Tests.Oak.Core.Maybe.tests
     ]
