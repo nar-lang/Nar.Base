@@ -277,24 +277,40 @@ export default function (runtime) {
         trim: (s) => runtime.string(runtime.unwrap(s).trim()),
         trimLeft: (s) => runtime.string(runtime.unwrap(s).trimStart()),
         trimRight: (s) => runtime.string(runtime.unwrap(s).trimEnd()),
-        toInt: (s) => {
+        toInt: (n) => {
             const maybe = runtime.qualifierIdentifier("Oak.Core.Maybe", "Maybe");
-            const n = parseInt(runtime.unwrap(s));
-            if (isNaN(n)) {
-                return runtime.optionShallow(maybe, "Nothing");
-            } else {
-                return runtime.optionShallow(maybe, "Just", [runtime.int(n)]);
+            const str = runtime.unwrap(n);
+            const code0 = str.charCodeAt(0);
+            const start = code0 === 0x2B /* + */ || code0 === 0x2D /* - */ ? 1 : 0;
+
+            let i;
+            let total = 0;
+            for (i = start; i < str.length; ++i)
+            {
+                const code = str.charCodeAt(i);
+                if (code < 0x30 || 0x39 < code)
+                {
+                    return runtime.optionShallow(maybe, "Nothing");
+                }
+                total = 10 * total + code - 0x30;
             }
+
+            return i === start
+                ? runtime.optionShallow(maybe, "Nothing")
+                : runtime.optionShallow(maybe, "Just", [runtime.int(code0 === 0x2D ? -total : total)]);
         },
         fromInt: (n) => runtime.string(runtime.unwrap(n).toString()),
-        toFloat: (s) => {
+        toFloat: (n) => {
             const maybe = runtime.qualifierIdentifier("Oak.Core.Maybe", "Maybe");
-            const f = parseFloat(runtime.unwrap(s));
-            if (isNaN(f)) {
-                return runtime.optionShallow(maybe, "Nothing");
-            } else {
-                return runtime.optionShallow(maybe, "Just", [runtime.float(f)]);
+            const s = runtime.unwrap(n);
+            if (s.length === 0 || /[\sxbo]/.test(s)) {
+                return runtime.optionShallow(maybe, "Nothing")
             }
+            const x = +s;
+            // faster isNaN check
+            return x === x
+                ? runtime.optionShallow(maybe, "Just", [runtime.float(x)])
+                : runtime.optionShallow(maybe, "Nothing");
         },
         fromFloat: (n) => runtime.string(runtime.unwrap(n).toString()),
         fromList: (chars) => runtime.string(String.fromCharCode(...runtime.unwrap(chars))),
