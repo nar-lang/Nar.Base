@@ -12,6 +12,7 @@ import Tests.Oak.Core.List
 import Tests.Oak.Core.Math
 import Tests.Oak.Core.Maybe
 import Oak.Tests.Runner
+import Tests.Oak.Core.Result
 
 def main = Oak.Tests.Runner.runDisplayed <|
   Test.describe("Oak Standard Library Tests") <|
@@ -24,4 +25,5 @@ def main = Oak.Tests.Runner.runDisplayed <|
     , Tests.Oak.Core.List.tests
     , Tests.Oak.Core.Math.tests
     , Tests.Oak.Core.Maybe.tests
+    , Tests.Oak.Core.Result.tests
     ]
