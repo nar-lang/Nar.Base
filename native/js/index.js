@@ -86,7 +86,7 @@ export default function (runtime) {
     function toString(x) {
         switch (x.kind) {
             case runtime.INSTANCE_KIND_CHAR:
-                return `'${String.fromCharCode(x.value).replaceAll("'", "\\\\'")}'`;
+                return `'${String.fromCodePoint(x.value).replaceAll("'", "\\\\'")}'`;
             case runtime.INSTANCE_KIND_STRING:
                 return `"${x.value.replaceAll('"', '\\\\"')}"`;
             case runtime.INSTANCE_KIND_LIST:
@@ -96,8 +96,14 @@ export default function (runtime) {
             case runtime.INSTANCE_KIND_RECORD:
                 const r = runtime.unwrapShallow(x);
                 return `{ ${Object.keys(r).map(k => k + " = " + toString(r[k])).join(", ")} }`;
+            case runtime.INSTANCE_KIND_OPTION:
+                return `${x.name}(${x.values.map(toString).join(", ")})`;
             default:
-                return runtime.unwrap(x).toString();
+                const s = runtime.unwrap(x);
+                if (s === null) {
+                    return "<null>";
+                }
+                return s.toString();
         }
     }
 
@@ -156,8 +162,8 @@ export default function (runtime) {
         shiftRightBy: (x, y) => runtime.int(y.value >> x.value),
     });
     runtime.register("Oak.Core.Char", {
-        toUpper: (char) => runtime.char(String.fromCharCode(char.value).toLocaleUpperCase().charCodeAt(0)),
-        toLower: (char) => runtime.char(String.fromCharCode(char.value).toLocaleLowerCase().charCodeAt(0)),
+        toUpper: (char) => runtime.char(String.fromCodePoint(char.value).toLocaleUpperCase().codePointAt(0)),
+        toLower: (char) => runtime.char(String.fromCodePoint(char.value).toLocaleLowerCase().codePointAt(0)),
         toCode: (char) => runtime.int(char.value),
         fromCode: (code) => runtime.char(code.value),
     });
@@ -174,7 +180,7 @@ export default function (runtime) {
         }
     });
     runtime.register("Oak.Core.List", {  //TODO: optimize all list functions
-        cons: (head, tail) => runtime._listItem(head, tail),
+        cons: (head, tail) => runtime.listItem(head, tail),
         map2: (f, a, b) => {
             const la = runtime.unwrapShallow(a);
             const lb = runtime.unwrapShallow(b);
@@ -249,13 +255,13 @@ export default function (runtime) {
         },
     });
     runtime.register("Oak.Core.String", {
-        length: (s) => s.value.length,
+        length: (s) => runtime.int(s.value.length),
         reverse: (s) => runtime.string([...runtime.unwrap(s)].reverse().join('')),
         append: (a, b) => runtime.string(runtime.unwrap(a) + runtime.unwrap(b)),
-        split: (sep, string) => runtime.list(runtime.unwrap(string).split(sep).map(runtime.string)),
+        split: (sep, string) => runtime.listShallow(runtime.unwrap(string).split(runtime.unwrap(sep)).map(runtime.string)),
         join: (sep, strings) => runtime.string(runtime.unwrap(strings).join(runtime.unwrap(sep))),
-        words: (string) => runtime.list(runtime.unwrap(string).trim().split(/\s+/).map(runtime.string)),
-        lines: (string) => runtime.list(runtime.unwrap(string).trim().split(/\r?\n/).map(runtime.string)),
+        words: (string) => runtime.listShallow(runtime.unwrap(string).trim().split(/\s+/).map(runtime.string)),
+        lines: (string) => runtime.listShallow(runtime.unwrap(string).trim().split(/\r?\n/).map(runtime.string)),
         slice: (begin, end, s) => runtime.string(runtime.unwrap(s).slice(runtime.unwrap(begin), runtime.unwrap(end))),
         contains: (sub, string) => runtime.bool(runtime.unwrap(string).includes(runtime.unwrap(sub))),
         startsWith: (sub, string) => runtime.bool(runtime.unwrap(string).startsWith(runtime.unwrap(sub))),
@@ -264,6 +270,11 @@ export default function (runtime) {
             const result = [];
             const s = runtime.unwrap(string);
             const u = runtime.unwrap(sub);
+
+            if (u.length === 0) {
+                return runtime.list([]);
+            }
+
             let idx = s.indexOf(u);
 
             while (idx !== -1) {
@@ -285,11 +296,9 @@ export default function (runtime) {
 
             let i;
             let total = 0;
-            for (i = start; i < str.length; ++i)
-            {
+            for (i = start; i < str.length; ++i) {
                 const code = str.charCodeAt(i);
-                if (code < 0x30 || 0x39 < code)
-                {
+                if (code < 0x30 || 0x39 < code) {
                     return runtime.optionShallow(maybe, "Nothing");
                 }
                 total = 10 * total + code - 0x30;
@@ -313,61 +322,58 @@ export default function (runtime) {
                 : runtime.optionShallow(maybe, "Nothing");
         },
         fromFloat: (n) => runtime.string(runtime.unwrap(n).toString()),
-        fromList: (chars) => runtime.string(String.fromCharCode(...runtime.unwrap(chars))),
-        cons: (c, s) => runtime.string(String.fromCharCode(runtime.unwrap(c)) + runtime.unwrap(s)),
+        fromList: (chars) => runtime.string(String.fromCodePoint(...runtime.unwrap(chars))),
+        cons: (c, s) => runtime.string(String.fromCodePoint(runtime.unwrap(c)) + runtime.unwrap(s)),
         uncons: (str) => {
             const maybe = runtime.qualifierIdentifier("Oak.Core.Maybe", "Maybe");
             const s = runtime.unwrap(str);
+
             if (s.length === 0) {
                 return runtime.optionShallow(maybe, "Nothing");
             } else {
-                return runtime.optionShallow(maybe, "Just", [runtime.tuple([
-                    runtime.char(s.charCodeAt(0)),
-                    runtime.string(s.substring(1)),
+                const c = s.codePointAt(0);
+                return runtime.optionShallow(maybe, "Just", [runtime.tupleShallow([
+                    runtime.char(c),
+                    runtime.string(s.substring(c > 0xFFFF ? 2 : 1)),
                 ])]);
             }
         },
         map: (f, str) => {
-            return runtime.string(String.fromCharCode(
-                ...runtime.unwrap(str).split("").map(
-                    c => runtime.unwrap(runtime.executeFn(f, [runtime.char(c.charCodeAt(0))]))
+            return runtime.string(String.fromCodePoint(
+                ...[...runtime.unwrap(str)].map(
+                    c => runtime.unwrap(runtime.executeFn(f, [runtime.char(c.codePointAt(0))]))
                 ))
             );
         },
         filter: (f, str) => {
-            return runtime.string(String.fromCharCode(
-                ...runtime.unwrap(str).split("").filter(
-                    c => runtime.unwrap(runtime.executeFn(f, [runtime.char(c.charCodeAt(0))]))
-                ))
+            return runtime.string([...runtime.unwrap(str)].filter(
+                    c => runtime.unwrap(runtime.executeFn(f, [runtime.char(c.codePointAt(0))]))
+                ).join("")
             );
         },
         foldl: (f, acc, str) => {
-            const s = runtime.unwrap(str);
+            const s = [...runtime.unwrap(str)];
             for (let i = 0; i < s.length; i++) {
-                acc = runtime.executeFn(f, [runtime.char(s.charCodeAt(i)), acc]);
+                acc = runtime.executeFn(f, [runtime.char(s[i].codePointAt(0)), acc]);
             }
             return acc;
         },
         foldr: (f, acc, str) => {
-            const s = runtime.unwrap(str);
+            const s = [...runtime.unwrap(str)];
             for (let i = s.length - 1; i >= 0; i--) {
-                acc = runtime.executeFn(f, [runtime.char(s.charCodeAt(i)), acc]);
+                acc = runtime.executeFn(f, [runtime.char(s[i].codePointAt(0)), acc]);
             }
             return acc;
         },
         any: (f, str) => {
-            return runtime.string(String.fromCharCode(
-                ...runtime.unwrap(str).split("").some(
-                    c => runtime.unwrap(runtime.executeFn(f, [runtime.char(c.charCodeAt(0))]))
-                ))
-            );
+            return runtime.wrap([...runtime.unwrap(str)].some(
+                c => runtime.unwrap(runtime.executeFn(f, [runtime.char(c.codePointAt(0))]))
+            ));
         },
         all: (f, str) => {
-            return runtime.string(String.fromCharCode(
-                ...runtime.unwrap(str).split("").every(
-                    c => runtime.unwrap(runtime.executeFn(f, [runtime.char(c.charCodeAt(0))]))
-                ))
-            );
+            return runtime.wrap([...runtime.unwrap(str)].every(
+                c => runtime.unwrap(runtime.executeFn(f, [runtime.char(c.codePointAt(0))]))
+            ));
         },
     })
 }
