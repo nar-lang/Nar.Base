@@ -14,6 +14,7 @@ import Tests.Oak.Core.Maybe
 import Oak.Tests.Runner
 import Tests.Oak.Core.Result
 import Tests.Oak.Core.Set
+import Tests.Oak.Core.String
 import Tests.Oak.Core.Tuple
 
 def main = Oak.Tests.Runner.runDisplayed <|
@@ -29,5 +30,6 @@ def main = Oak.Tests.Runner.runDisplayed <|
     , Tests.Oak.Core.Maybe.tests
     , Tests.Oak.Core.Result.tests
     , Tests.Oak.Core.Set.tests
+    , Tests.Oak.Core.String.tests
     , Tests.Oak.Core.Tuple.tests
     ]
