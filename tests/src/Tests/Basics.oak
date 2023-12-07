@@ -8,6 +8,7 @@ import Oak.Core.String
 import Oak.Core.Dict
 import Oak.Tests.Test exposing *
 import Oak.Tests.Expect exposing *
+import Oak.Core.Array exposing (Array)
 
 def tests: Test =
   describe("Basics") <|
