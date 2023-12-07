@@ -160,6 +160,7 @@ export default function (runtime) {
         complement: (x) => runtime.int(~x.value),
         shiftLeftBy: (x, y) => runtime.int(y.value << x.value),
         shiftRightBy: (x, y) => runtime.int(y.value >> x.value),
+        shiftRightZfBy: (x, y) => runtime.int(y.value >>> x.value),
     });
     runtime.register("Oak.Core.Char", {
         toUpper: (char) => runtime.char(String.fromCodePoint(char.value).toLocaleUpperCase().codePointAt(0)),

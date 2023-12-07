@@ -2,6 +2,7 @@ module Oak.Core.Bitwise
 
 import Oak.Core.Math exposing (Int)
 
+infix (>>>): (left 5) = shiftRightZf
 infix (<<): (left 5) = shiftLeft
 infix (>>): (left 5) = shiftRight
 infix (%) : (left 6) = or
@@ -20,8 +21,13 @@ def extern shiftLeftBy(x: Int, y: Int): Int
 
 def extern shiftRightBy(x: Int, y: Int): Int
 
+def extern shiftRightZfBy(x: Int, y: Int): Int
+
 def hidden shiftLeft(x: Int, y: Int) =
   shiftLeftBy(y, x)
 
 def hidden shiftRight(x: Int, y: Int) =
   shiftRightBy(y, x)
+
+def hidden shiftRightZf(x: Int, y: Int) =
+  shiftRightZfBy(y, x)
