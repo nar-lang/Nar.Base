@@ -44,7 +44,7 @@ def hidden initializeHelp(
   fn: (Int):a, fromIndex: Int, len: Int, nodeList: List[Node[a]], tail: NativeArray[a]
 ): Array[a] =
   if fromIndex < 0 then
-    builderToArray(False, { tail = tail , nodeList = nodeList , nodeListSize = length })
+    builderToArray(False, { tail = tail , nodeList = nodeList , nodeListSize = len })
   else
     let leaf = Leaf <| NativeArray.initialize(branchFactor, fromIndex, fn)
     in initializeHelp(fn, fromIndex - branchFactor, len, leaf | nodeList, tail)

@@ -78,6 +78,8 @@ export default function (runtime) {
 
             case runtime.INSTANCE_KIND_FUNC:
                 return (a.index < b.index) ? -1 : (a.index > b.index ? 1 : 0);
+            case runtime.INSTANCE_KIND_EXTERN:
+                throw "cannot compare externs";
             default:
                 throw "enum case is out of range";
         }
@@ -376,5 +378,99 @@ export default function (runtime) {
                 c => runtime.unwrap(runtime.executeFn(f, [runtime.char(c.codePointAt(0))]))
             ));
         },
-    })
+    });
+    runtime.register("Oak.Core.NativeArray", {
+        empty: runtime.extern([]),
+        singleton: (item) => runtime.extern([item]),
+        length: (array) => {
+            return runtime.int(array.value.length);
+        },
+        initialize: (size, offset, func) => {
+            const result = new Array(size.value);
+            for (let i = 0; i < size.value; i++) {
+                result[i] = runtime.executeFn(func, [runtime.int(offset.value + i)]);
+            }
+            return runtime.extern(result);
+        },
+        initializeFromList: (max, ls) => {
+            const result = new Array(max.value);
+            let i = 0;
+            for (; i < max.value && ls && ls.value; i++) {
+                result[i] = ls.value;
+                ls = ls.next;
+            }
+            result.length = i;
+            return runtime.tupleShallow([runtime.extern(result), ls || runtime.list([])]);
+        },
+        unsafeGet: (index, array) => {
+            return array.value[index.value];
+        },
+        unsafeSet: (index, value, array) => {
+            const length = array.value.length;
+            const result = new Array(length);
+            for (let i = 0; i < length; i++) {
+                result[i] = array.value[i];
+            }
+            result[index.value] = value;
+            return runtime.extern(result);
+        },
+        push: (value, array) => {
+            const length = array.value.length;
+            const result = new Array(length + 1);
+            for (let i = 0; i < length; i++) {
+                result[i] = array.value[i];
+            }
+            result[length] = value;
+            return runtime.extern(result);
+        },
+        foldl: (func, acc, array) => {
+            const length = array.value.length;
+            for (let i = 0; i < length; i++) {
+                acc = runtime.executeFn(func, [array.value[i], acc]);
+            }
+            return acc;
+        },
+        foldr: (func, acc, array) => {
+            for (let i = array.value.length - 1; i >= 0; i--) {
+                acc = runtime.executeFn(func, [array.value[i], acc]);
+            }
+            return acc;
+        },
+        map: (func, array) => {
+            const length = array.value.length;
+            const result = new Array(length);
+            for (let i = 0; i < length; i++) {
+                result[i] = runtime.executeFn(func, [array.value[i]]);
+            }
+            return runtime.extern(result);
+        },
+        indexedMap: (func, offset, array) => {
+            const length = array.value.length;
+            const result = new Array(length);
+            for (let i = 0; i < length; i++) {
+                result[i] = runtime.executeFn(func, [runtime.int(offset.value + i), array.value[i]]);
+            }
+            return runtime.extern(result);
+        },
+        slice: (from, to, array) => {
+            return runtime.extern(array.slice(from.value, to.value));
+        },
+        appendN: (n, dest, source) => {
+            const destLen = dest.value.length;
+            let itemsToCopy = n.value - destLen;
+            if (itemsToCopy > source.value.length) {
+                itemsToCopy = source.value.length;
+            }
+            const size = destLen + itemsToCopy;
+            const result = new Array(size);
+            for (let i = 0; i < destLen; i++) {
+                result[i] = dest[i];
+            }
+
+            for (let i = 0; i < itemsToCopy; i++) {
+                result[i + destLen] = source[i];
+            }
+            return runtime.extern(result);
+        },
+    });
 }

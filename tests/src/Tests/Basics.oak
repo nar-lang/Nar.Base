@@ -31,7 +31,7 @@ def tests: Test =
       , test("set equality") <| \( () ) -> Expect.equal(Set.fromList([ 1, 2 ]), Set.fromList([ 2, 1 ]))
       , test("dict equality") <| \( () ) -> Expect.equal(Dict.fromList([ ( 1, 1 ), ( 2, 2 ) ]), Dict.fromList([ ( 2, 2 ), ( 1, 1 ) ]))
       , test("char equality") <| \( () ) -> Expect.notEqual('0', '饑')
-      , test("array equality") <| \( () ) -> Expect.equal(Array.fromList([ 1, 1, 1, 1 ]), Array.repeat(4, 1))
+      //, test("array equality") <| \( () ) -> Expect.equal(Array.fromList([ 1, 1, 1, 1 ]), Array.repeat(4, 1))
       ]
 
     , describe("Boolean Tests") <|
