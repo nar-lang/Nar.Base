@@ -50,7 +50,7 @@ def hidden initializeHelp(
     in initializeHelp(fn, fromIndex - branchFactor, len, leaf | nodeList, tail)
 
 def repeat(n: Int, e: a): Array[a] =
-  initialize(n, \(_) -> e)
+  initialize(n, always(e))
 
 def fromList(list: List[a]): Array[a] =
   select list

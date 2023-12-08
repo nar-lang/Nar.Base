@@ -41,6 +41,12 @@ export default function (runtime) {
                 } else if (a.name > b.name) {
                     return 1;
                 } else {
+                    if (a.name === "Oak.Core.Array.Array#ArrayImpl" && b.name === "Oak.Core.Array.Array#ArrayImpl") {
+                        return cmp(
+                            runtime.execute("Oak.Core.Array.toList", a),
+                            runtime.execute("Oak.Core.Array.toList", b)
+                        )
+                    }
                     return cmpList(a.values, b.values);
                 }
             case runtime.INSTANCE_KIND_RECORD:
@@ -79,7 +85,13 @@ export default function (runtime) {
             case runtime.INSTANCE_KIND_FUNC:
                 return (a.index < b.index) ? -1 : (a.index > b.index ? 1 : 0);
             case runtime.INSTANCE_KIND_EXTERN:
-                throw "cannot compare externs";
+                if (a.value === b.value) {
+                    return 0;
+                } else if (a.value.length < b.value.length) {
+                    return -1;
+                } else {
+                    return 1;
+                }
             default:
                 throw "enum case is out of range";
         }
@@ -100,6 +112,8 @@ export default function (runtime) {
                 return `{ ${Object.keys(r).map(k => k + " = " + toString(r[k])).join(", ")} }`;
             case runtime.INSTANCE_KIND_OPTION:
                 return `${x.name}(${x.values.map(toString).join(", ")})`;
+            case runtime.INSTANCE_KIND_EXTERN:
+                return JSON.stringify(x.value);
             default:
                 const s = runtime.unwrap(x);
                 if (s === null) {
@@ -134,13 +148,13 @@ export default function (runtime) {
         },
         neg: (x) => runtime.wrap(-x.value),
         toFloat: (n) => runtime.float(n.value),
-        round: (n) => runtime.int(Math.round(n)),
-        floor: (n) => runtime.int(Math.floor(n)),
-        ceil: (n) => runtime.int(Math.ceil(n)),
-        trunc: (n) => runtime.int(Math.trunc(n)),
-        toPower: (pow, num) => runtime.wrap(runtime.unwrap(num) ** runtime.unwrap(pow)),
-        sqrt: (n) => runtime.float(Math.sqrt(runtime.unwrap(n))),
-        remainderBy: (n, x) => runtime.int(runtime.unwrap(x) % runtime.unwrap(n)),
+        round: (n) => runtime.int(Math.round(n.value)),
+        floor: (n) => runtime.int(Math.floor(n.value)),
+        ceil: (n) => runtime.int(Math.ceil(n.value)),
+        trunc: (n) => runtime.int(Math.trunc(n.value)),
+        toPower: (pow, num) => runtime.wrap(num.value ** pow.value),
+        sqrt: (n) => runtime.float(Math.sqrt(n.value)),
+        remainderBy: (n, x) => runtime.int(x.value % n.value),
         modBy: (modulus, x) => {
             if (modulus.value === 0) {
                 return runtime.wrap(NaN);
@@ -148,10 +162,10 @@ export default function (runtime) {
             const answer = x.value % modulus.value;
             return runtime.wrap(((answer > 0 && modulus.value < 0) || (answer < 0 && modulus.value > 0)) ? answer + modulus.value : answer);
         },
-        logBase: (base, n) => runtime.float(Math.log(runtime.unwrap(n)) / Math.log(runtime.unwrap(base))),
-        isNan: (n) => runtime.bool(isNaN(runtime.unwrap(n))),
+        logBase: (base, n) => runtime.float(Math.log(n.value) / Math.log(base.value)),
+        isNan: (n) => runtime.bool(isNaN(n.value)),
         isInf: (n) => {
-            const x = runtime.unwrap(n);
+            const x = n.value;
             return runtime.bool(x === Infinity || x === -Infinity);
         },
     });
