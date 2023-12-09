@@ -28,7 +28,7 @@ def empty: Array[a] = ArrayImpl(0, shiftStep, NativeArray.empty, NativeArray.emp
 def isEmpty(ArrayImpl(len, _, _, _): Array[a]): Bool =
   len == 0
 
-def length(ArrayImpl(len, _, _, _): Array[a]): Bool =
+def length(ArrayImpl(len, _, _, _): Array[a]): Int =
   len
 
 def initialize(len: Int, fn: (Int): a): Array[a] =
@@ -44,7 +44,7 @@ def hidden initializeHelp(
   fn: (Int):a, fromIndex: Int, len: Int, nodeList: List[Node[a]], tail: NativeArray[a]
 ): Array[a] =
   if fromIndex < 0 then
-    builderToArray(False, { tail = tail , nodeList = nodeList , nodeListSize = len })
+      builderToArray(False, { tail = tail , nodeList = nodeList , nodeListSize = len / branchFactor })
   else
     let leaf = Leaf <| NativeArray.initialize(branchFactor, fromIndex, fn)
     in initializeHelp(fn, fromIndex - branchFactor, len, leaf | nodeList, tail)
