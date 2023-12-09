@@ -503,11 +503,11 @@ export default function (runtime) {
             const size = destLen + itemsToCopy;
             const result = new Array(size);
             for (let i = 0; i < destLen; i++) {
-                result[i] = dest[i];
+                result[i] = dest.value[i];
             }
 
             for (let i = 0; i < itemsToCopy; i++) {
-                result[i + destLen] = source[i];
+                result[i + destLen] = source.value[i];
             }
             return runtime.extern(result);
         },
