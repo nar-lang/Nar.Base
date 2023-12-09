@@ -43,11 +43,12 @@ def tests: Test =
     , describe("Miscellaneous Tests") <|
       [ test("isNan (0/0)") <| \( () ) -> Expect.equal(True, isNan(0 / 0))
       , test("isNan (sqrt -1)") <| \( () ) -> Expect.equal(True, isNan(sqrt(-1)))
-      , test("isNan (1/0)") <| \( () ) -> Expect.equal(False, isNan(1 / 0))
+      , test("isNan (1/0)") <| \( () ) -> Expect.equal(True, isNan(1 / 0))
+      , test("isNan (1.0/0)") <| \( () ) -> Expect.equal(False, isNan(1.0 / 0))
       , test("isNan 1") <| \( () ) -> Expect.equal(False, isNan(1))
       , test("isInf (0/0)") <| \( () ) -> Expect.equal(False, isInf(0 / 0))
       , test("isInf (sqrt -1)") <| \( () ) -> Expect.equal(False, isInf(sqrt(-1)))
-      , test("isInf (1/0)") <| \( () ) -> Expect.equal(True, isInf(1 / 0))
+      , test("isInf (1.0/0)") <| \( () ) -> Expect.equal(True, isInf(1.0 / 0))
       , test("isInf 1") <| \( () ) -> Expect.equal(False, isInf(1))
       ]
     ]

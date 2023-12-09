@@ -16,11 +16,8 @@ export default function (runtime) {
     }
 
     function cmp(a, b) {
-        if (a.kind !== b.kind &&
-            (a.kind !== runtime.INSTANCE_KIND_INT || b.kind !== runtime.INSTANCE_KIND_FLOAT) &&
-            (a.kind !== runtime.INSTANCE_KIND_FLOAT || b.kind !== runtime.INSTANCE_KIND_INT)) {
-            throw "types are not equal"; //TODO: int-float should not be compared like this
-            //possible source of error: int constants are always int
+        if (a.kind !== b.kind) {
+            throw "types are not equal";
         }
         switch (a.kind) {
             case runtime.INSTANCE_KIND_INT:
@@ -136,38 +133,66 @@ export default function (runtime) {
         xor: (x, y) => runtime.bool(runtime.unwrap(x) ^ runtime.unwrap(y)),
     });
     runtime.register("Oak.Core.Math", {
-        add: (x, y) => runtime.wrap(x.value + y.value),
-        sub: (x, y) => runtime.wrap(x.value - y.value),
-        mul: (x, y) => runtime.wrap(x.value * y.value),
+        add: (x, y) => {
+            if (x.kind !== y.kind) {
+                throw "types are not equal";
+            }
+            return Object.freeze({kind: x.kind, value: x.value + y.value});
+        },
+        sub: (x, y) => {
+            if (x.kind !== y.kind) {
+                throw "types are not equal";
+            }
+            return Object.freeze({kind: x.kind, value: x.value - y.value});
+        },
+        mul: (x, y) => {
+            if (x.kind !== y.kind) {
+                throw "types are not equal";
+            }
+            return Object.freeze({kind: x.kind, value: x.value * y.value})
+        },
         div: (x, y) => {
-            if (x.kind === runtime.INSTANCE_KIND_INT && y.kind === runtime.INSTANCE_KIND_INT && y.value !== 0) {
+            if (x.kind !== y.kind) {
+                throw "types are not equal";
+            }
+            if (x.kind === runtime.INSTANCE_KIND_INT && y.kind === runtime.INSTANCE_KIND_INT) {
+                if (y.value === 0) {
+                    return runtime.int(NaN);
+                }
                 return runtime.int((x.value / y.value) | 0);
             } else {
-                return runtime.wrap(x.value / y.value);
+                return runtime.float(x.value / y.value);
             }
         },
-        neg: (x) => runtime.wrap(-x.value),
-        toFloat: (n) => runtime.float(n.value),
-        round: (n) => runtime.int(Math.round(n.value)),
-        floor: (n) => runtime.int(Math.floor(n.value)),
-        ceil: (n) => runtime.int(Math.ceil(n.value)),
-        trunc: (n) => runtime.int(Math.trunc(n.value)),
-        toPower: (pow, num) => runtime.wrap(num.value ** pow.value),
-        sqrt: (n) => runtime.float(Math.sqrt(n.value)),
-        remainderBy: (n, x) => runtime.int(x.value % n.value),
-        modBy: (modulus, x) => {
-            if (modulus.value === 0) {
-                return runtime.wrap(NaN);
+        neg: (x) => Object.freeze({kind: x.kind, value: -x.value}),
+        abs: (x) => x.value >= 0 ? x : Object.freeze({kind: x.kind, value: -x.value}),
+        toPower: (pow, num) =>{
+            if (pow.kind !== num.kind) {
+                throw "types are not equal";
             }
-            const answer = x.value % modulus.value;
-            return runtime.wrap(((answer > 0 && modulus.value < 0) || (answer < 0 && modulus.value > 0)) ? answer + modulus.value : answer);
+            return Object.freeze({kind: num.kind, value: num.value ** pow.value});
         },
-        logBase: (base, n) => runtime.float(Math.log(n.value) / Math.log(base.value)),
         isNan: (n) => runtime.bool(isNaN(n.value)),
         isInf: (n) => {
             const x = n.value;
             return runtime.bool(x === Infinity || x === -Infinity);
         },
+
+        toFloat: (n) => runtime.float(n.value),
+        round: (n) => runtime.int(Math.round(n.value)),
+        floor: (n) => runtime.int(Math.floor(n.value)),
+        ceil: (n) => runtime.int(Math.ceil(n.value)),
+        trunc: (n) => runtime.int(Math.trunc(n.value)),
+        sqrt: (n) => runtime.float(Math.sqrt(n.value)),
+        remainderBy: (n, x) => runtime.int(x.value % n.value),
+        modBy: (modulus, x) => {
+            if (modulus.value === 0) {
+                return runtime.int(NaN);
+            }
+            const answer = x.value % modulus.value;
+            return runtime.int(((answer > 0 && modulus.value < 0) || (answer < 0 && modulus.value > 0)) ? answer + modulus.value : answer);
+        },
+        logBase: (base, n) => runtime.float(Math.log(n.value) / Math.log(base.value)),
     });
     runtime.register("Oak.Core.Bitwise", {
         and: (x, y) => runtime.int(x.value & y.value),
@@ -289,7 +314,7 @@ export default function (runtime) {
             const u = runtime.unwrap(sub);
 
             if (u.length === 0) {
-                return runtime.list([]);
+                return runtime.listShallow([]);
             }
 
             let idx = s.indexOf(u);
@@ -298,7 +323,7 @@ export default function (runtime) {
                 result.push(idx);
                 idx = s.indexOf(u, idx + 1);
             }
-            return runtime.list(result);
+            return runtime.listShallow(result.map(runtime.int));
         },
         toUpper: (s) => runtime.string(runtime.unwrap(s).toLocaleUpperCase()),
         toLower: (s) => runtime.string(runtime.unwrap(s).toLocaleLowerCase()),
@@ -383,12 +408,12 @@ export default function (runtime) {
             return acc;
         },
         any: (f, str) => {
-            return runtime.wrap([...runtime.unwrap(str)].some(
+            return runtime.bool([...runtime.unwrap(str)].some(
                 c => runtime.unwrap(runtime.executeFn(f, [runtime.char(c.codePointAt(0))]))
             ));
         },
         all: (f, str) => {
-            return runtime.wrap([...runtime.unwrap(str)].every(
+            return runtime.bool([...runtime.unwrap(str)].every(
                 c => runtime.unwrap(runtime.executeFn(f, [runtime.char(c.codePointAt(0))]))
             ));
         },
@@ -414,7 +439,7 @@ export default function (runtime) {
                 ls = ls.next;
             }
             result.length = i;
-            return runtime.tupleShallow([runtime.extern(result), ls || runtime.list([])]);
+            return runtime.tupleShallow([runtime.extern(result), ls || runtime.listShallow([])]);
         },
         unsafeGet: (index, array) => {
             return array.value[index.value];
@@ -467,7 +492,7 @@ export default function (runtime) {
             return runtime.extern(result);
         },
         slice: (from, to, array) => {
-            return runtime.extern(array.slice(from.value, to.value));
+            return runtime.extern(array.value.slice(from.value, to.value));
         },
         appendN: (n, dest, source) => {
             const destLen = dest.value.length;
