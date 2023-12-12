@@ -2,7 +2,7 @@ module Oak.Core.Maybe
 
 import Oak.Core.Basics exposing (Bool)
 
-data Maybe[a]
+type Maybe[a]
   = Just(a)
   | Nothing
 

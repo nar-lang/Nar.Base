@@ -8,7 +8,7 @@ import Oak.Core.Maybe exposing (Maybe)
 import Oak.Tests.Test exposing *
 import Oak.Tests.Expect exposing *
 
-data Different
+type Different
     = A(String)
     | B(List[Int])
 

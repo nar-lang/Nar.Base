@@ -44,14 +44,14 @@ def compare(l: cmp, r: cmp): Order =
   then EQ
   else if lt(l, r) then LT else GT
 
-data Order
+type Order
   = LT
   | EQ
   | GT
 
 // BOOLEANS
 
-data Bool
+type Bool
   = True
   | False
 
@@ -83,7 +83,7 @@ def identity(x: a): a =
 def always(a: a, _: b): a =
   a
 
-data Never = JustOneMore(Never)
+type Never = JustOneMore(Never)
 
 def never(x: Never): a =
   select x

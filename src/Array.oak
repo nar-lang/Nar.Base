@@ -14,10 +14,10 @@ def hidden shiftStep: Int = ceil(logBase(2, toFloat(branchFactor)))
 
 def bitMask: Int = 0xFFFFFFFF >>> 32 - shiftStep
 
-data Array[a]
+type Array[a]
   = hidden ArrayImpl(length: Int, startShift: Int, tree: Tree[a], tail: NativeArray[a])
 
-data hidden Node[a]
+type hidden Node[a]
   = SubTree(Tree[a])
   | Leaf(NativeArray[a])
 
