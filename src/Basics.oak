@@ -83,7 +83,8 @@ def identity(x: a): a =
 def always(a: a, _: b): a =
   a
 
-type Never = JustOneMore(Never)
+type Never
+  = hidden JustOneMore(Never)
 
 def never(x: Never): a =
   select x
