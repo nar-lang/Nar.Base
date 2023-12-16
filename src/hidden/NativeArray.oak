@@ -5,32 +5,32 @@ import Oak.Core.Math exposing (Int, Float, (+), (-), (*), (/))
 import Oak.Core.String exposing (String, (<>))
 import Oak.Core.List exposing (List, (|), (++))
 
-alias extern NativeArray[a]
+alias native NativeArray[a]
 
-def extern empty: NativeArray[a]
+def native empty: NativeArray[a]
 
-def extern singleton(item: a): NativeArray[a]
+def native singleton(item: a): NativeArray[a]
 
-def extern length(arr: NativeArray[a]): Int
+def native length(arr: NativeArray[a]): Int
 
-def extern initialize(n: Int, offset: Int, fn: (Int): a): NativeArray[a]
+def native initialize(n: Int, offset: Int, fn: (Int): a): NativeArray[a]
 
-def extern initializeFromList(n: Int, ls: List[a]): ( NativeArray[a], List[a] )
+def native initializeFromList(n: Int, ls: List[a]): ( NativeArray[a], List[a] )
 
-def extern unsafeGet(index: Int, array: NativeArray[a]):  a
+def native unsafeGet(index: Int, array: NativeArray[a]):  a
 
-def extern unsafeSet(index: Int, value: a, array: NativeArray[a]): NativeArray[a]
+def native unsafeSet(index: Int, value: a, array: NativeArray[a]): NativeArray[a]
 
-def extern push(value: a, array: NativeArray[a]): NativeArray[a]
+def native push(value: a, array: NativeArray[a]): NativeArray[a]
 
-def extern foldl(f: (a,b):b, acc: b, array: NativeArray[a]): b
+def native foldl(f: (a,b):b, acc: b, array: NativeArray[a]): b
 
-def extern foldr(f: (a,b):b, acc: b, array: NativeArray[a]): b
+def native foldr(f: (a,b):b, acc: b, array: NativeArray[a]): b
 
-def extern map(f: (a):b, array: NativeArray[a]): NativeArray[b]
+def native map(f: (a):b, array: NativeArray[a]): NativeArray[b]
 
-def extern indexedMap(f: (Int, a):b, offset: Int, array: NativeArray[a]): NativeArray[b]
+def native indexedMap(f: (Int, a):b, offset: Int, array: NativeArray[a]): NativeArray[b]
 
-def extern slice(start: Int, end: Int, array: NativeArray[a]): NativeArray[a]
+def native slice(start: Int, end: Int, array: NativeArray[a]): NativeArray[a]
 
-def extern appendN(n: Int, from: NativeArray[a], to: NativeArray[a]): NativeArray[a]
+def native appendN(n: Int, from: NativeArray[a], to: NativeArray[a]): NativeArray[a]

@@ -7,7 +7,7 @@ import Oak.Core.Maybe exposing (Maybe)
 infix (++): (right 5) = append
 infix (|): (right 5) = cons
 
-alias extern List[a]
+alias native List[a]
 
 def singleton(value: a): List[a] =
   [value]
@@ -30,7 +30,7 @@ def hidden rangeHelp(lo: Int, hi: Int, list: List[Int]): List[Int] =
   else
     list
 
-def extern cons(head: a, tail: List[a]): List[a]
+def native cons(head: a, tail: List[a]): List[a]
 
 def map(f: (a):b, xs: List[a]): List[b] =
   foldr(\(x, acc) -> cons(f(x), acc), [], xs)
@@ -164,20 +164,20 @@ def intersperse(sep: a, xs: List[a]): List[a] =
         cons(hd, spersed)
   end
 
-def extern map2(f: (a, b):r, a: List[a], b: List[b]): List[r]
+def native map2(f: (a, b):r, a: List[a], b: List[b]): List[r]
 
-def extern map3(f: (a, b, c):r, a: List[a], b: List[b], c: List[c]): List[r]
+def native map3(f: (a, b, c):r, a: List[a], b: List[b], c: List[c]): List[r]
 
-def extern map4(f: (a, b, c, d):r, a: List[a], b: List[b], c: List[c], d: List[d]): List[r]
+def native map4(f: (a, b, c, d):r, a: List[a], b: List[b], c: List[c], d: List[d]): List[r]
 
-def extern map5(f: (a, b, c, d, e):r, a: List[a], b: List[b], c: List[c], d: List[d], e: List[e]): List[r]
+def native map5(f: (a, b, c, d, e):r, a: List[a], b: List[b], c: List[c], d: List[d], e: List[e]): List[r]
 
 def sort(xs: List[a]): List[a] =
   sortBy(identity, xs)
 
-def extern sortBy(f: (a):b, xs: List[a]): List[a]
+def native sortBy(f: (a):b, xs: List[a]): List[a]
 
-def extern sortWith(f: (a, a):Order, xs: List[a]): List[a]
+def native sortWith(f: (a, a):Order, xs: List[a]): List[a]
 
 def isEmpty(xs: List[a]): Bool =
   select xs

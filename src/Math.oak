@@ -7,46 +7,46 @@ infix (-) : (left  6) = sub
 infix (*) : (left  7) = mul
 infix (/) : (left  7) = div
 
-alias extern Int
+alias native Int
 
-alias extern Float
+alias native Float
 
-def extern add(x: number, y: number): number
+def native add(x: number, y: number): number
 
-def extern sub(x: number, y: number): number
+def native sub(x: number, y: number): number
 
-def extern mul(x: number, y: number): number
+def native mul(x: number, y: number): number
 
-def extern div(x: number, y: number): number
+def native div(x: number, y: number): number
 
-def extern neg(x: number): number
+def native neg(x: number): number
 
-def extern toFloat(n: Int): Float
+def native toFloat(n: Int): Float
 
-def extern round(n: Float): Int
+def native round(n: Float): Int
 
-def extern floor(n: Float): Int
+def native floor(n: Float): Int
 
-def extern ceil(n: Float): Int
+def native ceil(n: Float): Int
 
-def extern trunc(n: Float): Int
+def native trunc(n: Float): Int
 
-def extern toPower(pow: number, n: number): number
+def native toPower(pow: number, n: number): number
 
-def extern sqrt(n: Float): Float
+def native sqrt(n: Float): Float
 
-def extern remainderBy(n: Int, x: Int): Int
+def native remainderBy(n: Int, x: Int): Int
 
-def extern modBy(n: Int, x: Int): Int
+def native modBy(n: Int, x: Int): Int
 
-def extern logBase(base: Float, n: Float): Float
+def native logBase(base: Float, n: Float): Float
 
-def extern abs(x: number): number
+def native abs(x: number): number
 
 def pi: Float = 3.141592653589793
 
 def e: Float = 2.718281828459045
 
-def extern isNan(x: number): Bool
+def native isNan(x: number): Bool
 
-def extern isInf(x: number): Bool
+def native isInf(x: number): Bool

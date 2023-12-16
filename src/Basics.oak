@@ -15,23 +15,23 @@ infix (<~): (left  9) = composeL
 infix (~>): (right 9) = composeR
 
 
-alias extern Unit
+alias native Unit
 
 // EQUALITY
 
-def extern eq(a: eq, b: eq): Bool
+def native eq(a: eq, b: eq): Bool
 
-def extern neq(a: eq, b: eq): Bool
+def native neq(a: eq, b: eq): Bool
 
 // COMPARISONS
 
-def extern lt(l: cmp, r: cmp): Bool
+def native lt(l: cmp, r: cmp): Bool
 
-def extern gt(l: cmp, r: cmp): Bool
+def native gt(l: cmp, r: cmp): Bool
 
-def extern le(l: cmp, r: cmp): Bool
+def native le(l: cmp, r: cmp): Bool
 
-def extern ge(l: cmp, r: cmp): Bool
+def native ge(l: cmp, r: cmp): Bool
 
 def min(x: cmp, y: cmp): cmp =
   if lt(x, y) then x else y
@@ -55,13 +55,13 @@ type Bool
   = True
   | False
 
-def extern not(x: Bool): Bool
+def native not(x: Bool): Bool
 
-def extern and(x: Bool, y: Bool): Bool
+def native and(x: Bool, y: Bool): Bool
 
-def extern or(x: Bool, y: Bool): Bool
+def native or(x: Bool, y: Bool): Bool
 
-def extern xor(x: Bool, y: Bool): Bool
+def native xor(x: Bool, y: Bool): Bool
 
 // FUNCTION HELPERS
 

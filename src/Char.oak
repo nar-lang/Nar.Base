@@ -3,7 +3,7 @@ module Oak.Core.Char
 import Oak.Core.Basics exposing (Bool, (&&), (||), (>=), (<=))
 import Oak.Core.Math exposing (Int)
 
-alias extern Char
+alias native Char
 
 def isUpper(char: Char): Bool =
   let code = toCode(char)
@@ -34,10 +34,10 @@ def isHexDigit(char: Char): Bool =
     || (0x41 <= code && code <= 0x46)
     || (0x61 <= code && code <= 0x66)
 
-def extern toUpper(char: Char): Char
+def native toUpper(char: Char): Char
 
-def extern toLower(char: Char): Char
+def native toLower(char: Char): Char
 
-def extern toCode(char: Char): Int
+def native toCode(char: Char): Int
 
-def extern fromCode(code: Int): Char
+def native fromCode(code: Int): Char
