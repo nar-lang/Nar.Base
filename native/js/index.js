@@ -81,7 +81,7 @@ export default function (runtime) {
 
             case runtime.INSTANCE_KIND_FUNC:
                 return (a.index < b.index) ? -1 : (a.index > b.index ? 1 : 0);
-            case runtime.INSTANCE_KIND_EXTERN:
+            case runtime.INSTANCE_KIND_NATIVE:
                 if (a.value === b.value) {
                     return 0;
                 } else if (a.value.length < b.value.length) {
@@ -109,7 +109,7 @@ export default function (runtime) {
                 return `{ ${Object.keys(r).map(k => k + " = " + toString(r[k])).join(", ")} }`;
             case runtime.INSTANCE_KIND_OPTION:
                 return `${x.name}(${x.values.map(toString).join(", ")})`;
-            case runtime.INSTANCE_KIND_EXTERN:
+            case runtime.INSTANCE_KIND_NATIVE:
                 return JSON.stringify(x.value);
             default:
                 const s = runtime.unwrap(x);
@@ -419,8 +419,8 @@ export default function (runtime) {
         },
     });
     runtime.register("Oak.Core.NativeArray", {
-        empty: runtime.extern([]),
-        singleton: (item) => runtime.extern([item]),
+        empty: runtime.native([]),
+        singleton: (item) => runtime.native([item]),
         length: (array) => {
             return runtime.int(array.value.length);
         },
@@ -429,7 +429,7 @@ export default function (runtime) {
             for (let i = 0; i < size.value; i++) {
                 result[i] = runtime.executeFn(func, [runtime.int(offset.value + i)]);
             }
-            return runtime.extern(result);
+            return runtime.native(result);
         },
         initializeFromList: (max, ls) => {
             const result = new Array(max.value);
@@ -439,7 +439,7 @@ export default function (runtime) {
                 ls = ls.next;
             }
             result.length = i;
-            return runtime.tupleShallow([runtime.extern(result), ls || runtime.listShallow([])]);
+            return runtime.tupleShallow([runtime.native(result), ls || runtime.listShallow([])]);
         },
         unsafeGet: (index, array) => {
             return array.value[index.value];
@@ -451,7 +451,7 @@ export default function (runtime) {
                 result[i] = array.value[i];
             }
             result[index.value] = value;
-            return runtime.extern(result);
+            return runtime.native(result);
         },
         push: (value, array) => {
             const length = array.value.length;
@@ -460,7 +460,7 @@ export default function (runtime) {
                 result[i] = array.value[i];
             }
             result[length] = value;
-            return runtime.extern(result);
+            return runtime.native(result);
         },
         foldl: (func, acc, array) => {
             const length = array.value.length;
@@ -481,7 +481,7 @@ export default function (runtime) {
             for (let i = 0; i < length; i++) {
                 result[i] = runtime.executeFn(func, [array.value[i]]);
             }
-            return runtime.extern(result);
+            return runtime.native(result);
         },
         indexedMap: (func, offset, array) => {
             const length = array.value.length;
@@ -489,10 +489,10 @@ export default function (runtime) {
             for (let i = 0; i < length; i++) {
                 result[i] = runtime.executeFn(func, [runtime.int(offset.value + i), array.value[i]]);
             }
-            return runtime.extern(result);
+            return runtime.native(result);
         },
         slice: (from, to, array) => {
-            return runtime.extern(array.value.slice(from.value, to.value));
+            return runtime.native(array.value.slice(from.value, to.value));
         },
         appendN: (n, dest, source) => {
             const destLen = dest.value.length;
@@ -509,7 +509,7 @@ export default function (runtime) {
             for (let i = 0; i < itemsToCopy; i++) {
                 result[i + destLen] = source.value[i];
             }
-            return runtime.extern(result);
+            return runtime.native(result);
         },
     });
 }
