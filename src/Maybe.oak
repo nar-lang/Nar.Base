@@ -1,7 +1,5 @@
 module Oak.Core.Maybe
 
-import Oak.Core.Basics exposing (Bool)
-
 type Maybe[a]
   = Just(a)
   | Nothing

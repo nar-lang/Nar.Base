@@ -1,7 +1,5 @@
 module Oak.Core.Math
 
-import Oak.Core.Basics exposing *
-
 infix (+) : (left  6) = add
 infix (-) : (left  6) = sub
 infix (*) : (left  7) = mul

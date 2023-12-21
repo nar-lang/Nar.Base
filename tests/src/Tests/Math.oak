@@ -1,9 +1,6 @@
 module Tests.Oak.Core.Math
 
-import Oak.Core.Basics exposing *
 import Oak.Core.Math exposing *
-import Oak.Tests.Test exposing *
-import Oak.Tests.Expect exposing *
 
 def tests: Test =
   describe("Math") <|

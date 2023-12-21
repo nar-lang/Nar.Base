@@ -1,8 +1,5 @@
 module Oak.Core.Char
 
-import Oak.Core.Basics exposing (Bool, (&&), (||), (>=), (<=))
-import Oak.Core.Math exposing (Int)
-
 alias native Char
 
 def isUpper(char: Char): Bool =

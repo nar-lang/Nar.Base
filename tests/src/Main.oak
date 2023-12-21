@@ -1,23 +1,5 @@
 module Tests.Oak.Core
 
-import Oak.Core.Basics exposing *
-import Oak.Tests.Test exposing (Test)
-import Oak.Tests.Runner
-import Tests.Oak.Core.Array
-import Tests.Oak.Core.Basics
-import Tests.Oak.Core.Bitwise
-import Tests.Oak.Core.Char
-import Tests.Oak.Core.Debug
-import Tests.Oak.Core.Dict
-import Tests.Oak.Core.Equality
-import Tests.Oak.Core.List
-import Tests.Oak.Core.Math
-import Tests.Oak.Core.Maybe
-import Tests.Oak.Core.Result
-import Tests.Oak.Core.Set
-import Tests.Oak.Core.String
-import Tests.Oak.Core.Tuple
-
 def main = Oak.Tests.Runner.runDisplayed <|
   Test.describe("Oak Standard Library Tests") <|
     [ Tests.Oak.Core.Array.tests

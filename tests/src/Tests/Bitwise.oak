@@ -1,10 +1,5 @@
 module Tests.Oak.Core.Bitwise
 
-import Oak.Core.Basics exposing *
-import Oak.Core.Bitwise
-import Oak.Tests.Test exposing *
-import Oak.Tests.Expect exposing *
-
 def tests: Test =
   describe("Bitwise") <|
     [ describe("and") <|

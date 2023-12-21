@@ -1,14 +1,5 @@
 module Tests.Oak.Core.Dict
 
-import Oak.Core.Basics exposing *
-import Oak.Core.Math exposing ((+),(-),(*),(/))
-import Oak.Core.String exposing (String, (<>))
-import Oak.Core.Dict
-import Oak.Core.List exposing ((++))
-import Oak.Core.Maybe exposing *
-import Oak.Tests.Test exposing *
-import Oak.Tests.Expect exposing *
-
 def animals: Dict.Dict[String, String] =
     Dict.fromList([ ( "Tom", "cat" ), ( "Jerry", "mouse" ) ])
 

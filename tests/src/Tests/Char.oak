@@ -1,12 +1,6 @@
 module Tests.Oak.Core.Char
 
-import Oak.Core.Basics exposing *
 import Oak.Core.Char exposing *
-import Oak.Core.List exposing (List)
-import Oak.Core.Math exposing *
-import Oak.Tests.Test exposing *
-import Oak.Tests.Expect exposing *
-import Oak.Core.Debug
 
 def lower =
     [ 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm'

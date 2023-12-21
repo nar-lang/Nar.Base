@@ -1,8 +1,5 @@
 module Oak.Core.Result
 
-import Oak.Core.Basics exposing (Bool)
-import Oak.Core.Maybe exposing (Maybe)
-
 type Result[error, value]
   = Ok(value)
   | Err(error)

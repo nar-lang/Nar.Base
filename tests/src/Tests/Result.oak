@@ -1,15 +1,5 @@
 module Tests.Oak.Core.Result
 
-import Oak.Core.Basics exposing *
-import Oak.Core.Math exposing (Int, Float, (+), (-), (*), (/), modBy)
-import Oak.Core.String exposing (String, (<>))
-import Oak.Core.List exposing (List, (|), (++))
-import Oak.Core.Result exposing *
-import Oak.Core.Maybe exposing (Maybe)
-import Oak.Tests.Test exposing *
-import Oak.Tests.Expect
-
-
 def isEven(n) =
   if modBy(2, n) == 0 then
     Ok(n)

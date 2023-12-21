@@ -1,10 +1,5 @@
 module Tests.Oak.Core.Debug
 
-import Oak.Core.Basics exposing *
-import Oak.Core.Set
-import Oak.Core.Dict
-import Oak.Tests.Test exposing *
-import Oak.Tests.Expect exposing *
 import Oak.Core.Debug exposing (toString)
 
 def tests: Test =

@@ -1,16 +1,8 @@
 module Oak.Core.Array
 
-import Oak.Core.Basics exposing *
-import Oak.Core.Bitwise exposing *
-import Oak.Core.Math exposing *
-import Oak.Core.List exposing (List, (|))
-import Oak.Core.NativeArray exposing (NativeArray)
-import Oak.Core.Maybe exposing (Maybe)
-import Oak.Core.Tuple
-
 def hidden branchFactor: Int = 32
 
-def hidden shiftStep: Int = ceil(logBase(2, toFloat(branchFactor)))
+def hidden shiftStep: Int = ceil(logBase(2, Math.toFloat(branchFactor)))
 
 def bitMask: Int = 0xFFFFFFFF >>> 32 - shiftStep
 
@@ -300,8 +292,8 @@ def hidden sliceRight(end: Int, (ArrayImpl(len, startShift, tree, tail) as array
     let depth =
       (endIdx - 1)
         |> max(1)
-        |> toFloat
-        |> logBase(toFloat(branchFactor))
+        |> Math.toFloat
+        |> logBase(Math.toFloat(branchFactor))
         |> floor
     let newShift = max(5, depth * shiftStep)
     in ArrayImpl
@@ -405,7 +397,7 @@ def hidden builderToArray(reverseNodeList: Bool, builder: Builder[a]): Array[a] 
     ArrayImpl(NativeArray.length(builder.tail), shiftStep, NativeArray.empty, builder.tail)
   else
     let treeLen = builder.nodeListSize * branchFactor
-    let depth = (treeLen - 1) |> toFloat |> logBase(toFloat(branchFactor)) |> floor
+    let depth = (treeLen - 1) |> Math.toFloat |> logBase(Math.toFloat(branchFactor)) |> floor
     let correctNodeList =
       if reverseNodeList then
         List.reverse(builder.nodeList)
@@ -421,7 +413,7 @@ def hidden builderToArray(reverseNodeList: Bool, builder: Builder[a]): Array[a] 
         )
 
 def hidden treeFromBuilder(nodeList: List[Node[a]], nodeListSize: Int): Tree[a] =
-  let newNodeSize = ceil(toFloat(nodeListSize) / toFloat(branchFactor))
+  let newNodeSize = ceil(Math.toFloat(nodeListSize) / Math.toFloat(branchFactor))
   in
     if newNodeSize == 1 then
       NativeArray.initializeFromList(branchFactor, nodeList) |> Tuple.first

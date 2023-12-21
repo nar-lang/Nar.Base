@@ -1,14 +1,5 @@
 module Tests.Oak.Core.Set
 
-import Oak.Core.Basics exposing *
-import Oak.Core.Math exposing (Int, Float, (+), (-), (*), (/))
-import Oak.Core.String exposing (String, (<>))
-import Oak.Core.List exposing (List, (|), (++))
-import Oak.Core.Set exposing *
-import Oak.Tests.Test exposing *
-import Oak.Tests.Expect
-
-
 def tests: Test =
   describe("Set Tests") <|
     [ describe("empty", emptyTests)
