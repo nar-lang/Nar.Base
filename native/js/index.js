@@ -120,6 +120,8 @@ export default function (runtime) {
         }
     }
 
+    runtime.scope("Oak.Core", {cmpList});
+
     runtime.register("Oak.Core.Basics", {
         eq: (a, b) => runtime.bool(cmp(a, b) === 0),
         neq: (a, b) => runtime.bool(cmp(a, b) !== 0),
@@ -166,7 +168,7 @@ export default function (runtime) {
         },
         neg: (x) => Object.freeze({kind: x.kind, value: -x.value}),
         abs: (x) => x.value >= 0 ? x : Object.freeze({kind: x.kind, value: -x.value}),
-        toPower: (pow, num) =>{
+        toPower: (pow, num) => {
             if (pow.kind !== num.kind) {
                 throw "types are not equal";
             }
