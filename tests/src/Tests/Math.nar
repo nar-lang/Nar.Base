@@ -1,6 +1,6 @@
-module Tests.Oak.Core.Math
+module Tests.Nar.Core.Math
 
-import Oak.Core.Math exposing *
+import Nar.Core.Math exposing *
 
 def tests: Test =
   describe("Math") <|

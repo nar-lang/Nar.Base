@@ -1,4 +1,4 @@
-module Tests.Oak.Core.Equality
+module Tests.Nar.Core.Equality
 
 type Different
     = A(String)

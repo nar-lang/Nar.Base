@@ -1,4 +1,4 @@
-module Oak.Core.Result
+module Nar.Core.Result
 
 type Result[error, value]
   = Ok(value)

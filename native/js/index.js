@@ -38,10 +38,10 @@ export default function (runtime) {
                 } else if (a.name > b.name) {
                     return 1;
                 } else {
-                    if (a.name === "Oak.Core.Array.Array#ArrayImpl" && b.name === "Oak.Core.Array.Array#ArrayImpl") {
+                    if (a.name === "Nar.Core.Array.Array#ArrayImpl" && b.name === "Nar.Core.Array.Array#ArrayImpl") {
                         return cmp(
-                            runtime.execute("Oak.Core.Array.toList", a),
-                            runtime.execute("Oak.Core.Array.toList", b)
+                            runtime.execute("Nar.Core.Array.toList", a),
+                            runtime.execute("Nar.Core.Array.toList", b)
                         )
                     }
                     return cmpList(a.values, b.values);
@@ -120,9 +120,9 @@ export default function (runtime) {
         }
     }
 
-    runtime.scope("Oak.Core", {cmpList});
+    runtime.scope("Nar.Core", {cmpList});
 
-    runtime.register("Oak.Core.Basics", {
+    runtime.register("Nar.Core.Basics", {
         eq: (a, b) => runtime.bool(cmp(a, b) === 0),
         neq: (a, b) => runtime.bool(cmp(a, b) !== 0),
         lt: (a, b) => runtime.bool(cmp(a, b) < 0),
@@ -134,7 +134,7 @@ export default function (runtime) {
         or: (x, y) => runtime.bool(runtime.unwrap(x) || runtime.unwrap(y)),
         xor: (x, y) => runtime.bool(runtime.unwrap(x) ^ runtime.unwrap(y)),
     });
-    runtime.register("Oak.Core.Math", {
+    runtime.register("Nar.Core.Math", {
         add: (x, y) => {
             if (x.kind !== y.kind) {
                 throw "types are not equal";
@@ -196,7 +196,7 @@ export default function (runtime) {
         },
         logBase: (base, n) => runtime.float(Math.log(n.value) / Math.log(base.value)),
     });
-    runtime.register("Oak.Core.Bitwise", {
+    runtime.register("Nar.Core.Bitwise", {
         and: (x, y) => runtime.int(x.value & y.value),
         or: (x, y) => runtime.int(x.value | y.value),
         xor: (x, y) => runtime.int(x.value ^ y.value),
@@ -205,13 +205,13 @@ export default function (runtime) {
         shiftRightBy: (x, y) => runtime.int(y.value >> x.value),
         shiftRightZfBy: (x, y) => runtime.int(y.value >>> x.value),
     });
-    runtime.register("Oak.Core.Char", {
+    runtime.register("Nar.Core.Char", {
         toUpper: (char) => runtime.char(String.fromCodePoint(char.value).toLocaleUpperCase().codePointAt(0)),
         toLower: (char) => runtime.char(String.fromCodePoint(char.value).toLocaleLowerCase().codePointAt(0)),
         toCode: (char) => runtime.int(char.value),
         fromCode: (code) => runtime.char(code.value),
     });
-    runtime.register("Oak.Core.Debug", {
+    runtime.register("Nar.Core.Debug", {
         toString: (x) => runtime.string(toString(x)),
         log: (msg, a) => {
             console.log(runtime.unwrap(msg) + toString(a));
@@ -223,7 +223,7 @@ export default function (runtime) {
             return runtime.unit();
         }
     });
-    runtime.register("Oak.Core.List", {  //TODO: optimize all list functions
+    runtime.register("Nar.Core.List", {  //TODO: optimize all list functions
         cons: (head, tail) => runtime.listItem(head, tail),
         map2: (f, a, b) => {
             const la = runtime.unwrapShallow(a);
@@ -275,16 +275,16 @@ export default function (runtime) {
             const l = runtime.unwrapShallow(xs);
             l.sort((a, b) => {
                 const res = runtime.executeFn(f, [a, b]);
-                if (res.name === "Oak.Core.Basics.Order#LT") {
+                if (res.name === "Nar.Core.Basics.Order#LT") {
                     return -1;
                 }
-                if (res.name === "Oak.Core.Basics.Order#GT") {
+                if (res.name === "Nar.Core.Basics.Order#GT") {
                     return 1;
                 }
-                if (res.name === "Oak.Core.Basics.Order#EQ") {
+                if (res.name === "Nar.Core.Basics.Order#EQ") {
                     return 0;
                 }
-                throw "expected Oak.Core.Basics.Order";
+                throw "expected Nar.Core.Basics.Order";
             });
             return runtime.listShallow(l);
         },
@@ -298,7 +298,7 @@ export default function (runtime) {
             return runtime.listShallow(l);
         },
     });
-    runtime.register("Oak.Core.String", {
+    runtime.register("Nar.Core.String", {
         length: (s) => runtime.int(s.value.length),
         reverse: (s) => runtime.string([...runtime.unwrap(s)].reverse().join('')),
         append: (a, b) => runtime.string(runtime.unwrap(a) + runtime.unwrap(b)),
@@ -333,7 +333,7 @@ export default function (runtime) {
         trimLeft: (s) => runtime.string(runtime.unwrap(s).trimStart()),
         trimRight: (s) => runtime.string(runtime.unwrap(s).trimEnd()),
         toInt: (n) => {
-            const maybe = runtime.qualifierIdentifier("Oak.Core.Maybe", "Maybe");
+            const maybe = runtime.qualifierIdentifier("Nar.Core.Maybe", "Maybe");
             const str = runtime.unwrap(n);
             const code0 = str.charCodeAt(0);
             const start = code0 === 0x2B /* + */ || code0 === 0x2D /* - */ ? 1 : 0;
@@ -354,7 +354,7 @@ export default function (runtime) {
         },
         fromInt: (n) => runtime.string(runtime.unwrap(n).toString()),
         toFloat: (n) => {
-            const maybe = runtime.qualifierIdentifier("Oak.Core.Maybe", "Maybe");
+            const maybe = runtime.qualifierIdentifier("Nar.Core.Maybe", "Maybe");
             const s = runtime.unwrap(n);
             if (s.length === 0 || /[\sxbo]/.test(s)) {
                 return runtime.optionShallow(maybe, "Nothing")
@@ -369,7 +369,7 @@ export default function (runtime) {
         fromList: (chars) => runtime.string(String.fromCodePoint(...runtime.unwrap(chars))),
         cons: (c, s) => runtime.string(String.fromCodePoint(runtime.unwrap(c)) + runtime.unwrap(s)),
         uncons: (str) => {
-            const maybe = runtime.qualifierIdentifier("Oak.Core.Maybe", "Maybe");
+            const maybe = runtime.qualifierIdentifier("Nar.Core.Maybe", "Maybe");
             const s = runtime.unwrap(str);
 
             if (s.length === 0) {
@@ -420,7 +420,7 @@ export default function (runtime) {
             ));
         },
     });
-    runtime.register("Oak.Core.NativeArray", {
+    runtime.register("Nar.Core.NativeArray", {
         empty: runtime.native([]),
         singleton: (item) => runtime.native([item]),
         length: (array) => {

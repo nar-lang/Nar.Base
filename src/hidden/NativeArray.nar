@@ -1,9 +1,9 @@
-module Oak.Core.NativeArray
+module Nar.Core.NativeArray
 
-import Oak.Core.Basics exposing *
-import Oak.Core.Math exposing (Int, Float, (+), (-), (*), (/))
-import Oak.Core.String exposing (String, (<>))
-import Oak.Core.List exposing (List, (|), (++))
+import Nar.Core.Basics exposing *
+import Nar.Core.Math exposing (Int, Float, (+), (-), (*), (/))
+import Nar.Core.String exposing (String, (<>))
+import Nar.Core.List exposing (List, (|), (++))
 
 alias native NativeArray[a]
 

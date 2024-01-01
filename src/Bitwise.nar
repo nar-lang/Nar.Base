@@ -1,4 +1,4 @@
-module Oak.Core.Bitwise
+module Nar.Core.Bitwise
 
 infix (>>>): (left 5) = shiftRightZf
 infix (<<): (left 5) = shiftLeft

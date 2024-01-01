@@ -1,4 +1,4 @@
-module Oak.Core.List
+module Nar.Core.List
 
 infix (++): (right 5) = append
 infix (|): (right 5) = cons

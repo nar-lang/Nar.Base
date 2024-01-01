@@ -1,4 +1,4 @@
-module Oak.Core.Debug
+module Nar.Core.Debug
 
 def native toString(x: a): String
 

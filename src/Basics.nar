@@ -1,4 +1,4 @@
-module Oak.Core.Basics
+module Nar.Core.Basics
 
 infix (<|): (right 0) = apL
 infix (|>): (left  0) = apR

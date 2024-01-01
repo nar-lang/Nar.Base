@@ -1,4 +1,4 @@
-module Oak.Core.Set
+module Nar.Core.Set
 
 type Set[t]
   = hidden SetImpl(Dict[t, ()])

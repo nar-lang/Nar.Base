@@ -1,6 +1,6 @@
-module Tests.Oak.Core.List
+module Tests.Nar.Core.List
 
-import Oak.Core.List exposing *
+import Nar.Core.List exposing *
 
 def tests: Test =
     describe("List Tests") <|

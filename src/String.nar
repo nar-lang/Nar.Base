@@ -1,4 +1,4 @@
-module Oak.Core.String
+module Nar.Core.String
 
 infix (<>): (right 5) = append
 

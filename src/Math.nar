@@ -1,4 +1,4 @@
-module Oak.Core.Math
+module Nar.Core.Math
 
 infix (+) : (left  6) = add
 infix (-) : (left  6) = sub

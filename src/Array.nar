@@ -1,4 +1,4 @@
-module Oak.Core.Array
+module Nar.Core.Array
 
 def hidden branchFactor: Int = 32
 

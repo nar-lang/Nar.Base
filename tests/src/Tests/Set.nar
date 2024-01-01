@@ -1,4 +1,4 @@
-module Tests.Oak.Core.Set
+module Tests.Nar.Core.Set
 
 def tests: Test =
   describe("Set Tests") <|

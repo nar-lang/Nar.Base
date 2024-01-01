@@ -1,4 +1,4 @@
-module Oak.Core.Dict
+module Nar.Core.Dict
 
 type hidden NColor
     = Red

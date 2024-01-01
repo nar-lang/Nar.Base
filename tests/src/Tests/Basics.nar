@@ -1,4 +1,4 @@
-module Tests.Oak.Core.Basics
+module Tests.Nar.Core.Basics
 
 def tests: Test =
   describe("Basics") <|

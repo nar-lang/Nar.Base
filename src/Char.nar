@@ -1,4 +1,4 @@
-module Oak.Core.Char
+module Nar.Core.Char
 
 alias native Char
 

@@ -1,6 +1,6 @@
-module Tests.Oak.Core.Debug
+module Tests.Nar.Core.Debug
 
-import Oak.Core.Debug exposing (toString)
+import Nar.Core.Debug exposing (toString)
 
 def tests: Test =
   describe("Debug") <|

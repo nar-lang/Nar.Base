@@ -1,6 +1,6 @@
-module Tests.Oak.Core.Char
+module Tests.Nar.Core.Char
 
-import Oak.Core.Char exposing *
+import Nar.Core.Char exposing *
 
 def lower =
     [ 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm'
