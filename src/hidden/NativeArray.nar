@@ -1,9 +1,9 @@
-module Nar.Core.NativeArray
+module Nar.Base.NativeArray
 
-import Nar.Core.Basics exposing *
-import Nar.Core.Math exposing (Int, Float, (+), (-), (*), (/))
-import Nar.Core.String exposing (String, (<>))
-import Nar.Core.List exposing (List, (|), (++))
+import Nar.Base.Basics exposing *
+import Nar.Base.Math exposing (Int, Float, (+), (-), (*), (/))
+import Nar.Base.String exposing (String, (<>))
+import Nar.Base.List exposing (List, (|), (++))
 
 alias native NativeArray[a]
 

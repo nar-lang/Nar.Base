@@ -1,4 +1,4 @@
-module Tests.Nar.Core.Maybe
+module Tests.Nar.Base.Maybe
 
 def tests: Test =
   describe("Maybe Tests") <|

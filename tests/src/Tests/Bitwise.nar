@@ -1,4 +1,4 @@
-module Tests.Nar.Core.Bitwise
+module Tests.Nar.Base.Bitwise
 
 def tests: Test =
   describe("Bitwise") <|

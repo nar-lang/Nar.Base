@@ -1,4 +1,4 @@
-module Nar.Core.Char
+module Nar.Base.Char
 
 alias native Char
 

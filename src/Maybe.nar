@@ -1,4 +1,4 @@
-module Nar.Core.Maybe
+module Nar.Base.Maybe
 
 type Maybe[a]
   = Just(a)

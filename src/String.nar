@@ -1,4 +1,4 @@
-module Nar.Core.String
+module Nar.Base.String
 
 infix (<>): (right 5) = append
 

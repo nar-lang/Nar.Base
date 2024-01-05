@@ -1,6 +1,6 @@
-module Tests.Nar.Core.Char
+module Tests.Nar.Base.Char
 
-import Nar.Core.Char exposing *
+import Nar.Base.Char exposing *
 
 def lower =
     [ 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm'

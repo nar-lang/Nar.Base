@@ -1,4 +1,4 @@
-module Nar.Core.Bitwise
+module Nar.Base.Bitwise
 
 infix (>>>): (left 5) = shiftRightZf
 infix (<<): (left 5) = shiftLeft

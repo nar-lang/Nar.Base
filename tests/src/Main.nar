@@ -1,19 +1,19 @@
-module Tests.Nar.Core
+module Tests.Nar.Base
 
 def main = Nar.Tests.Runner.runDisplayed <|
   Test.describe("Nar Standard Library Tests") <|
-    [ Tests.Nar.Core.Array.tests
-    , Tests.Nar.Core.Basics.tests
-    , Tests.Nar.Core.Bitwise.tests
-    , Tests.Nar.Core.Char.tests
-    , Tests.Nar.Core.Debug.tests
-    , Tests.Nar.Core.Dict.tests
-    , Tests.Nar.Core.Equality.tests
-    , Tests.Nar.Core.List.tests
-    , Tests.Nar.Core.Math.tests
-    , Tests.Nar.Core.Maybe.tests
-    , Tests.Nar.Core.Result.tests
-    , Tests.Nar.Core.Set.tests
-    , Tests.Nar.Core.String.tests
-    , Tests.Nar.Core.Tuple.tests
+    [ Tests.Nar.Base.Array.tests
+    , Tests.Nar.Base.Basics.tests
+    , Tests.Nar.Base.Bitwise.tests
+    , Tests.Nar.Base.Char.tests
+    , Tests.Nar.Base.Debug.tests
+    , Tests.Nar.Base.Dict.tests
+    , Tests.Nar.Base.Equality.tests
+    , Tests.Nar.Base.List.tests
+    , Tests.Nar.Base.Math.tests
+    , Tests.Nar.Base.Maybe.tests
+    , Tests.Nar.Base.Result.tests
+    , Tests.Nar.Base.Set.tests
+    , Tests.Nar.Base.String.tests
+    , Tests.Nar.Base.Tuple.tests
     ]

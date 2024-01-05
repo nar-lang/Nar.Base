@@ -1,4 +1,4 @@
-module Nar.Core.Set
+module Nar.Base.Set
 
 type Set[t]
   = hidden SetImpl(Dict[t, ()])

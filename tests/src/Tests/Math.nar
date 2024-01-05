@@ -1,6 +1,6 @@
-module Tests.Nar.Core.Math
+module Tests.Nar.Base.Math
 
-import Nar.Core.Math exposing *
+import Nar.Base.Math exposing *
 
 def tests: Test =
   describe("Math") <|

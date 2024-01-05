@@ -1,6 +1,6 @@
-module Tests.Nar.Core.Debug
+module Tests.Nar.Base.Debug
 
-import Nar.Core.Debug exposing (toString)
+import Nar.Base.Debug exposing (toString)
 
 def tests: Test =
   describe("Debug") <|

@@ -1,4 +1,4 @@
-module Nar.Core.Dict
+module Nar.Base.Dict
 
 type hidden NColor
     = Red

@@ -1,4 +1,4 @@
-module Nar.Core.Array
+module Nar.Base.Array
 
 def hidden branchFactor: Int = 32
 

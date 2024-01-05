@@ -1,6 +1,6 @@
-module Tests.Nar.Core.List
+module Tests.Nar.Base.List
 
-import Nar.Core.List exposing *
+import Nar.Base.List exposing *
 
 def tests: Test =
     describe("List Tests") <|

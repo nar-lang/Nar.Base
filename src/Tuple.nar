@@ -1,4 +1,4 @@
-module Nar.Core.Tuple
+module Nar.Base.Tuple
 
 def pair(x: x, y: y): ( x, y ) =
   ( x, y )

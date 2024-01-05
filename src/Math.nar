@@ -1,4 +1,4 @@
-module Nar.Core.Math
+module Nar.Base.Math
 
 infix (+) : (left  6) = add
 infix (-) : (left  6) = sub

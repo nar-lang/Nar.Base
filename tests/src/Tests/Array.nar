@@ -1,6 +1,6 @@
-module Tests.Nar.Core.Array
+module Tests.Nar.Base.Array
 
-import Nar.Core.Array exposing *
+import Nar.Base.Array exposing *
 
 def hidden size = 500
 

@@ -1,4 +1,4 @@
-module Nar.Core.Debug
+module Nar.Base.Debug
 
 def native toString(x: a): String
 

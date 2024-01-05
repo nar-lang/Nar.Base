@@ -1,4 +1,4 @@
-module Nar.Core.Result
+module Nar.Base.Result
 
 type Result[error, value]
   = Ok(value)

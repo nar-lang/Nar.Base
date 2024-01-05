@@ -1,4 +1,4 @@
-module Nar.Core.List
+module Nar.Base.List
 
 infix (++): (right 5) = append
 infix (|): (right 5) = cons

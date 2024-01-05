@@ -1,4 +1,4 @@
-module Tests.Nar.Core.Dict
+module Tests.Nar.Base.Dict
 
 def animals: Dict.Dict[String, String] =
     Dict.fromList([ ( "Tom", "cat" ), ( "Jerry", "mouse" ) ])

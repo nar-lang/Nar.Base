@@ -1,4 +1,4 @@
-module Tests.Nar.Core.Tuple
+module Tests.Nar.Base.Tuple
 
 def tests: Test =
   describe("Tuple Tests") <|
