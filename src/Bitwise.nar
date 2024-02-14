@@ -21,11 +21,11 @@ def native shiftRightBy(x: Int, y: Int): Int
 
 def native shiftRightZfBy(x: Int, y: Int): Int
 
-def hidden shiftLeft(x: Int, y: Int) =
+def hidden shiftLeft(x: Int, y: Int): Int =
   shiftLeftBy(y, x)
 
-def hidden shiftRight(x: Int, y: Int) =
+def hidden shiftRight(x: Int, y: Int): Int =
   shiftRightBy(y, x)
 
-def hidden shiftRightZf(x: Int, y: Int) =
+def hidden shiftRightZf(x: Int, y: Int): Int =
   shiftRightZfBy(y, x)

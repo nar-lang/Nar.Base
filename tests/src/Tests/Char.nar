@@ -39,7 +39,7 @@ def decCodes =
 def oneOf(list: List[a], e: a): Bool =
     List.member(e, list)
 
-def tests =
+def tests : Test =
     describe("Char") <|
         [ describe("toCode") <|
             [ test("a-z") <| \( () ) -> Expect.equal(lowerCodes, List.map(toCode, lower))
