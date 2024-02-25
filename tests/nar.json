@@ -1,10 +1,10 @@
 {
   "name": "Tests.Nar.Base",
-  "version": "1.0",
-  "nar-version": "1.0",
-  "dependencies": [
-    "..",
-    "github.com/nar-lang/Nar.Tests"
-  ],
+  "version": 100,
+  "nar-version": 100,
+  "dependencies": {
+    "..": 0,
+    "github.com/nar-lang/Nar.Tests": 100
+  },
   "main": "Tests.Nar.Base.main"
 }

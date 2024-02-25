@@ -1,6 +1,6 @@
 {
   "name": "Nar.Base",
-  "version": "1.0",
-  "nar-version": "1.0",
+  "version": 100,
+  "nar-version": 100,
   "dependencies": []
 }
