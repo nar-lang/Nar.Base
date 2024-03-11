@@ -1,6 +1,6 @@
 module Tests.Nar.Base
 
-def main = Nar.Tests.Runner.runDisplayed <|
+def main = Nar.Tests.Runner.runDebugLogged <|
   Test.describe("Nar Standard Library Tests") <|
     [ Tests.Nar.Base.Array.tests
     , Tests.Nar.Base.Basics.tests

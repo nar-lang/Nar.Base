@@ -57,13 +57,13 @@ export default function (runtime) {
                 } else if (ka.length > kb.length) {
                     return 1;
                 } else {
-                    ka.sort();
-                    kb.sort();
                     if (ka.length < kb.length) {
                         return -1;
                     } else if (ka.length > kb.length) {
                         return 1;
                     } else {
+                        ka.sort();
+                        kb.sort();
                         for (let i = 0; i < ka.length; i++) {
                             if (ka[i] !== kb[i]) {
                                 return ka[i] < kb ? -1 : 1;

@@ -215,7 +215,7 @@ def append(
 ): Array[a] =
   if bLen <= (branchFactor * 4) then
     let foldHelper(node, array) =
-      select(node)
+      select node
         case SubTree(tree) -> NativeArray.foldl(foldHelper, array, tree)
         case Leaf(leaf) -> appendHelpTree(leaf, array)
       end
