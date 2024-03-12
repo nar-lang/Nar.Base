@@ -104,7 +104,7 @@ int by_fn(void *sel_fn, const void *a, const void *b) {
     nar_object_t fn = *(nar_object_t *) sel_fn;
     nar_object_t value_a = nar_apply(fn, 1, (nar_object_t *) a);
     nar_object_t value_b = nar_apply(fn, 1, (nar_object_t *) b);
-    return cmp(value_a, value_b);
+    return (int)cmp(value_a, value_b);
 }
 
 nar_object_t list_sortBy(nar_object_t fn, nar_object_t xs) {

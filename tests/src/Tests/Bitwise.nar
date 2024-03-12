@@ -36,4 +36,9 @@ def tests: Test =
         , test("32 |> shiftRight 2 == 8") <| \( () ) -> Expect.equal(8, 32 |> Bitwise.shiftRightBy(2))
         , test("-32 |> shiftRight 1 == -16") <| \( () ) -> Expect.equal(-16, -32 |> Bitwise.shiftRightBy(1))
         ]
+    , describe("shiftRightZfBy") <|
+        [ test("32 |> shiftRight 1 == 16") <| \( () ) -> Expect.equal(16, 32 |> Bitwise.shiftRightZfBy(1))
+        , test("32 |> shiftRight 2 == 8") <| \( () ) -> Expect.equal(8, 32 |> Bitwise.shiftRightZfBy(2))
+        , test("-32 |> shiftRight 1 == 0x7FFFFFFFFFFFFFF0") <| \( () ) -> Expect.equal(0x7FFFFFFFFFFFFFF0, -32 |> Bitwise.shiftRightZfBy(1))
+        ]
     ]

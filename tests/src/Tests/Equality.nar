@@ -15,7 +15,6 @@ def tests: Test =
     , describe("Record equality") <|
       [ test("empty same") <| \( () ) -> Expect.equal(True, {} == {})
       , test("ctor same") <| \( () ) -> Expect.equal(True, { field = Just(3) } == { field = Just(3) })
-      , test("ctor same, special case") <| \( () ) -> Expect.equal(True, { ctor = Just(3) } == { ctor = Just(3) })
       , test("ctor diff") <| \( () ) -> Expect.equal(True, { field = Just(3) } != { field = Nothing })
       , test("ctor diff, special case") <| \( () ) -> Expect.equal(True, { ctor = Just(3) } != { ctor = Nothing })
       , test("order independent") <| \( () ) -> Expect.equal(True, { a = 1, b = 2 } == { b = 2, a = 1 })

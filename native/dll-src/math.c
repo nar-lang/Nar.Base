@@ -123,7 +123,7 @@ nar_object_t math_toPower(nar_object_t powr, nar_object_t num) {
     }
     switch (kind_num) {
         case NAR_INT: {
-            return nar_int(lround(pow((nar_float_t) nar_to_int(num), (nar_float_t) nar_to_int(powr)) + 0.5));
+            return nar_int(lround(pow((nar_float_t) nar_to_int(num), (nar_float_t) nar_to_int(powr))));
         }
         case NAR_FLOAT: {
             return nar_float(pow(nar_to_float(num), nar_to_float(powr)));

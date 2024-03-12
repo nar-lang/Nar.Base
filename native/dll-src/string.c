@@ -1,5 +1,6 @@
 #include <wchar.h>
 #include <stdlib.h>
+#include <string.h>
 #include "native.h"
 
 nar_object_t string_length(nar_object_t s) {
@@ -9,7 +10,7 @@ nar_object_t string_length(nar_object_t s) {
 nar_object_t string_reverse(nar_object_t s) {
     nar_string_t value = nar_to_string(s);
     size_t len = wcslen(value);
-    wchar_t *reversed = malloc((len + 1) * sizeof(wchar_t));
+    nar_string_t reversed = malloc((len + 1) * sizeof(nar_char_t));
     for (size_t i = 0; i < len; i++) {
         reversed[i] = value[len - i - 1];
     }
@@ -24,7 +25,7 @@ nar_object_t string_append(nar_object_t a, nar_object_t b) {
     nar_string_t value_b = nar_to_string(b);
     size_t len_a = wcslen(value_a);
     size_t len_b = wcslen(value_b);
-    wchar_t *appended = malloc((len_a + len_b + 1) * sizeof(wchar_t));
+    nar_string_t appended = malloc((len_a + len_b + 1) * sizeof(nar_char_t));
     wcscpy(appended, value_a);
     wcscpy(appended + len_a, value_b);
     appended[len_a + len_b] = L'\0';
@@ -34,27 +35,34 @@ nar_object_t string_append(nar_object_t a, nar_object_t b) {
 }
 
 nar_object_t string_split(nar_object_t sep, nar_object_t string) {
-    nar_string_t value_sep = nar_to_string(sep);
-    nar_string_t value_string = nar_to_string(string);
-    wchar_t *str = wcsdup(value_string);
-    wchar_t *token = wcstok(str, value_sep, &str);
-    int size = 0;
-    while (token) {
-        size++;
-        token = wcstok(NULL, value_sep, &str);
+    nar_string_t sep_ = nar_to_string(sep);
+    nar_string_t string_ = nar_to_string(string);
+    nar_size_t parts = 1;
+    nar_string_t token = string_;
+    while ((token = wcsstr(token, sep_)) != NULL) {
+        parts++;
+        token += wcslen(sep_);
     }
-    free(str);
-    str = wcsdup(value_string);
-    nar_object_t *items = malloc(size * sizeof(nar_object_t));
-    token = wcstok(str, value_sep, &str);
-    for (int i = 0; i < size; i++) {
-        items[i] = nar_string(token);
-        token = wcstok(NULL, value_sep, &str);
+    if (parts == 1) {
+        return nar_list(1, (nar_object_t[]) {string});
     }
-    free(str);
-    nar_object_t result = nar_list(size, items);
-    free(items);
-    return result;
+
+    nar_object_t items[parts];
+    token = string_;
+    for (nar_size_t i = 0; i < parts; i++) {
+        nar_string_t next = wcsstr(token, sep_);
+        nar_size_t len = next ? next - token : wcslen(token);
+        nar_char_t sub[len + 1];
+        wcsncpy(sub, token, len);
+        sub[len] = L'\0';
+        items[i] = nar_string(sub);
+        if (!next) {
+            break;
+        }
+        token = next + wcslen(sep_);
+    }
+
+    return nar_list(parts, items);
 }
 
 nar_object_t string_join(nar_object_t sep, nar_object_t strings) {
@@ -65,7 +73,7 @@ nar_object_t string_join(nar_object_t sep, nar_object_t strings) {
         len += wcslen(nar_to_string(strings_.items[i]));
     }
     len += (strings_.size - 1) * wcslen(value_sep);
-    wchar_t *joined = malloc((len + 1) * sizeof(wchar_t));
+    nar_string_t joined = malloc((len + 1) * sizeof(nar_char_t));
     joined[0] = L'\0';
     for (int i = 0; i < strings_.size; i++) {
         wcscat(joined, nar_to_string(strings_.items[i]));
@@ -80,8 +88,8 @@ nar_object_t string_join(nar_object_t sep, nar_object_t strings) {
 
 nar_object_t string_words(nar_object_t string) {
     nar_string_t value = nar_to_string(string);
-    wchar_t *str = wcsdup(value);
-    wchar_t *token = wcstok(str, L" \t\n\r", &str);
+    nar_string_t str = wcsdup(value);
+    nar_string_t token = wcstok(str, L" \t\n\r", &str);
     int size = 0;
     while (token) {
         size++;
@@ -103,8 +111,8 @@ nar_object_t string_words(nar_object_t string) {
 
 nar_object_t string_lines(nar_object_t string) {
     nar_string_t value = nar_to_string(string);
-    wchar_t *str = wcsdup(value);
-    wchar_t *token = wcstok(str, L"\n\r", &str);
+    nar_string_t str = wcsdup(value);
+    nar_string_t token = wcstok(str, L"\n\r", &str);
     int size = 0;
     while (token) {
         size++;
@@ -128,7 +136,14 @@ nar_object_t string_slice(nar_object_t from, nar_object_t to, nar_object_t array
     nar_string_t value = nar_to_string(array);
     nar_int_t value_begin = nar_to_int(from);
     nar_int_t value_end = nar_to_int(to);
-    wchar_t *sliced = wcsdup(value + value_begin);
+    nar_size_t len = wcslen(value);
+    if (value_begin < 0) {
+        value_begin = (nar_int_t) len + value_begin;
+    }
+    if (value_end < 0) {
+        value_end = (nar_int_t) len + value_end;
+    }
+    nar_string_t sliced = wcsdup(value + value_begin);
     sliced[value_end - value_begin] = L'\0';
     nar_object_t result = nar_string(sliced);
     free(sliced);
@@ -157,9 +172,12 @@ nar_object_t string_endsWith(nar_object_t sub, nar_object_t string) {
 
 nar_object_t string_indices(nar_object_t sub, nar_object_t string) {
     nar_string_t value_sub = nar_to_string(sub);
+    if (wcslen(value_sub) == 0) {
+        return nar_list(0, NULL);
+    }
     nar_string_t value_string = nar_to_string(string);
     int size = 0;
-    wchar_t *pos = value_string;
+    nar_string_t pos = value_string;
     while (*pos != L'\0' && ((pos = wcsstr(pos, value_sub)) != NULL)) {
         size++;
         pos++;
@@ -179,7 +197,7 @@ nar_object_t string_indices(nar_object_t sub, nar_object_t string) {
 nar_object_t string_toUpper(nar_object_t s) {
     nar_string_t value = nar_to_string(s);
     size_t len = wcslen(value);
-    wchar_t *upper = malloc((len + 1) * sizeof(wchar_t));
+    nar_string_t upper = malloc((len + 1) * sizeof(nar_char_t));
     for (size_t i = 0; i < len; i++) {
         upper[i] = towupper(value[i]);
     }
@@ -192,7 +210,7 @@ nar_object_t string_toUpper(nar_object_t s) {
 nar_object_t string_toLower(nar_object_t s) {
     nar_string_t value = nar_to_string(s);
     size_t len = wcslen(value);
-    wchar_t *lower = malloc((len + 1) * sizeof(wchar_t));
+    nar_string_t lower = malloc((len + 1) * sizeof(nar_char_t));
     for (size_t i = 0; i < len; i++) {
         lower[i] = towlower(value[i]);
     }
@@ -213,7 +231,7 @@ nar_object_t string_trim(nar_object_t s) {
     while (end > begin && iswspace(value[end - 1])) {
         end--;
     }
-    wchar_t *trimmed = malloc((end - begin + 1) * sizeof(wchar_t));
+    nar_string_t trimmed = malloc((end - begin + 1) * sizeof(nar_char_t));
     wcsncpy(trimmed, value + begin, end - begin);
     trimmed[end - begin] = L'\0';
     nar_object_t result = nar_string(trimmed);
@@ -228,7 +246,7 @@ nar_object_t string_trimLeft(nar_object_t s) {
     while (iswspace(value[begin])) {
         begin++;
     }
-    wchar_t *trimmed = malloc((len - begin + 1) * sizeof(wchar_t));
+    nar_string_t trimmed = malloc((len - begin + 1) * sizeof(nar_char_t));
     wcscpy(trimmed, value + begin);
     nar_object_t result = nar_string(trimmed);
     free(trimmed);
@@ -242,7 +260,7 @@ nar_object_t string_trimRight(nar_object_t s) {
     while (end > 0 && iswspace(value[end - 1])) {
         end--;
     }
-    wchar_t *trimmed = malloc((end + 1) * sizeof(wchar_t));
+    nar_string_t trimmed = malloc((end + 1) * sizeof(nar_char_t));
     wcsncpy(trimmed, value, end);
     trimmed[end] = L'\0';
     nar_object_t result = nar_string(trimmed);
@@ -252,9 +270,9 @@ nar_object_t string_trimRight(nar_object_t s) {
 
 nar_object_t string_toInt(nar_object_t s) {
     nar_string_t value = nar_to_string(s);
-    wchar_t *end;
+    nar_char_t *end;
     nar_int_t result = wcstol(value, &end, 10);
-    if (end == value) {
+    if (end == value || end != value + wcslen(value)) {
         return nar_option(L"Nar.Base.Maybe.Maybe#Nothing", 0, NULL);
     } else {
         return nar_option(L"Nar.Base.Maybe.Maybe#Just", 1, (nar_object_t[]) {nar_int(result)});
@@ -263,7 +281,7 @@ nar_object_t string_toInt(nar_object_t s) {
 
 nar_object_t string_fromInt(nar_object_t n) {
     nar_int_t value = nar_to_int(n);
-    wchar_t *buffer = malloc(32 * sizeof(wchar_t));
+    nar_string_t buffer = malloc(32 * sizeof(nar_char_t));
     swprintf(buffer, 32, L"%d", value);
     nar_object_t result = nar_string(buffer);
     free(buffer);
@@ -272,9 +290,9 @@ nar_object_t string_fromInt(nar_object_t n) {
 
 nar_object_t string_toFloat(nar_object_t s) {
     nar_string_t value = nar_to_string(s);
-    wchar_t *end;
+    nar_char_t *end;
     nar_float_t result = wcstod(value, &end);
-    if (end == value) {
+    if (end == value || end != value + wcslen(value)) {
         return nar_option(L"Nar.Base.Maybe.Maybe#Nothing", 0, NULL);
     } else {
         return nar_option(L"Nar.Base.Maybe.Maybe#Just", 1, (nar_object_t[]) {nar_float(result)});
@@ -283,7 +301,7 @@ nar_object_t string_toFloat(nar_object_t s) {
 
 nar_object_t string_fromFloat(nar_object_t n) {
     nar_float_t value = nar_to_float(n);
-    wchar_t *buffer = malloc(32 * sizeof(wchar_t));
+    nar_string_t buffer = malloc(32 * sizeof(nar_char_t));
     swprintf(buffer, 32, L"%f", value);
     nar_object_t result = nar_string(buffer);
     free(buffer);
@@ -293,7 +311,7 @@ nar_object_t string_fromFloat(nar_object_t n) {
 nar_object_t string_cons(nar_object_t head, nar_object_t tail) {
     nar_char_t value_c = nar_to_char(head);
     nar_string_t value_s = nar_to_string(tail);
-    wchar_t *consed = malloc((wcslen(value_s) + 2) * sizeof(wchar_t));
+    nar_string_t consed = malloc((wcslen(value_s) + 2) * sizeof(nar_char_t));
     consed[0] = value_c;
     wcscpy(consed + 1, value_s);
     nar_object_t result = nar_string(consed);
@@ -315,7 +333,7 @@ nar_object_t string_uncons(nar_object_t s) {
 nar_object_t string_map(nar_object_t func, nar_object_t array) {
     nar_string_t value = nar_to_string(array);
     size_t len = wcslen(value);
-    wchar_t *mapped = malloc((len + 1) * sizeof(wchar_t));
+    nar_string_t mapped = malloc((len + 1) * sizeof(nar_char_t));
     for (size_t i = 0; i < len; i++) {
         nar_char_t c = value[i];
         nar_object_t arg = nar_char(c);
@@ -332,7 +350,7 @@ nar_object_t string_map(nar_object_t func, nar_object_t array) {
 nar_object_t string_filter(nar_object_t f, nar_object_t s) {
     nar_string_t value = nar_to_string(s);
     size_t len = wcslen(value);
-    wchar_t *filtered = malloc((len + 1) * sizeof(wchar_t));
+    nar_string_t filtered = malloc((len + 1) * sizeof(nar_char_t));
     size_t j = 0;
     for (size_t i = 0; i < len; i++) {
         nar_char_t c = value[i];
@@ -363,8 +381,8 @@ nar_object_t string_foldl(nar_object_t func, nar_object_t acc, nar_object_t s) {
 nar_object_t string_foldr(nar_object_t func, nar_object_t acc, nar_object_t s) {
     nar_string_t value = nar_to_string(s);
     nar_object_t result = acc;
-    for (size_t i = wcslen(value); i > 0; i--) {
-        nar_char_t c = value[i - 1];
+    for (size_t i = wcslen(value); i > 0;) {
+        nar_char_t c = value[--i];
         nar_object_t arg[2] = {nar_char(c), result};
         result = nar_apply(func, 2, arg);
     }

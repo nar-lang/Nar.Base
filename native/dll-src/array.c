@@ -1,208 +1,214 @@
 #include <memory.h>
 #include "native.h"
+#include "utils.h"
+
+typedef struct {
+    nar_size_t size;
+    nar_object_t *items;
+} chunk_t;
+
+chunk_t *alloc_chunk(nar_size_t size) {
+    nar_size_t mem_size = sizeof(chunk_t) + size * sizeof(nar_object_t);
+    chunk_t *chunk = nar_alloc(mem_size);
+    chunk->size = size;
+    if (size > 0) {
+        chunk->items = (nar_object_t *) (chunk + 1);
+        memset(chunk->items, 0, size * sizeof(nar_object_t));
+    } else {
+        chunk->items = NULL;
+    }
+    return chunk;
+}
+
+nar_int_t cmp_chunks(void *pa, void *pb) {
+    chunk_t *a = pa;
+    chunk_t *b = pb;
+    if (a->size < b->size) {
+        return -1;
+    } else if (a->size > b->size) {
+        return 1;
+    }
+    for (nar_size_t i = 0; i < a->size; i++) {
+        nar_int_t c = cmp(a->items[i], b->items[i]);
+        if (c != 0) {
+            return c;
+        }
+    }
+    return 0;
+}
+
+nar_object_t chunk_to_object(chunk_t *chunk) {
+    return nar_native(chunk, &cmp_chunks);
+}
+
+chunk_t *object_to_chunk(nar_object_t array) {
+    return (chunk_t *) nar_to_native(array).ptr;
+}
 
 nar_object_t array_empty() {
-    return nar_native(NULL);
+    return chunk_to_object(alloc_chunk(0));
 }
 
 nar_object_t array_singleton(nar_object_t item) {
-    void *result = nar_alloc(sizeof(nar_size_t) + sizeof(nar_object_t));
-    *(nar_size_t *) result = 1;
-    *(nar_object_t *) (result + sizeof(nar_size_t)) = item;
-    return nar_native(result);
+    chunk_t *chunk = alloc_chunk(1);
+    chunk->items[0] = item;
+    return chunk_to_object(chunk);
 }
 
 nar_object_t array_length(nar_object_t array) {
-    nar_native_t *ptr = nar_to_native(array);
-    if (ptr == NULL) {
-        return nar_int(0);
-    }
-    return nar_int((nar_int_t) *(nar_size_t *) ptr);
+    chunk_t *chunk = object_to_chunk(array);
+    return nar_int((nar_int_t) chunk->size);
 }
 
 nar_object_t array_initialize(nar_object_t size, nar_object_t offset, nar_object_t func) {
-    nar_int_t size_value = nar_to_int(size);
-    nar_int_t offset_value = nar_to_int(offset);
-    if (size_value <= 0) {
+    nar_int_t size_ = nar_to_int(size);
+    nar_int_t offset_ = nar_to_int(offset);
+    if (size_ <= 0) {
         return array_empty();
     }
-    void *result = nar_alloc(sizeof(nar_size_t) + size_value * sizeof(nar_object_t));
-    *(nar_size_t *) result = size_value;
-    nar_object_t *ptr = (nar_object_t *) (result + sizeof(nar_size_t));
-    for (nar_size_t i = 0; i < size_value; i++) {
-        nar_object_t arg = nar_int(offset_value + (nar_int_t) i);
-        ptr[i] = nar_apply(func, 1, &arg);
+    chunk_t *chunk = alloc_chunk((nar_size_t) size_);
+    for (nar_int_t i = 0; i < size_; i++) {
+        nar_object_t arg = nar_int(offset_ + i);
+        chunk->items[i] = nar_apply(func, 1, &arg);
     }
-    return nar_native(result);
+    return chunk_to_object(chunk);
 }
 
 nar_object_t array_initializeFromList(nar_object_t max, nar_object_t ls) {
-    nar_int_t max_value = nar_to_int(max);
-    if (max_value <= 0) {
+    nar_int_t max_ = nar_to_int(max);
+    nar_list_t ls_ = nar_to_list(ls);
+    if (max_ <= 0) {
         nar_object_t arg[2] = {array_empty(), ls};
         return nar_tuple(2, arg);
     }
-    nar_list_t ls_ = nar_to_list(ls);
-    nar_size_t result_size = ls_.size < max_value ? ls_.size : (nar_size_t) max_value;
-    nar_size_t mem_size = sizeof(nar_size_t) + result_size * sizeof(nar_object_t);
-    void *result = nar_alloc(mem_size);
-    *(nar_size_t *) result = result_size;
-    nar_object_t *ptr = (nar_object_t *) (result + sizeof(nar_size_t));
-    memcpy(ptr, ls_.items, result_size * sizeof(nar_object_t));
-    nar_object_t rest = nar_list(ls_.size - result_size, ls_.items + result_size);
-    return nar_tuple(2, (nar_object_t[]) {nar_native(result), rest});
+    chunk_t *chunk = alloc_chunk(ls_.size < max_ ? ls_.size : (nar_size_t) max_);
+    memcpy(chunk->items, ls_.items, chunk->size * sizeof(nar_object_t));
+    nar_size_t rest_size = ls_.size - chunk->size;
+    nar_object_t rest;
+    if (rest_size == 0) {
+        rest = nar_list(0, NULL);
+    } else {
+        rest = nar_list(rest_size, ls_.items + chunk->size);
+    }
+    return nar_tuple(2, (nar_object_t[]) {chunk_to_object(chunk), rest});
 }
 
 nar_object_t array_unsafeGet(nar_object_t index, nar_object_t array) {
-    nar_int_t index_value = nar_to_int(index);
-    nar_native_t *ptr = nar_to_native(array);
-    if (ptr == NULL) {
-        return nar_fail(L"Nar.Base.NativeArray.unsafeGet: array is empty");
-    }
-    nar_size_t size = *(nar_size_t *) ptr;
-    if (index_value < 0 || index_value >= size) {
+    nar_int_t index_ = nar_to_int(index);
+    chunk_t *chunk = object_to_chunk(array);
+    if (index_ < 0 || index_ >= chunk->size) {
         return nar_fail(L"Nar.Base.NativeArray.unsafeGet: index out of bounds");
     }
-    return ((nar_object_t *) (ptr + sizeof(nar_size_t)))[index_value];
+    return chunk->items[index_];
 }
 
 nar_object_t array_unsafeSet(nar_object_t index, nar_object_t value, nar_object_t array) {
-    nar_int_t index_value = nar_to_int(index);
-    nar_native_t *ptr = nar_to_native(array);
-    if (ptr == NULL) {
-        return nar_fail(L"Nar.Base.NativeArray.unsafeSet: array is empty");
-    }
-    nar_size_t size = *(nar_size_t *) ptr;
-    if (index_value < 0 || index_value >= size) {
+    nar_int_t index_ = nar_to_int(index);
+    chunk_t *chunk = object_to_chunk(array);
+    if (index_ < 0 || index_ >= chunk->size) {
         return nar_fail(L"Nar.Base.NativeArray.unsafeSet: index out of bounds");
     }
-    ((nar_object_t *) (ptr + sizeof(nar_size_t)))[index_value] = value;
-    return array;
+    chunk_t *result = alloc_chunk(chunk->size);
+    memcpy(result->items, chunk->items, chunk->size * sizeof(nar_object_t));
+    result->items[index_] = value;
+    return chunk_to_object(result);
 }
 
 nar_object_t array_push(nar_object_t value, nar_object_t array) {
-    nar_native_t *ptr = nar_to_native(array);
-    nar_size_t size = ptr == NULL ? 0 : *(nar_size_t *) ptr;
-    void *result = nar_alloc(sizeof(nar_size_t) + (size + 1) * sizeof(nar_object_t));
-    *(nar_size_t *) result = size + 1;
-    if (size > 0) {
-        memcpy(result + sizeof(nar_size_t), ptr + sizeof(nar_size_t), size * sizeof(nar_object_t));
-    }
-    ((nar_object_t *) (result + sizeof(nar_size_t)))[size] = value;
-    return nar_native(result);
+    chunk_t *chunk = object_to_chunk(array);
+    chunk_t *result = alloc_chunk(chunk->size + 1);
+    memcpy(result->items, chunk->items, chunk->size * sizeof(nar_object_t));
+    result->items[chunk->size] = value;
+    return chunk_to_object(result);
 }
 
 nar_object_t array_foldl(nar_object_t func, nar_object_t acc, nar_object_t array) {
-    nar_native_t *ptr = nar_to_native(array);
-    if (ptr == NULL) {
-        return acc;
-    }
-    nar_size_t size = *(nar_size_t *) ptr;
-    nar_object_t *values = (nar_object_t *) (ptr + sizeof(nar_size_t));
-    for (nar_size_t i = 0; i < size; i++) {
-        nar_object_t args[2] = {values[i], acc};
+    chunk_t *chunk = object_to_chunk(array);
+    for (nar_size_t i = 0; i < chunk->size; i++) {
+        nar_object_t args[2] = {chunk->items[i], acc};
         acc = nar_apply(func, 2, args);
     }
     return acc;
 }
 
 nar_object_t array_foldr(nar_object_t func, nar_object_t acc, nar_object_t array) {
-    nar_native_t *ptr = nar_to_native(array);
-    if (ptr == NULL) {
-        return acc;
-    }
-    nar_size_t size = *(nar_size_t *) ptr;
-    nar_object_t *values = (nar_object_t *) (ptr + sizeof(nar_size_t));
-    for (nar_size_t i = size; i > 0; i--) {
-        nar_object_t args[2] = {values[i - 1], acc};
+    chunk_t *chunk = object_to_chunk(array);
+    for (nar_size_t i = chunk->size; i > 0;) {
+        nar_object_t args[2] = {chunk->items[--i], acc};
         acc = nar_apply(func, 2, args);
     }
     return acc;
 }
 
 nar_object_t array_map(nar_object_t func, nar_object_t array) {
-    nar_native_t *ptr = nar_to_native(array);
-    if (ptr == NULL) {
-        return array_empty();
+    chunk_t *chunk = object_to_chunk(array);
+    chunk_t *result = alloc_chunk(chunk->size);
+    for (nar_size_t i = 0; i < chunk->size; i++) {
+        result->items[i] = nar_apply(func, 1, chunk->items + i);
     }
-    nar_size_t size = *(nar_size_t *) ptr;
-    nar_object_t *values = (nar_object_t *) (ptr + sizeof(nar_size_t));
-    void *result = nar_alloc(sizeof(nar_size_t) + size * sizeof(nar_object_t));
-    *(nar_size_t *) result = size;
-    nar_object_t *result_values = (nar_object_t *) (result + sizeof(nar_size_t));
-    for (nar_size_t i = 0; i < size; i++) {
-        result_values[i] = nar_apply(func, 1, &values[i]);
-    }
-    return nar_native(result);
+    return chunk_to_object(result);
 }
 
 nar_object_t array_indexedMap(nar_object_t func, nar_object_t offset, nar_object_t array) {
-    nar_int_t offset_value = nar_to_int(offset);
-    nar_native_t *ptr = nar_to_native(array);
-    if (ptr == NULL) {
-        return array_empty();
+    nar_int_t offset_ = nar_to_int(offset);
+    chunk_t *chunk = object_to_chunk(array);
+    chunk_t *result = alloc_chunk(chunk->size);
+    for (nar_int_t i = 0; i < chunk->size; i++) {
+        nar_object_t args[2] = {nar_int(offset_ + i), chunk->items[i]};
+        result->items[i] = nar_apply(func, 2, args);
     }
-    nar_size_t size = *(nar_size_t *) ptr;
-    nar_object_t *values = (nar_object_t *) (ptr + sizeof(nar_size_t));
-    void *result = nar_alloc(sizeof(nar_size_t) + size * sizeof(nar_object_t));
-    *(nar_size_t *) result = size;
-    nar_object_t *result_values = (nar_object_t *) (result + sizeof(nar_size_t));
-    for (nar_size_t i = 0; i < size; i++) {
-        nar_object_t args[2] = {nar_int(offset_value + (nar_int_t) i), values[i]};
-        result_values[i] = nar_apply(func, 2, args);
-    }
-    return nar_native(result);
+    return chunk_to_object(result);
 }
 
 nar_object_t array_slice(nar_object_t from, nar_object_t to, nar_object_t array) {
-    nar_int_t from_value = nar_to_int(from);
-    nar_int_t to_value = nar_to_int(to);
-    nar_native_t *ptr = nar_to_native(array);
-    if (ptr == NULL) {
+    nar_int_t from_ = nar_to_int(from);
+    nar_int_t to_ = nar_to_int(to);
+    chunk_t *chunk = object_to_chunk(array);
+    nar_int_t size = (nar_int_t)chunk->size;
+
+    if ((-size <= from_) && (from_ < 0)) {
+        from_ += size;
+    }
+    if (from_ < -size) {
+        from_ = 0;
+    }
+    if (from_ > size) {
         return array_empty();
     }
-    nar_size_t size = *(nar_size_t *) ptr;
-    printf(" from: %lld, to: %lld, size: %lld\n", from_value, to_value, size);
-    if (from_value < 0) {
-        from_value = (nar_int_t) size + from_value;
+
+    if ((-size <= to_) && (to_ < 0)) {
+        to_ += (nar_int_t)size;
     }
-    if (to_value < 0) {
-        to_value = (nar_int_t) size + to_value;
+    if (to_ < -size) {
+        to_ = 0;
     }
-    if (from_value < 0 || from_value > size || to_value < 0 || to_value > size || from_value > to_value) {
-        return nar_fail(L"Nar.Base.NativeArray.slice: invalid range");
+    if (to_ > size) {
+        to_ = size;
     }
-    printf("`from: %lld, to: %lld, size: %lld\n", from_value, to_value, size);
-    nar_size_t len = to_value - from_value;
-    void *result = nar_alloc(sizeof(nar_size_t) + len * sizeof(nar_object_t));
-    *(nar_size_t *) result = len;
-    nar_object_t *result_values = (nar_object_t *) (result + sizeof(nar_size_t));
-    memcpy(result_values, (nar_object_t *) (ptr + sizeof(nar_size_t) + (from_value * sizeof(nar_object_t))), len * sizeof(nar_object_t));
-    return nar_native(result);
+    if (to_ == from_) {
+        return array_empty();
+    }
+    chunk_t *result = alloc_chunk(to_ - from_);
+    memcpy(result->items, chunk->items + from_, result->size * sizeof(nar_object_t));
+    return chunk_to_object(result);
 }
 
 nar_object_t array_appendN(nar_object_t n, nar_object_t dest, nar_object_t source) {
-    nar_int_t n_value = nar_to_int(n);
-    nar_native_t *dest_ptr = nar_to_native(dest);
-    if (dest_ptr == NULL) {
-        return source;
+    nar_int_t n_ = nar_to_int(n);
+    chunk_t *dest_ = object_to_chunk(dest);
+    chunk_t *source_ = object_to_chunk(source);
+    nar_size_t dest_len = dest_->size;
+
+    nar_size_t items_to_copy = n_ - dest_len;
+    if (items_to_copy > source_->size) {
+        items_to_copy = source_->size;
     }
-    nar_size_t dest_size = *(nar_size_t *) dest_ptr;
-    nar_native_t *source_ptr = nar_to_native(source);
-    if (source_ptr == NULL) {
-        return dest;
-    }
-    nar_size_t source_size = *(nar_size_t *) source_ptr;
-    nar_size_t result_size = dest_size + n_value;
-    if (result_size > source_size) {
-        result_size = source_size;
-    }
-    void *result = nar_alloc(sizeof(nar_size_t) + result_size * sizeof(nar_object_t));
-    *(nar_size_t *) result = result_size;
-    nar_object_t *result_values = (nar_object_t *) (result + sizeof(nar_size_t));
-    memcpy(result_values, (nar_object_t *) (dest_ptr + sizeof(nar_size_t)), dest_size * sizeof(nar_object_t));
-    memcpy(result_values + dest_size, (nar_object_t *) (source_ptr + sizeof(nar_size_t)), result_size * sizeof(nar_object_t));
-    return nar_native(result);
+
+    nar_size_t size = dest_len + items_to_copy;
+    chunk_t *result = alloc_chunk(size);
+    memcpy(result->items, dest_->items, dest_len * sizeof(nar_object_t));
+    memcpy(result->items + dest_len, source_->items, items_to_copy * sizeof(nar_object_t));
+    return chunk_to_object(result);
 }
 
 void register_array(void) {
