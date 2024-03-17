@@ -13,7 +13,7 @@ project(
 )
 
 add_library(Nar.Base SHARED
-        native.h native.c
+        _package.h _package.c
         utils.h utils.c
         array.c
         basics.c
@@ -25,7 +25,7 @@ add_library(Nar.Base SHARED
         string.c
 )
 
-target_include_directories(Nar.Base PRIVATE ../../../narc)
+target_include_directories(Nar.Base PRIVATE ../../../nar-runtime/lib)
 set_target_properties(Nar.Base PROPERTIES VERSION ${PROJECT_VERSION})
 
 target_link_libraries(Nar.Base)
