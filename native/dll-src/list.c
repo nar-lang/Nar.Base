@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <string.h>
 #include "_package.h"
 #include "utils.h"
 
@@ -12,33 +13,36 @@ nar_object_t list_map2(nar_runtime_t rt, nar_object_t fn, nar_object_t a, nar_ob
     nar_list_t a_ = nar->to_list(rt, a);
     nar_list_t b_ = nar->to_list(rt, b);
     nar_size_t size = a_.size < b_.size ? a_.size : b_.size;
-    nar_object_t *items = malloc(size * sizeof(nar_object_t));
+    nar_object_t *items = nar->alloc(size * sizeof(nar_object_t));
     for (int i = 0; i < size; i++) {
         nar_object_t arg[2] = {a_.items[i], b_.items[i]};
         items[i] = nar->apply_func(rt, fn, 2, arg);
     }
     nar_object_t result = nar->new_list(rt, size, items);
-    free(items);
+    nar->free(items);
     return result;
 }
 
-nar_object_t list_map3(nar_runtime_t rt, nar_object_t fn, nar_object_t a, nar_object_t b, nar_object_t c) {
+nar_object_t list_map3(
+        nar_runtime_t rt, nar_object_t fn, nar_object_t a, nar_object_t b, nar_object_t c) {
     nar_list_t a_ = nar->to_list(rt, a);
     nar_list_t b_ = nar->to_list(rt, b);
     nar_list_t c_ = nar->to_list(rt, c);
     nar_size_t size = a_.size < b_.size ? a_.size : b_.size;
     size = size < c_.size ? size : c_.size;
-    nar_object_t *items = malloc(size * sizeof(nar_object_t));
+    nar_object_t *items = nar->alloc(size * sizeof(nar_object_t));
     for (int i = 0; i < size; i++) {
         nar_object_t arg[3] = {a_.items[i], b_.items[i], c_.items[i]};
         items[i] = nar->apply_func(rt, fn, 3, arg);
     }
     nar_object_t result = nar->new_list(rt, size, items);
-    free(items);
+    nar->free(items);
     return result;
 }
 
-nar_object_t list_map4(nar_runtime_t rt, nar_object_t fn, nar_object_t a, nar_object_t b, nar_object_t c, nar_object_t d) {
+nar_object_t list_map4(
+        nar_runtime_t rt, nar_object_t fn, nar_object_t a, nar_object_t b, nar_object_t c,
+        nar_object_t d) {
     nar_list_t a_ = nar->to_list(rt, a);
     nar_list_t b_ = nar->to_list(rt, b);
     nar_list_t c_ = nar->to_list(rt, c);
@@ -46,17 +50,19 @@ nar_object_t list_map4(nar_runtime_t rt, nar_object_t fn, nar_object_t a, nar_ob
     nar_size_t size = a_.size < b_.size ? a_.size : b_.size;
     size = size < c_.size ? size : c_.size;
     size = size < d_.size ? size : d_.size;
-    nar_object_t *items = malloc(size * sizeof(nar_object_t));
+    nar_object_t *items = nar->alloc(size * sizeof(nar_object_t));
     for (int i = 0; i < size; i++) {
         nar_object_t arg[4] = {a_.items[i], b_.items[i], c_.items[i], d_.items[i]};
         items[i] = nar->apply_func(rt, fn, 4, arg);
     }
     nar_object_t result = nar->new_list(rt, size, items);
-    free(items);
+    nar->free(items);
     return result;
 }
 
-nar_object_t list_map5(nar_runtime_t rt, nar_object_t fn, nar_object_t a, nar_object_t b, nar_object_t c, nar_object_t d, nar_object_t e) {
+nar_object_t list_map5(
+        nar_runtime_t rt, nar_object_t fn, nar_object_t a, nar_object_t b, nar_object_t c,
+        nar_object_t d, nar_object_t e) {
     nar_list_t a_ = nar->to_list(rt, a);
     nar_list_t b_ = nar->to_list(rt, b);
     nar_list_t c_ = nar->to_list(rt, c);
@@ -66,13 +72,13 @@ nar_object_t list_map5(nar_runtime_t rt, nar_object_t fn, nar_object_t a, nar_ob
     size = size < c_.size ? size : c_.size;
     size = size < d_.size ? size : d_.size;
     size = size < e_.size ? size : e_.size;
-    nar_object_t *items = malloc(size * sizeof(nar_object_t));
+    nar_object_t *items = nar->alloc(size * sizeof(nar_object_t));
     for (int i = 0; i < size; i++) {
         nar_object_t arg[5] = {a_.items[i], b_.items[i], c_.items[i], d_.items[i], e_.items[i]};
         items[i] = nar->apply_func(rt, fn, 5, arg);
     }
     nar_object_t result = nar->new_list(rt, size, items);
-    free(items);
+    nar->free(items);
     return result;
 }
 
@@ -87,16 +93,16 @@ int with_fn(void *data, const void *a, const void *b) {
     nar_object_t arg[2] = {*(nar_object_t *) a, *(nar_object_t *) b};
     nar_object_t res = nar->apply_func(rt, fn, 2, arg);
     nar_option_t res_ = nar->to_option(rt, res);
-    if (wcscmp(res_.name, L"Nar.Base.Basics.Order#LT") == 0) {
+    if (strcmp(res_.name, "Nar.Base.Basics.Order#LT") == 0) {
         return -1;
     }
-    if (wcscmp(res_.name, L"Nar.Base.Basics.Order#GT") == 0) {
+    if (strcmp(res_.name, "Nar.Base.Basics.Order#GT") == 0) {
         return 1;
     }
-    if (wcscmp(res_.name, L"Nar.Base.Basics.Order#EQ") == 0) {
+    if (strcmp(res_.name, "Nar.Base.Basics.Order#EQ") == 0) {
         return 0;
     }
-    nar->fail(rt, L"Nar.Base.List.sortWith: expected that predicate returns Nar.Base.Basics.Order");
+    nar->fail(rt, "Nar.Base.List.sortWith: expected that predicate returns Nar.Base.Basics.Order");
     return -1;
 }
 
@@ -123,12 +129,12 @@ nar_object_t list_sortBy(nar_runtime_t rt, nar_object_t fn, nar_object_t xs) {
 }
 
 void register_list(nar_runtime_t rt) {
-    nar_string_t module_name = L"Nar.Base.List";
-    nar->register_def(rt, module_name, L"cons", nar->new_func(rt, &list_cons, 2));
-    nar->register_def(rt, module_name, L"map2", nar->new_func(rt, &list_map2, 3));
-    nar->register_def(rt, module_name, L"map3", nar->new_func(rt, &list_map3, 4));
-    nar->register_def(rt, module_name, L"map4", nar->new_func(rt, &list_map4, 5));
-    nar->register_def(rt, module_name, L"map5", nar->new_func(rt, &list_map5, 6));
-    nar->register_def(rt, module_name, L"sortWith", nar->new_func(rt, &list_sortWith, 2));
-    nar->register_def(rt, module_name, L"sortBy", nar->new_func(rt, &list_sortBy, 2));
+    nar_string_t module_name = "Nar.Base.List";
+    nar->register_def(rt, module_name, "cons", nar->new_func(rt, &list_cons, 2));
+    nar->register_def(rt, module_name, "map2", nar->new_func(rt, &list_map2, 3));
+    nar->register_def(rt, module_name, "map3", nar->new_func(rt, &list_map3, 4));
+    nar->register_def(rt, module_name, "map4", nar->new_func(rt, &list_map4, 5));
+    nar->register_def(rt, module_name, "map5", nar->new_func(rt, &list_map5, 6));
+    nar->register_def(rt, module_name, "sortWith", nar->new_func(rt, &list_sortWith, 2));
+    nar->register_def(rt, module_name, "sortBy", nar->new_func(rt, &list_sortBy, 2));
 }

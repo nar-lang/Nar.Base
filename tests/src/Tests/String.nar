@@ -6,12 +6,21 @@ def tests: Test =
       [ test("is empty") <| \( () ) -> Expect.equal(True, String.isEmpty(""))
       , test("is not empty") <| \( () ) -> Expect.equal(True, not(String.isEmpty("the world")))
       , test("length") <| \( () ) -> Expect.equal(11, String.length("innumerable"))
+      , test("startsWith") <| \( () ) -> Expect.equal(True, String.startsWith("space", "spaceship"))
       , test("endsWith") <| \( () ) -> Expect.equal(True, String.endsWith("ship", "spaceship"))
       , test("reverse") <| \( () ) -> Expect.equal("desserts", String.reverse("stressed"))
       , test("repeat") <| \( () ) -> Expect.equal("hahaha", String.repeat(3, "ha"))
-      , test("indexes") <| \( () ) -> Expect.equal([ 0, 2 ], String.indices("a", "aha"))
-      , test("empty indexes") <| \( () ) -> Expect.equal([], String.indices("", "aha"))
+      , test("indices") <| \( () ) -> Expect.equal([ 0, 1, 4 ], String.indices("aa", "aaahaa"))
+      , test("empty indices") <| \( () ) -> Expect.equal([], String.indices("", "aha"))
       , test("\"hello\" <> \"world\"") <| \( () ) -> Expect.equal("helloworld", "hello" <> "world")
+      , test("toUpper") <| \( () ) -> Expect.equal("HELLO", String.toUpper("hello"))
+      , test("toLower") <| \( () ) -> Expect.equal("hello", String.toLower("HELLO"))
+      , test("trim 1") <| \( () ) -> Expect.equal("hello", String.trim("  hello  "))
+      , test("trim 2") <| \( () ) -> Expect.equal("", String.trim("  \t  "))
+      , test("trimLeft 1") <| \( () ) -> Expect.equal("hello  ", String.trimLeft("  hello  "))
+      , test("trimLeft 2") <| \( () ) -> Expect.equal("", String.trimLeft("  \t  "))
+      , test("trimRight 1") <| \( () ) -> Expect.equal("  hello", String.trimRight("  hello  "))
+      , test("trimRight 2") <| \( () ) -> Expect.equal("", String.trimRight("  \t  "))
       ]
 
     , describe("Combining Strings") <|
@@ -29,6 +38,8 @@ def tests: Test =
       , test("slice 2") <| \( () ) -> Expect.equal("abc", String.slice(0, 3, "abcd"))
       , test("slice 3") <| \( () ) -> Expect.equal("abc", String.slice(0, -1, "abcd"))
       , test("slice 4") <| \( () ) -> Expect.equal("cd", String.slice(-2, 4, "abcd"))
+      , test("words") <| \( () ) -> Expect.equal([ "cat", "dog", "cow" ], String.words("cat  dog\tcow"))
+      , test("lines") <| \( () ) -> Expect.equal([ "cat", "dog", "cow", "zebra", "wolf" ], String.lines("cat\ndog\rcow\n\rzebra\r\nwolf"))
       ]
 
     , describe("String.toInt") <|

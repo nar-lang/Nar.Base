@@ -1,452 +1,611 @@
 #include <wchar.h>
-#include <stdlib.h>
+#include <nar-package.h>
 #include <string.h>
+#include <stdbool.h>
 #include "_package.h"
+#include "vector.h"
 
-nar_object_t string_length(nar_runtime_t rt, nar_object_t s) {
-    return nar->new_int(rt, (nar_int_t) wcslen(nar->to_string(rt, s)));
+bool index_of(
+        const fchar_t *str, size_t str_len, const fchar_t *sub, size_t sub_len, size_t start,
+        size_t *out_index) {
+    *out_index = 0;
+    if (sub_len == 0) {
+        return false;
+    }
+    for (size_t i = start; i < str_len; i++) {
+        if (str[i] == sub[0]) {
+            nar_bool_t found = nar_true;
+            for (size_t j = 1; j < sub_len; j++) {
+                if (str[i + j] != sub[j]) {
+                    found = nar_false;
+                    break;
+                }
+            }
+            if (found) {
+                *out_index = i;
+                return true;
+            }
+        }
+    }
+    return false;
 }
 
-nar_object_t string_reverse(nar_runtime_t rt, nar_object_t s) {
-    nar_string_t value = nar->to_string(rt, s);
-    size_t len = wcslen(value);
-    nar_string_t reversed = malloc((len + 1) * sizeof(nar_char_t));
-    for (size_t i = 0; i < len; i++) {
-        reversed[i] = value[len - i - 1];
+fchar_t *new_fstring_from_object(nar_runtime_t rt, nar_object_t string, size_t *out_len) {
+    nar_cstring_t u8string = nar->to_string(rt, string);
+    size_t u8srting_len = strlen(u8string);
+    fchar_t *fstring = nar->alloc(sizeof(fchar_t) * (u8srting_len + 1));
+    size_t fstring_len = u8sntofcs(fstring, u8string, u8srting_len, u8srting_len);
+    if (out_len != NULL) {
+        *out_len = fstring_len;
     }
-    reversed[len] = L'\0';
-    nar_object_t result = nar->new_string(rt, reversed);
-    free(reversed);
+    return fstring;
+}
+
+nar_object_t fstring_to_obj(nar_runtime_t rt, const fchar_t *str, size_t len) {
+    size_t string_result_len = len * MAX_U8_SIZE;
+    nar_string_t string_result = nar->alloc(sizeof(char) * (string_result_len + 1));
+    fcsntou8s(string_result, str, string_result_len, len);
+    nar_object_t result = nar->new_string(rt, string_result);
+    nar->free(string_result);
+    return result;
+}
+
+nar_object_t string_length(nar_runtime_t rt, nar_object_t string) {
+    size_t len;
+    nar->free(new_fstring_from_object(rt, string, &len));
+    return nar->new_int(rt, (nar_int_t) len);
+}
+
+nar_object_t string_reverse(nar_runtime_t rt, nar_object_t string) {
+    size_t fstring_len;
+    fchar_t *fstring = new_fstring_from_object(rt, string, &fstring_len);
+
+    size_t hlen = fstring_len / 2;
+    for (size_t i = 0; i < hlen; i++) {
+        fchar_t tmp = fstring[i];
+        fstring[i] = fstring[fstring_len - i - 1];
+        fstring[fstring_len - i - 1] = tmp;
+    }
+
+    nar_object_t result = fstring_to_obj(rt, fstring, fstring_len);
+    nar->free(fstring);
     return result;
 }
 
 nar_object_t string_append(nar_runtime_t rt, nar_object_t a, nar_object_t b) {
-    nar_string_t value_a = nar->to_string(rt, a);
-    nar_string_t value_b = nar->to_string(rt, b);
-    size_t len_a = wcslen(value_a);
-    size_t len_b = wcslen(value_b);
-    nar_string_t appended = malloc((len_a + len_b + 1) * sizeof(nar_char_t));
-    wcscpy(appended, value_a);
-    wcscpy(appended + len_a, value_b);
-    appended[len_a + len_b] = L'\0';
+    nar_cstring_t value_a = nar->to_string(rt, a);
+    nar_cstring_t value_b = nar->to_string(rt, b);
+    size_t len_a = strlen(value_a);
+    size_t len_b = strlen(value_b);
+    size_t len_total = len_a + len_b;
+    nar_string_t appended = nar->alloc((len_total + 1) * sizeof(char));
+    strcpy(appended, value_a);
+    strcpy(appended + len_a, value_b);
+    appended[len_total] = '\0';
     nar_object_t result = nar->new_string(rt, appended);
-    free(appended);
+    nar->free(appended);
     return result;
 }
 
 nar_object_t string_split(nar_runtime_t rt, nar_object_t sep, nar_object_t string) {
-    nar_string_t sep_ = nar->to_string(rt, sep);
-    nar_string_t string_ = nar->to_string(rt, string);
-    nar_size_t parts = 1;
-    nar_string_t token = string_;
-    while ((token = wcsstr(token, sep_)) != NULL) {
-        parts++;
-        token += wcslen(sep_);
-    }
-    if (parts == 1) {
-        return nar->new_list(rt, 1, (nar_object_t[]) {string});
+    size_t fstring_len;
+    fchar_t *fstring = new_fstring_from_object(rt, string, &fstring_len);
+
+    size_t fsep_len;
+    fchar_t *fsep = new_fstring_from_object(rt, sep, &fsep_len);
+
+    vector_t *items = nvector_new(sizeof(nar_object_t), 0, nar);
+    size_t last_index = 0;
+    size_t index;
+    bool found = index_of(fstring, fstring_len, fsep, fsep_len, 0, &index);
+    while (found) {
+        nar_object_t part = fstring_to_obj(rt, fstring + last_index, index - last_index);
+        vector_push(items, 1, &part);
+        last_index = index + fsep_len;
+        found = index_of(fstring, fstring_len, fsep, fsep_len, last_index, &index);
     }
 
-    nar_object_t items[parts];
-    token = string_;
-    for (nar_size_t i = 0; i < parts; i++) {
-        nar_string_t next = wcsstr(token, sep_);
-        nar_size_t len = next ? next - token : wcslen(token);
-        nar_char_t sub[len + 1];
-        wcsncpy(sub, token, len);
-        sub[len] = L'\0';
-        items[i] = nar->new_string(rt, sub);
-        if (!next) {
-            break;
-        }
-        token = next + wcslen(sep_);
-    }
+    nar_object_t part = fstring_to_obj(rt, fstring + last_index, fstring_len - last_index);
+    vector_push(items, 1, &part);
 
-    return nar->new_list(rt, parts, items);
+    nar_object_t result = nar->new_list(rt, vector_size(items), vector_data(items));
+    nar->free(fstring);
+    nar->free(fsep);
+    vector_free(items);
+    return result;
 }
 
 nar_object_t string_join(nar_runtime_t rt, nar_object_t sep, nar_object_t strings) {
-    nar_string_t value_sep = nar->to_string(rt, sep);
-    nar_list_t strings_ = nar->to_list(rt, strings);
+    nar_cstring_t sep_ = nar->to_string(rt, sep);
+    size_t sep_len = strlen(sep_);
+    nar_list_t list = nar->to_list(rt, strings);
+    nar_cstring_t *ss = nar->alloc(list.size * sizeof(nar_cstring_t));
     size_t len = 0;
-    for (int i = 0; i < strings_.size; i++) {
-        len += wcslen(nar->to_string(rt, strings_.items[i]));
+    for (int i = 0; i < list.size; i++) {
+        nar_cstring_t s = nar->to_string(rt, list.items[i]);
+        len += strlen(s);
+        ss[i] = s;
     }
-    len += (strings_.size - 1) * wcslen(value_sep);
-    nar_string_t joined = malloc((len + 1) * sizeof(nar_char_t));
-    joined[0] = L'\0';
-    for (int i = 0; i < strings_.size; i++) {
-        wcscat(joined, nar->to_string(rt, strings_.items[i]));
-        if (i < strings_.size - 1) {
-            wcscat(joined, value_sep);
+    len += (list.size - 1) * sep_len;
+    nar_string_t joined = nar->alloc((len + 1) * sizeof(char));
+    nar_string_t ptr = joined;
+    for (int i = 0; i < list.size; i++) {
+        size_t l = strlen(ss[i]);
+        memcpy(ptr, ss[i], l);
+        ptr += l;
+        if (i < list.size - 1) {
+            memcpy(ptr, sep_, sep_len);
+            ptr += sep_len;
         }
     }
+    *ptr = '\0';
     nar_object_t result = nar->new_string(rt, joined);
-    free(joined);
+    nar->free(joined);
+    nar->free(ss);
     return result;
 }
 
 nar_object_t string_words(nar_runtime_t rt, nar_object_t string) {
-    nar_string_t value = nar->to_string(rt, string);
-    nar_string_t str = wcsdup(value);
-    nar_string_t token = wcstok(str, L" \t\n\r", &str);
-    int size = 0;
-    while (token) {
-        size++;
-        token = wcstok(NULL, L" \t\n\r", &str);
+    size_t fstring_len;
+    fchar_t *fstring = new_fstring_from_object(rt, string, &fstring_len);
+
+    vector_t *words = nvector_new(sizeof(nar_object_t), 0, nar);
+
+    size_t last_index = 0;
+    for (size_t i = 0; i < fstring_len; i++) {
+        if (iswspace((wchar_t)fstring[i])) {
+            size_t len = i - last_index;
+            if (len > 0) {
+                nar_object_t word = fstring_to_obj(rt, fstring + last_index, len);
+                vector_push(words, 1, &word);
+            }
+            last_index = i + 1;
+        }
     }
-    free(str);
-    str = wcsdup(value);
-    nar_object_t *items = malloc(size * sizeof(nar_object_t));
-    token = wcstok(str, L" \t\n\r", &str);
-    for (int i = 0; i < size; i++) {
-        items[i] = nar->new_string(rt, token);
-        token = wcstok(NULL, L" \t\n\r", &str);
+
+    if (last_index < fstring_len) {
+        nar_object_t word = fstring_to_obj(rt, fstring + last_index, fstring_len - last_index);
+        vector_push(words, 1, &word);
     }
-    free(str);
-    nar_object_t result = nar->new_list(rt, size, items);
-    free(items);
+
+    nar_object_t result = nar->new_list(rt, vector_size(words), vector_data(words));
+    nar->free(fstring);
+    vector_free(words);
     return result;
 }
 
 nar_object_t string_lines(nar_runtime_t rt, nar_object_t string) {
-    nar_string_t value = nar->to_string(rt, string);
-    nar_string_t str = wcsdup(value);
-    nar_string_t token = wcstok(str, L"\n\r", &str);
-    int size = 0;
-    while (token) {
-        size++;
-        token = wcstok(NULL, L"\n\r", &str);
+    size_t fstring_len;
+    fchar_t *fstring = new_fstring_from_object(rt, string, &fstring_len);
+
+    vector_t *words = nvector_new(sizeof(nar_object_t), 0, nar);
+
+    size_t last_index = 0;
+    for (size_t i = 0; i < fstring_len; i++) {
+        if (fstring[i] == '\n' || fstring[i] == '\r') {
+            size_t len = i - last_index;
+            if (len > 0) {
+                nar_object_t word = fstring_to_obj(rt, fstring + last_index, len);
+                vector_push(words, 1, &word);
+            }
+            last_index = i + 1;
+        }
     }
-    free(str);
-    str = wcsdup(value);
-    nar_object_t *items = malloc(size * sizeof(nar_object_t));
-    token = wcstok(str, L"\n\r", &str);
-    for (int i = 0; i < size; i++) {
-        items[i] = nar->new_string(rt, token);
-        token = wcstok(NULL, L"\n\r", &str);
+
+    if (last_index < fstring_len) {
+        nar_object_t word = fstring_to_obj(rt, fstring + last_index, fstring_len - last_index);
+        vector_push(words, 1, &word);
     }
-    free(str);
-    nar_object_t result = nar->new_list(rt, size, items);
-    free(items);
+
+    nar_object_t result = nar->new_list(rt, vector_size(words), vector_data(words));
+    nar->free(fstring);
+    vector_free(words);
     return result;
 }
 
-nar_object_t string_slice(nar_runtime_t rt, nar_object_t from, nar_object_t to, nar_object_t array) {
-    nar_string_t value = nar->to_string(rt, array);
-    nar_int_t value_begin = nar->to_int(rt, from);
-    nar_int_t value_end = nar->to_int(rt, to);
-    nar_size_t len = wcslen(value);
-    if (value_begin < 0) {
-        value_begin = (nar_int_t) len + value_begin;
+nar_object_t string_slice(
+        nar_runtime_t rt, nar_object_t from, nar_object_t to, nar_object_t string) {
+    size_t fstring_len;
+    fchar_t *fstring = new_fstring_from_object(rt, string, &fstring_len);
+
+    nar_int_t from_ = nar->to_int(rt, from);
+    nar_int_t to_ = nar->to_int(rt, to);
+    if (from_ < 0) {
+        from_ += (nar_int_t) fstring_len;
     }
-    if (value_end < 0) {
-        value_end = (nar_int_t) len + value_end;
+    if (to_ < 0) {
+        to_ += (nar_int_t) fstring_len;
     }
-    nar_string_t sliced = wcsdup(value + value_begin);
-    sliced[value_end - value_begin] = L'\0';
-    nar_object_t result = nar->new_string(rt, sliced);
-    free(sliced);
+    if (from_ < 0) {
+        from_ = 0;
+    }
+    if (to_ > fstring_len) {
+        to_ = (nar_int_t) fstring_len;
+    }
+
+    nar_int_t slice_len = (to_ - from_);
+    nar_object_t result = fstring_to_obj(rt, fstring + from_, slice_len);
+    nar->free(fstring);
     return result;
 }
 
 nar_object_t string_contains(nar_runtime_t rt, nar_object_t sub, nar_object_t string) {
-    nar_string_t value_sub = nar->to_string(rt, sub);
-    nar_string_t value_string = nar->to_string(rt, string);
-    return nar->new_bool(rt, wcsstr(value_string, value_sub) != NULL);
+    size_t fstring_len;
+    fchar_t *fstring = new_fstring_from_object(rt, string, &fstring_len);
+
+    size_t fsub_len;
+    fchar_t *fsub = new_fstring_from_object(rt, sub, &fsub_len);
+
+    nar_bool_t found = nar_true;
+    if (fstring_len >= fsub_len) {
+        for (size_t i = 0; i < fsub_len; i++) {
+            if (fstring[i] != fsub[i]) {
+                found = nar_false;
+                break;
+            }
+        }
+    } else {
+        found = nar_false;
+    }
+
+    nar->free(fstring);
+    nar->free(fsub);
+    return nar->new_bool(rt, found);
 }
 
 nar_object_t string_startsWith(nar_runtime_t rt, nar_object_t sub, nar_object_t string) {
-    nar_string_t value_sub = nar->to_string(rt, sub);
-    nar_string_t value_string = nar->to_string(rt, string);
-    return nar->new_bool(rt, wcsncmp(value_string, value_sub, wcslen(value_sub)) == 0);
+    size_t fstring_len;
+    fchar_t *fstring = new_fstring_from_object(rt, string, &fstring_len);
+
+    size_t fsub_len;
+    fchar_t *fsub = new_fstring_from_object(rt, sub, &fsub_len);
+
+    nar_bool_t found = nar_true;
+    if (fstring_len >= fsub_len) {
+        for (size_t i = 0; i < fsub_len; i++) {
+            if (fstring[i] != fsub[i]) {
+                found = nar_false;
+                break;
+            }
+        }
+    } else {
+        found = nar_false;
+    }
+
+    nar->free(fstring);
+    nar->free(fsub);
+    return nar->new_bool(rt, found);
 }
 
 nar_object_t string_endsWith(nar_runtime_t rt, nar_object_t sub, nar_object_t string) {
-    nar_string_t value_sub = nar->to_string(rt, sub);
-    nar_string_t value_string = nar->to_string(rt, string);
-    size_t len_sub = wcslen(value_sub);
-    size_t len_string = wcslen(value_string);
-    return nar->new_bool(rt, wcsncmp(value_string + len_string - len_sub, value_sub, len_sub) == 0);
+    size_t fstring_len;
+    fchar_t *fstring = new_fstring_from_object(rt, string, &fstring_len);
+
+    size_t fsub_len;
+    fchar_t *fsub = new_fstring_from_object(rt, sub, &fsub_len);
+
+    nar_bool_t found = nar_true;
+    if (fstring_len >= fsub_len) {
+        for (size_t i = 0; i < fsub_len; i++) {
+            if (fstring[fstring_len - i - 1] != fsub[fsub_len - i - 1]) {
+                found = nar_false;
+                break;
+            }
+        }
+    } else {
+        found = nar_false;
+    }
+
+    nar->free(fstring);
+    nar->free(fsub);
+    return nar->new_bool(rt, found);
 }
 
 nar_object_t string_indices(nar_runtime_t rt, nar_object_t sub, nar_object_t string) {
-    nar_string_t value_sub = nar->to_string(rt, sub);
-    if (wcslen(value_sub) == 0) {
-        return nar->new_list(rt, 0, NULL);
+    size_t fstring_len;
+    fchar_t *fstring = new_fstring_from_object(rt, string, &fstring_len);
+    size_t fsub_len;
+    fchar_t *fsub = new_fstring_from_object(rt, sub, &fsub_len);
+
+    vector_t *indices = nvector_new(sizeof(nar_object_t), 0, nar);
+    size_t last_index;
+    bool found = index_of(fstring, fstring_len, fsub, fsub_len, 0, &last_index);
+    while (found) {
+        nar_object_t index = nar->new_int(rt, (nar_int_t) last_index);
+        vector_push(indices, 1, &index);
+        found = index_of(fstring, fstring_len, fsub, fsub_len, last_index + 1, &last_index);
     }
-    nar_string_t value_string = nar->to_string(rt, string);
-    int size = 0;
-    nar_string_t pos = value_string;
-    while (*pos != L'\0' && ((pos = wcsstr(pos, value_sub)) != NULL)) {
-        size++;
-        pos++;
-    }
-    nar_object_t *items = malloc(size * sizeof(nar_object_t));
-    pos = value_string;
-    for (int i = 0; i < size; i++) {
-        pos = wcsstr(pos, value_sub);
-        items[i] = nar->new_int(rt, (nar_int_t)(pos - value_string));
-        pos++;
-    }
-    nar_object_t result = nar->new_list(rt, size, items);
-    free(items);
+
+    nar_object_t result = nar->new_list(rt, vector_size(indices), vector_data(indices));
+    nar->free(fstring);
+    nar->free(fsub);
+    vector_free(indices);
     return result;
 }
 
-nar_object_t string_toUpper(nar_runtime_t rt, nar_object_t s) {
-    nar_string_t value = nar->to_string(rt, s);
-    size_t len = wcslen(value);
-    nar_string_t upper = malloc((len + 1) * sizeof(nar_char_t));
-    for (size_t i = 0; i < len; i++) {
-        upper[i] = towupper(value[i]);
+nar_object_t string_toUpper(nar_runtime_t rt, nar_object_t string) {
+    size_t fstring_len;
+    fchar_t *fstring = new_fstring_from_object(rt, string, &fstring_len);
+
+    for (size_t i = 0; i < fstring_len; i++) {
+        fstring[i] = (fchar_t)towupper((wchar_t)fstring[i]);
     }
-    upper[len] = L'\0';
-    nar_object_t result = nar->new_string(rt, upper);
-    free(upper);
+
+    nar_object_t result = fstring_to_obj(rt, fstring, fstring_len);
+    nar->free(fstring);
     return result;
 }
 
-nar_object_t string_toLower(nar_runtime_t rt, nar_object_t s) {
-    nar_string_t value = nar->to_string(rt, s);
-    size_t len = wcslen(value);
-    nar_string_t lower = malloc((len + 1) * sizeof(nar_char_t));
-    for (size_t i = 0; i < len; i++) {
-        lower[i] = towlower(value[i]);
+nar_object_t string_toLower(nar_runtime_t rt, nar_object_t string) {
+    size_t fstring_len;
+    fchar_t *fstring = new_fstring_from_object(rt, string, &fstring_len);
+
+    for (size_t i = 0; i < fstring_len; i++) {
+        fstring[i] = (fchar_t)towlower((wchar_t)fstring[i]);
     }
-    lower[len] = L'\0';
-    nar_object_t result = nar->new_string(rt, lower);
-    free(lower);
+
+    nar_object_t result = fstring_to_obj(rt, fstring, fstring_len);
+    nar->free(fstring);
     return result;
 }
 
-nar_object_t string_trim(nar_runtime_t rt, nar_object_t s) {
-    nar_string_t value = nar->to_string(rt, s);
-    size_t len = wcslen(value);
-    size_t begin = 0;
-    size_t end = len;
-    while (iswspace(value[begin])) {
-        begin++;
+nar_object_t string_trim(nar_runtime_t rt, nar_object_t string) {
+    size_t fstring_len;
+    fchar_t *fstring = new_fstring_from_object(rt, string, &fstring_len);
+
+    size_t start = 0;
+    while (start < fstring_len && iswspace((wchar_t)fstring[start])) {
+        start++;
     }
-    while (end > begin && iswspace(value[end - 1])) {
+
+    size_t end = fstring_len;
+    while (end > start && iswspace((wchar_t)fstring[end - 1])) {
         end--;
     }
-    nar_string_t trimmed = malloc((end - begin + 1) * sizeof(nar_char_t));
-    wcsncpy(trimmed, value + begin, end - begin);
-    trimmed[end - begin] = L'\0';
-    nar_object_t result = nar->new_string(rt, trimmed);
-    free(trimmed);
+
+    nar_object_t result = fstring_to_obj(rt, fstring + start, end - start);
+    nar->free(fstring);
     return result;
 }
 
 nar_object_t string_trimLeft(nar_runtime_t rt, nar_object_t s) {
-    nar_string_t value = nar->to_string(rt, s);
-    size_t len = wcslen(value);
-    size_t begin = 0;
-    while (iswspace(value[begin])) {
-        begin++;
+    size_t fstring_len;
+    fchar_t *fstring = new_fstring_from_object(rt, s, &fstring_len);
+
+    size_t start = 0;
+    while (start < fstring_len && iswspace((wchar_t)fstring[start])) {
+        start++;
     }
-    nar_string_t trimmed = malloc((len - begin + 1) * sizeof(nar_char_t));
-    wcscpy(trimmed, value + begin);
-    nar_object_t result = nar->new_string(rt, trimmed);
-    free(trimmed);
+
+    nar_object_t result = fstring_to_obj(rt, fstring + start, fstring_len - start);
+    nar->free(fstring);
     return result;
 }
 
 nar_object_t string_trimRight(nar_runtime_t rt, nar_object_t s) {
-    nar_string_t value = nar->to_string(rt, s);
-    size_t len = wcslen(value);
-    size_t end = len;
-    while (end > 0 && iswspace(value[end - 1])) {
+    size_t fstring_len;
+    fchar_t *fstring = new_fstring_from_object(rt, s, &fstring_len);
+
+    size_t end = fstring_len;
+    while (end > 0 && iswspace((wchar_t)fstring[end - 1])) {
         end--;
     }
-    nar_string_t trimmed = malloc((end + 1) * sizeof(nar_char_t));
-    wcsncpy(trimmed, value, end);
-    trimmed[end] = L'\0';
-    nar_object_t result = nar->new_string(rt, trimmed);
-    free(trimmed);
+
+    nar_object_t result = fstring_to_obj(rt, fstring, end);
+    nar->free(fstring);
     return result;
 }
 
 nar_object_t string_toInt(nar_runtime_t rt, nar_object_t s) {
-    nar_string_t value = nar->to_string(rt, s);
-    nar_char_t *end;
-    nar_int_t result = wcstol(value, &end, 10);
-    if (end == value || end != value + wcslen(value)) {
-        return nar->new_option(rt, L"Nar.Base.Maybe.Maybe#Nothing", 0, NULL);
+    nar_cstring_t value = nar->to_string(rt, s);
+    nar_string_t end;
+    nar_int_t result = strtol(value, &end, 10);
+    if (end == value || end != value + strlen(value)) {
+        return nar->new_option(rt, "Nar.Base.Maybe.Maybe#Nothing", 0, NULL);
     } else {
-        return nar->new_option(rt, L"Nar.Base.Maybe.Maybe#Just", 1, (nar_object_t[]) {nar->new_int(rt, result)});
+        return nar->new_option(rt, "Nar.Base.Maybe.Maybe#Just", 1,
+                (nar_object_t[]) {nar->new_int(rt, result)});
     }
 }
 
 nar_object_t string_fromInt(nar_runtime_t rt, nar_object_t n) {
     nar_int_t value = nar->to_int(rt, n);
-    nar_string_t buffer = malloc(32 * sizeof(nar_char_t));
-    swprintf(buffer, 32, L"%d", value);
+    nar_string_t buffer = nar->alloc(32 * sizeof(char));
+    snprintf(buffer, 32, "%lld", value);
     nar_object_t result = nar->new_string(rt, buffer);
-    free(buffer);
+    nar->free(buffer);
     return result;
 }
 
 nar_object_t string_toFloat(nar_runtime_t rt, nar_object_t s) {
-    nar_string_t value = nar->to_string(rt, s);
-    nar_char_t *end;
-    nar_float_t result = wcstod(value, &end);
-    if (end == value || end != value + wcslen(value)) {
-        return nar->new_option(rt, L"Nar.Base.Maybe.Maybe#Nothing", 0, NULL);
+    nar_cstring_t value = nar->to_string(rt, s);
+    nar_string_t end;
+    nar_float_t result = strtod(value, &end);
+    if (end == value || end != value + strlen(value)) {
+        return nar->new_option(rt, "Nar.Base.Maybe.Maybe#Nothing", 0, NULL);
     } else {
-        return nar->new_option(rt, L"Nar.Base.Maybe.Maybe#Just", 1, (nar_object_t[]) {nar->new_float(rt, result)});
+        return nar->new_option(rt, "Nar.Base.Maybe.Maybe#Just", 1,
+                (nar_object_t[]) {nar->new_float(rt, result)});
     }
 }
 
 nar_object_t string_fromFloat(nar_runtime_t rt, nar_object_t n) {
     nar_float_t value = nar->to_float(rt, n);
-    nar_string_t buffer = malloc(32 * sizeof(nar_char_t));
-    swprintf(buffer, 32, L"%f", value);
+    nar_string_t buffer = nar->alloc(32 * sizeof(char));
+    snprintf(buffer, 32, "%f", value);
     nar_object_t result = nar->new_string(rt, buffer);
-    free(buffer);
+    nar->free(buffer);
     return result;
 }
 
 nar_object_t string_cons(nar_runtime_t rt, nar_object_t head, nar_object_t tail) {
     nar_char_t value_c = nar->to_char(rt, head);
-    nar_string_t value_s = nar->to_string(rt, tail);
-    nar_string_t consed = malloc((wcslen(value_s) + 2) * sizeof(nar_char_t));
-    consed[0] = value_c;
-    wcscpy(consed + 1, value_s);
+    nar_cstring_t value_s = nar->to_string(rt, tail);
+    char h[MAX_U8_SIZE + 1];
+    size_t hlen = fctou8(h, value_c);
+    h[hlen] = '\0';
+    nar_string_t consed = nar->alloc((strlen(value_s) + hlen + 1) * sizeof(char));
+    strcpy(consed, h);
+    strcat(consed, value_s);
     nar_object_t result = nar->new_string(rt, consed);
-    free(consed);
+    nar->free(consed);
     return result;
 }
 
-nar_object_t string_uncons(nar_runtime_t rt, nar_object_t s) {
-    nar_string_t value = nar->to_string(rt, s);
-    if (wcslen(value) == 0) {
-        return nar->new_option(rt, L"Nar.Base.Maybe.Maybe#Nothing", 0, NULL);
+nar_object_t string_uncons(nar_runtime_t rt, nar_object_t string) {
+    size_t fstring_len;
+    fchar_t *fstring = new_fstring_from_object(rt, string, &fstring_len);
+
+    nar_object_t result;
+    if (fstring_len == 0) {
+        result = nar->new_option(rt, "Nar.Base.Maybe.Maybe#Nothing", 0, NULL);
     } else {
-        nar_char_t c = value[0];
-        nar_object_t optValue = nar->new_tuple(rt, 2, (nar_object_t[]) {nar->new_char(rt, c), nar->new_string(rt, value + 1)});
-        nar_object_t result = nar->new_option(rt, L"Nar.Base.Maybe.Maybe#Just", 1, &optValue);
-        return result;
-    }
-}
+        size_t string_result_len = (fstring_len - 1) * MAX_U8_SIZE;
+        nar_string_t string_result = nar->alloc(sizeof(char) * (string_result_len + 1));
+        fcstou8s(string_result, fstring + 1, string_result_len);
+        nar_object_t result_obj = nar->new_string(rt, string_result);
+        nar->free(string_result);
 
-nar_object_t string_map(nar_runtime_t rt, nar_object_t func, nar_object_t array) {
-    nar_string_t value = nar->to_string(rt, array);
-    size_t len = wcslen(value);
-    nar_string_t mapped = malloc((len + 1) * sizeof(nar_char_t));
-    for (size_t i = 0; i < len; i++) {
-        nar_char_t c = value[i];
-        nar_object_t arg = nar->new_char(rt, c);
-        nar_object_t result = nar->apply_func(rt, func, 1, &arg);
-        nar_char_t mapped_c = nar->to_char(rt, result);
-        mapped[i] = mapped_c;
+        nar_object_t optValue = nar->new_tuple(rt, 2,
+                (nar_object_t[]) {nar->new_char(rt, fstring[0]), result_obj});
+        result = nar->new_option(rt, "Nar.Base.Maybe.Maybe#Just", 1, &optValue);
     }
-    mapped[len] = L'\0';
-    nar_object_t result = nar->new_string(rt, mapped);
-    free(mapped);
+
+    nar->free(fstring);
     return result;
 }
 
-nar_object_t string_filter(nar_runtime_t rt, nar_object_t f, nar_object_t s) {
-    nar_string_t value = nar->to_string(rt, s);
-    size_t len = wcslen(value);
-    nar_string_t filtered = malloc((len + 1) * sizeof(nar_char_t));
-    size_t j = 0;
-    for (size_t i = 0; i < len; i++) {
-        nar_char_t c = value[i];
-        nar_object_t arg = nar->new_char(rt, c);
+nar_object_t string_map(nar_runtime_t rt, nar_object_t func, nar_object_t string) {
+    size_t fstring_len;
+    fchar_t *fstring = new_fstring_from_object(rt, string, &fstring_len);
+
+    for (size_t i = 0; i < fstring_len; i++) {
+        nar_object_t c = nar->new_char(rt, fstring[i]);
+        c = nar->apply_func(rt, func, 1, &c);
+        fstring[i] = nar->to_char(rt, c);
+    }
+
+    nar_object_t result = fstring_to_obj(rt, fstring, fstring_len);
+    nar->free(fstring);
+    return result;
+}
+
+nar_object_t string_filter(nar_runtime_t rt, nar_object_t f, nar_object_t string) {
+    size_t fstring_len;
+    fchar_t *fstring = new_fstring_from_object(rt, string, &fstring_len);
+    size_t skipped = 0;
+    for (size_t i = 0; i < fstring_len; i++) {
+        nar_object_t arg = nar->new_char(rt, fstring[i]);
         nar_object_t result = nar->apply_func(rt, f, 1, &arg);
-        nar_bool_t keep = nar->to_bool(rt, result);
-        if (keep) {
-            filtered[j++] = c;
+        if (!nar->to_bool(rt, result)) {
+            skipped++;
+        } else {
+            fstring[i - skipped] = fstring[i];
         }
     }
-    filtered[j] = L'\0';
-    nar_object_t result = nar->new_string(rt, filtered);
-    free(filtered);
+
+    nar_object_t result = fstring_to_obj(rt, fstring, fstring_len - skipped);
+    nar->free(fstring);
     return result;
 }
 
-nar_object_t string_foldl(nar_runtime_t rt, nar_object_t func, nar_object_t acc, nar_object_t s) {
-    nar_string_t value = nar->to_string(rt, s);
+nar_object_t string_foldl(
+        nar_runtime_t rt, nar_object_t func, nar_object_t acc, nar_object_t string) {
+    size_t fstring_len;
+    fchar_t *fstring = new_fstring_from_object(rt, string, &fstring_len);
+
     nar_object_t result = acc;
-    for (size_t i = 0; i < wcslen(value); i++) {
-        nar_char_t c = value[i];
-        nar_object_t arg[2] = {nar->new_char(rt, c), result};
+    for (size_t i = 0; i < fstring_len; i++) {
+        nar_object_t arg[2] = {nar->new_char(rt, fstring[i]), result};
         result = nar->apply_func(rt, func, 2, arg);
     }
+
+    nar->free(fstring);
     return result;
 }
 
-nar_object_t string_foldr(nar_runtime_t rt, nar_object_t func, nar_object_t acc, nar_object_t s) {
-    nar_string_t value = nar->to_string(rt, s);
+nar_object_t string_foldr(
+        nar_runtime_t rt, nar_object_t func, nar_object_t acc, nar_object_t string) {
+    size_t fstring_len;
+    fchar_t *fstring = new_fstring_from_object(rt, string, &fstring_len);
+
     nar_object_t result = acc;
-    for (size_t i = wcslen(value); i > 0;) {
-        nar_char_t c = value[--i];
-        nar_object_t arg[2] = {nar->new_char(rt, c), result};
+    for (size_t i = fstring_len; i > 0; i--) {
+        nar_object_t arg[2] = {nar->new_char(rt, fstring[i - 1]), result};
         result = nar->apply_func(rt, func, 2, arg);
     }
+
+    nar->free(fstring);
     return result;
 }
 
-nar_object_t string_any(nar_runtime_t rt, nar_object_t f, nar_object_t s) {
-    nar_string_t value = nar->to_string(rt, s);
-    for (size_t i = 0; i < wcslen(value); i++) {
-        nar_char_t c = value[i];
-        nar_object_t arg = nar->new_char(rt, c);
-        nar_object_t result = nar->apply_func(rt, f, 1, &arg);
-        nar_bool_t keep = nar->to_bool(rt, result);
-        if (keep) {
-            return nar->new_bool(rt, nar_true);
+nar_object_t string_any(nar_runtime_t rt, nar_object_t func, nar_object_t string) {
+    size_t fstring_len;
+    fchar_t *fstring = new_fstring_from_object(rt, string, &fstring_len);
+
+    nar_bool_t result = false;
+    for (size_t i = 0; i < fstring_len; i++) {
+        nar_object_t c = nar->new_char(rt, fstring[i]);
+        result = nar->to_bool(rt, nar->apply_func(rt, func, 1, &c));
+        if (result) {
+            break;
         }
     }
-    return nar->new_bool(rt, nar_false);
+
+    nar->free(fstring);
+    return nar->new_bool(rt, result);
 }
 
-nar_object_t string_all(nar_runtime_t rt, nar_object_t f, nar_object_t s) {
-    nar_string_t value = nar->to_string(rt, s);
-    for (size_t i = 0; i < wcslen(value); i++) {
-        nar_char_t c = value[i];
-        nar_object_t arg = nar->new_char(rt, c);
-        nar_object_t result = nar->apply_func(rt, f, 1, &arg);
-        nar_bool_t keep = nar->to_bool(rt, result);
-        if (!keep) {
-            return nar->new_bool(rt, nar_false);
+nar_object_t string_all(nar_runtime_t rt, nar_object_t func, nar_object_t string) {
+    size_t fstring_len;
+    fchar_t *fstring = new_fstring_from_object(rt, string, &fstring_len);
+
+    nar_bool_t result = true;
+    if (fstring_len == 0) {
+        result = false;
+    } else {
+        for (size_t i = 0; i < fstring_len; i++) {
+            nar_object_t c = nar->new_char(rt, fstring[i]);
+            result = nar->to_bool(rt, nar->apply_func(rt, func, 1, &c));
+            if (!result) {
+                break;
+            }
         }
     }
-    return nar->new_bool(rt, nar_true);
+
+    nar->free(fstring);
+    return nar->new_bool(rt, result);
 }
 
 void register_string(nar_runtime_t rt) {
-    nar_string_t module_name = L"Nar.Base.String";
-    nar->register_def(rt, module_name, L"length", nar->new_func(rt, &string_length, 1));
-    nar->register_def(rt, module_name, L"reverse", nar->new_func(rt, &string_reverse, 1));
-    nar->register_def(rt, module_name, L"append", nar->new_func(rt, &string_append, 2));
-    nar->register_def(rt, module_name, L"split", nar->new_func(rt, &string_split, 2));
-    nar->register_def(rt, module_name, L"join", nar->new_func(rt, &string_join, 2));
-    nar->register_def(rt, module_name, L"words", nar->new_func(rt, &string_words, 1));
-    nar->register_def(rt, module_name, L"lines", nar->new_func(rt, &string_lines, 1));
-    nar->register_def(rt, module_name, L"slice", nar->new_func(rt, &string_slice, 3));
-    nar->register_def(rt, module_name, L"contains", nar->new_func(rt, &string_contains, 2));
-    nar->register_def(rt, module_name, L"startsWith", nar->new_func(rt, &string_startsWith, 2));
-    nar->register_def(rt, module_name, L"endsWith", nar->new_func(rt, &string_endsWith, 2));
-    nar->register_def(rt, module_name, L"indices", nar->new_func(rt, &string_indices, 2));
-    nar->register_def(rt, module_name, L"toUpper", nar->new_func(rt, &string_toUpper, 1));
-    nar->register_def(rt, module_name, L"toLower", nar->new_func(rt, &string_toLower, 1));
-    nar->register_def(rt, module_name, L"trim", nar->new_func(rt, &string_trim, 1));
-    nar->register_def(rt, module_name, L"trimLeft", nar->new_func(rt, &string_trimLeft, 1));
-    nar->register_def(rt, module_name, L"trimRight", nar->new_func(rt, &string_trimRight, 1));
-    nar->register_def(rt, module_name, L"toInt", nar->new_func(rt, &string_toInt, 1));
-    nar->register_def(rt, module_name, L"fromInt", nar->new_func(rt, &string_fromInt, 1));
-    nar->register_def(rt, module_name, L"toFloat", nar->new_func(rt, &string_toFloat, 1));
-    nar->register_def(rt, module_name, L"fromFloat", nar->new_func(rt, &string_fromFloat, 1));
-    nar->register_def(rt, module_name, L"cons", nar->new_func(rt, &string_cons, 2));
-    nar->register_def(rt, module_name, L"uncons", nar->new_func(rt, &string_uncons, 1));
-    nar->register_def(rt, module_name, L"map", nar->new_func(rt, &string_map, 2));
-    nar->register_def(rt, module_name, L"filter", nar->new_func(rt, &string_filter, 2));
-    nar->register_def(rt, module_name, L"foldl", nar->new_func(rt, &string_foldl, 3));
-    nar->register_def(rt, module_name, L"foldr", nar->new_func(rt, &string_foldr, 3));
-    nar->register_def(rt, module_name, L"any", nar->new_func(rt, &string_any, 2));
-    nar->register_def(rt, module_name, L"all", nar->new_func(rt, &string_all, 2));
+    nar_string_t module_name = "Nar.Base.String";
+    nar->register_def(rt, module_name, "length", nar->new_func(rt, &string_length, 1));
+    nar->register_def(rt, module_name, "reverse", nar->new_func(rt, &string_reverse, 1));
+    nar->register_def(rt, module_name, "append", nar->new_func(rt, &string_append, 2));
+    nar->register_def(rt, module_name, "split", nar->new_func(rt, &string_split, 2));
+    nar->register_def(rt, module_name, "join", nar->new_func(rt, &string_join, 2));
+    nar->register_def(rt, module_name, "words", nar->new_func(rt, &string_words, 1));
+    nar->register_def(rt, module_name, "lines", nar->new_func(rt, &string_lines, 1));
+    nar->register_def(rt, module_name, "slice", nar->new_func(rt, &string_slice, 3));
+    nar->register_def(rt, module_name, "contains", nar->new_func(rt, &string_contains, 2));
+    nar->register_def(rt, module_name, "startsWith", nar->new_func(rt, &string_startsWith, 2));
+    nar->register_def(rt, module_name, "endsWith", nar->new_func(rt, &string_endsWith, 2));
+    nar->register_def(rt, module_name, "indices", nar->new_func(rt, &string_indices, 2));
+    nar->register_def(rt, module_name, "toUpper", nar->new_func(rt, &string_toUpper, 1));
+    nar->register_def(rt, module_name, "toLower", nar->new_func(rt, &string_toLower, 1));
+    nar->register_def(rt, module_name, "trim", nar->new_func(rt, &string_trim, 1));
+    nar->register_def(rt, module_name, "trimLeft", nar->new_func(rt, &string_trimLeft, 1));
+    nar->register_def(rt, module_name, "trimRight", nar->new_func(rt, &string_trimRight, 1));
+    nar->register_def(rt, module_name, "toInt", nar->new_func(rt, &string_toInt, 1));
+    nar->register_def(rt, module_name, "fromInt", nar->new_func(rt, &string_fromInt, 1));
+    nar->register_def(rt, module_name, "toFloat", nar->new_func(rt, &string_toFloat, 1));
+    nar->register_def(rt, module_name, "fromFloat", nar->new_func(rt, &string_fromFloat, 1));
+    nar->register_def(rt, module_name, "cons", nar->new_func(rt, &string_cons, 2));
+    nar->register_def(rt, module_name, "uncons", nar->new_func(rt, &string_uncons, 1));
+    nar->register_def(rt, module_name, "map", nar->new_func(rt, &string_map, 2));
+    nar->register_def(rt, module_name, "filter", nar->new_func(rt, &string_filter, 2));
+    nar->register_def(rt, module_name, "foldl", nar->new_func(rt, &string_foldl, 3));
+    nar->register_def(rt, module_name, "foldr", nar->new_func(rt, &string_foldr, 3));
+    nar->register_def(rt, module_name, "any", nar->new_func(rt, &string_any, 2));
+    nar->register_def(rt, module_name, "all", nar->new_func(rt, &string_all, 2));
 }

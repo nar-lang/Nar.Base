@@ -9,7 +9,7 @@ typedef struct {
 
 chunk_t *alloc_chunk(nar_runtime_t rt, nar_size_t size) {
     nar_size_t mem_size = sizeof(chunk_t) + size * sizeof(nar_object_t);
-    chunk_t *chunk = nar->alloc(rt, mem_size);
+    chunk_t *chunk = nar->frame_alloc(rt, mem_size);
     chunk->size = size;
     if (size > 0) {
         chunk->items = (nar_object_t *) (chunk + 1);
@@ -60,7 +60,8 @@ nar_object_t array_length(nar_runtime_t rt, nar_object_t array) {
     return nar->new_int(rt, (nar_int_t) chunk->size);
 }
 
-nar_object_t array_initialize(nar_runtime_t rt, nar_object_t size, nar_object_t offset, nar_object_t func) {
+nar_object_t array_initialize(
+        nar_runtime_t rt, nar_object_t size, nar_object_t offset, nar_object_t func) {
     nar_int_t size_ = nar->to_int(rt, size);
     nar_int_t offset_ = nar->to_int(rt, offset);
     if (size_ <= 0) {
@@ -96,22 +97,13 @@ nar_object_t array_initializeFromList(nar_runtime_t rt, nar_object_t max, nar_ob
 nar_object_t array_unsafeGet(nar_runtime_t rt, nar_object_t index, nar_object_t array) {
     nar_int_t index_ = nar->to_int(rt, index);
     chunk_t *chunk = object_to_chunk(rt, array);
-    //TODO: remove check
-    if (index_ < 0 || index_ >= chunk->size) {
-        nar->fail(rt, L"Nar.Base.NativeArray.unsafeGet: index out of bounds");
-        return nar->new_unit(rt);
-    }
     return chunk->items[index_];
 }
 
-nar_object_t array_unsafeSet(nar_runtime_t rt, nar_object_t index, nar_object_t value, nar_object_t array) {
+nar_object_t array_unsafeSet(
+        nar_runtime_t rt, nar_object_t index, nar_object_t value, nar_object_t array) {
     nar_int_t index_ = nar->to_int(rt, index);
     chunk_t *chunk = object_to_chunk(rt, array);
-    //TODO: remove check
-    if (index_ < 0 || index_ >= chunk->size) {
-        nar->fail(rt, L"Nar.Base.NativeArray.unsafeSet: index out of bounds");
-        return nar->new_unit(rt);
-    }
     chunk_t *result = alloc_chunk(rt, chunk->size);
     memcpy(result->items, chunk->items, chunk->size * sizeof(nar_object_t));
     result->items[index_] = value;
@@ -126,7 +118,8 @@ nar_object_t array_push(nar_runtime_t rt, nar_object_t value, nar_object_t array
     return chunk_to_object(rt, result);
 }
 
-nar_object_t array_foldl(nar_runtime_t rt, nar_object_t func, nar_object_t acc, nar_object_t array) {
+nar_object_t array_foldl(
+        nar_runtime_t rt, nar_object_t func, nar_object_t acc, nar_object_t array) {
     chunk_t *chunk = object_to_chunk(rt, array);
     for (nar_size_t i = 0; i < chunk->size; i++) {
         nar_object_t args[2] = {chunk->items[i], acc};
@@ -135,7 +128,8 @@ nar_object_t array_foldl(nar_runtime_t rt, nar_object_t func, nar_object_t acc, 
     return acc;
 }
 
-nar_object_t array_foldr(nar_runtime_t rt, nar_object_t func, nar_object_t acc, nar_object_t array) {
+nar_object_t array_foldr(
+        nar_runtime_t rt, nar_object_t func, nar_object_t acc, nar_object_t array) {
     chunk_t *chunk = object_to_chunk(rt, array);
     for (nar_size_t i = chunk->size; i > 0;) {
         nar_object_t args[2] = {chunk->items[--i], acc};
@@ -153,7 +147,8 @@ nar_object_t array_map(nar_runtime_t rt, nar_object_t func, nar_object_t array) 
     return chunk_to_object(rt, result);
 }
 
-nar_object_t array_indexedMap(nar_runtime_t rt, nar_object_t func, nar_object_t offset, nar_object_t array) {
+nar_object_t array_indexedMap(
+        nar_runtime_t rt, nar_object_t func, nar_object_t offset, nar_object_t array) {
     nar_int_t offset_ = nar->to_int(rt, offset);
     chunk_t *chunk = object_to_chunk(rt, array);
     chunk_t *result = alloc_chunk(rt, chunk->size);
@@ -197,7 +192,8 @@ nar_object_t array_slice(nar_runtime_t rt, nar_object_t from, nar_object_t to, n
     return chunk_to_object(rt, result);
 }
 
-nar_object_t array_appendN(nar_runtime_t rt, nar_object_t n, nar_object_t dest, nar_object_t source) {
+nar_object_t array_appendN(
+        nar_runtime_t rt, nar_object_t n, nar_object_t dest, nar_object_t source) {
     nar_int_t n_ = nar->to_int(rt, n);
     chunk_t *dest_ = object_to_chunk(rt, dest);
     chunk_t *source_ = object_to_chunk(rt, source);
@@ -216,19 +212,20 @@ nar_object_t array_appendN(nar_runtime_t rt, nar_object_t n, nar_object_t dest, 
 }
 
 void register_array(nar_runtime_t rt) {
-    nar_string_t module_name = L"Nar.Base.NativeArray";
-    nar->register_def(rt, module_name, L"empty", nar->new_func(rt, &array_empty, 0));
-    nar->register_def(rt, module_name, L"singleton", nar->new_func(rt, &array_singleton, 1));
-    nar->register_def(rt, module_name, L"length", nar->new_func(rt, &array_length, 1));
-    nar->register_def(rt, module_name, L"initialize", nar->new_func(rt, &array_initialize, 3));
-    nar->register_def(rt, module_name, L"initializeFromList", nar->new_func(rt, &array_initializeFromList, 2));
-    nar->register_def(rt, module_name, L"unsafeGet", nar->new_func(rt, &array_unsafeGet, 2));
-    nar->register_def(rt, module_name, L"unsafeSet", nar->new_func(rt, &array_unsafeSet, 3));
-    nar->register_def(rt, module_name, L"push", nar->new_func(rt, &array_push, 2));
-    nar->register_def(rt, module_name, L"foldl", nar->new_func(rt, &array_foldl, 3));
-    nar->register_def(rt, module_name, L"foldr", nar->new_func(rt, &array_foldr, 3));
-    nar->register_def(rt, module_name, L"map", nar->new_func(rt, &array_map, 2));
-    nar->register_def(rt, module_name, L"indexedMap", nar->new_func(rt, &array_indexedMap, 3));
-    nar->register_def(rt, module_name, L"slice", nar->new_func(rt, &array_slice, 3));
-    nar->register_def(rt, module_name, L"appendN", nar->new_func(rt, &array_appendN, 3));
+    nar_string_t module_name = "Nar.Base.NativeArray";
+    nar->register_def(rt, module_name, "empty", nar->new_func(rt, &array_empty, 0));
+    nar->register_def(rt, module_name, "singleton", nar->new_func(rt, &array_singleton, 1));
+    nar->register_def(rt, module_name, "length", nar->new_func(rt, &array_length, 1));
+    nar->register_def(rt, module_name, "initialize", nar->new_func(rt, &array_initialize, 3));
+    nar->register_def(rt, module_name, "initializeFromList",
+            nar->new_func(rt, &array_initializeFromList, 2));
+    nar->register_def(rt, module_name, "unsafeGet", nar->new_func(rt, &array_unsafeGet, 2));
+    nar->register_def(rt, module_name, "unsafeSet", nar->new_func(rt, &array_unsafeSet, 3));
+    nar->register_def(rt, module_name, "push", nar->new_func(rt, &array_push, 2));
+    nar->register_def(rt, module_name, "foldl", nar->new_func(rt, &array_foldl, 3));
+    nar->register_def(rt, module_name, "foldr", nar->new_func(rt, &array_foldr, 3));
+    nar->register_def(rt, module_name, "map", nar->new_func(rt, &array_map, 2));
+    nar->register_def(rt, module_name, "indexedMap", nar->new_func(rt, &array_indexedMap, 3));
+    nar->register_def(rt, module_name, "slice", nar->new_func(rt, &array_slice, 3));
+    nar->register_def(rt, module_name, "appendN", nar->new_func(rt, &array_appendN, 3));
 }

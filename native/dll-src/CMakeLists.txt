@@ -13,8 +13,8 @@ project(
 )
 
 add_library(Nar.Base SHARED
-        _package.h _package.c
-        utils.h utils.c
+        _package.c
+        _package.h
         array.c
         basics.c
         bitwise.c
@@ -23,9 +23,11 @@ add_library(Nar.Base SHARED
         list.c
         math.c
         string.c
+        utils.c
+        utils.h
 )
 
-target_include_directories(Nar.Base PRIVATE ../../../nar-runtime/lib)
+target_include_directories(Nar.Base PRIVATE ../../../nar-runtime-c/include)
 set_target_properties(Nar.Base PROPERTIES VERSION ${PROJECT_VERSION})
 
 target_link_libraries(Nar.Base)
