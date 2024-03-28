@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.9)
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ../../dll)
+set(CMAKE_OSX_DEPLOYMENT_TARGET "11.0")
 
 find_library(Iconv_FOUND NAMES iconv)
 
