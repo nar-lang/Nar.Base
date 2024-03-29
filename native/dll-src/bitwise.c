@@ -32,13 +32,11 @@ nar_object_t bitwise_shiftRightZfBy(nar_runtime_t rt, nar_object_t x, nar_object
 
 void register_bitwise(nar_runtime_t rt) {
     nar_string_t module_name = "Nar.Base.Bitwise";
-    nar->register_def(rt, module_name, "and", nar->new_func(rt, &bitwise_and, 2));
-    nar->register_def(rt, module_name, "or", nar->new_func(rt, &bitwise_or, 2));
-    nar->register_def(rt, module_name, "xor", nar->new_func(rt, &bitwise_xor, 2));
-    nar->register_def(rt, module_name, "complement", nar->new_func(rt, &bitwise_complement, 1));
-    nar->register_def(rt, module_name, "shiftLeftBy", nar->new_func(rt, &bitwise_shiftLeftBy, 2));
-    nar->register_def(rt, module_name, "shiftRightBy",
-            nar->new_func(rt, &bitwise_shiftRightBy, 2));
-    nar->register_def(rt, module_name, "shiftRightZfBy",
-            nar->new_func(rt, &bitwise_shiftRightZfBy, 2));
+    nar->register_def_dynamic(rt, module_name, "and", "bitwise_and", 2);
+    nar->register_def_dynamic(rt, module_name, "or", "bitwise_or", 2);
+    nar->register_def_dynamic(rt, module_name, "xor", "bitwise_xor", 2);
+    nar->register_def_dynamic(rt, module_name, "complement", "bitwise_complement", 1);
+    nar->register_def_dynamic(rt, module_name, "shiftLeftBy", "bitwise_shiftLeftBy", 2);
+    nar->register_def_dynamic(rt, module_name, "shiftRightBy", "bitwise_shiftRightBy", 2);
+    nar->register_def_dynamic(rt, module_name, "shiftRightZfBy", "bitwise_shiftRightZfBy", 2);
 }

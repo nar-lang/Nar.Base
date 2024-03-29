@@ -213,19 +213,18 @@ nar_object_t array_appendN(
 
 void register_array(nar_runtime_t rt) {
     nar_string_t module_name = "Nar.Base.NativeArray";
-    nar->register_def(rt, module_name, "empty", nar->new_func(rt, &array_empty, 0));
-    nar->register_def(rt, module_name, "singleton", nar->new_func(rt, &array_singleton, 1));
-    nar->register_def(rt, module_name, "length", nar->new_func(rt, &array_length, 1));
-    nar->register_def(rt, module_name, "initialize", nar->new_func(rt, &array_initialize, 3));
-    nar->register_def(rt, module_name, "initializeFromList",
-            nar->new_func(rt, &array_initializeFromList, 2));
-    nar->register_def(rt, module_name, "unsafeGet", nar->new_func(rt, &array_unsafeGet, 2));
-    nar->register_def(rt, module_name, "unsafeSet", nar->new_func(rt, &array_unsafeSet, 3));
-    nar->register_def(rt, module_name, "push", nar->new_func(rt, &array_push, 2));
-    nar->register_def(rt, module_name, "foldl", nar->new_func(rt, &array_foldl, 3));
-    nar->register_def(rt, module_name, "foldr", nar->new_func(rt, &array_foldr, 3));
-    nar->register_def(rt, module_name, "map", nar->new_func(rt, &array_map, 2));
-    nar->register_def(rt, module_name, "indexedMap", nar->new_func(rt, &array_indexedMap, 3));
-    nar->register_def(rt, module_name, "slice", nar->new_func(rt, &array_slice, 3));
-    nar->register_def(rt, module_name, "appendN", nar->new_func(rt, &array_appendN, 3));
+    nar->register_def_dynamic(rt, module_name, "empty", "array_empty", 0);
+    nar->register_def_dynamic(rt, module_name, "singleton", "array_singleton", 1);
+    nar->register_def_dynamic(rt, module_name, "length", "array_length", 1);
+    nar->register_def_dynamic(rt, module_name, "initialize", "array_initialize", 3);
+    nar->register_def_dynamic(rt, module_name, "initializeFromList", "array_initializeFromList", 2);
+    nar->register_def_dynamic(rt, module_name, "unsafeGet", "array_unsafeGet", 2);
+    nar->register_def_dynamic(rt, module_name, "unsafeSet", "array_unsafeSet", 3);
+    nar->register_def_dynamic(rt, module_name, "push", "array_push", 2);
+    nar->register_def_dynamic(rt, module_name, "foldl", "array_foldl", 3);
+    nar->register_def_dynamic(rt, module_name, "foldr", "array_foldr", 3);
+    nar->register_def_dynamic(rt, module_name, "map", "array_map", 2);
+    nar->register_def_dynamic(rt, module_name, "indexedMap", "array_indexedMap", 3);
+    nar->register_def_dynamic(rt, module_name, "slice", "array_slice", 3);
+    nar->register_def_dynamic(rt, module_name, "appendN", "array_appendN", 3);
 }

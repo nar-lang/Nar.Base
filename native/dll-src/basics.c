@@ -43,14 +43,14 @@ nar_object_t basics_xor(nar_runtime_t rt, nar_object_t x, nar_object_t y) {
 
 void register_basics(nar_runtime_t rt) {
     nar_string_t module_name = "Nar.Base.Basics";
-    nar->register_def(rt, module_name, "eq", nar->new_func(rt, &basics_eq, 2));
-    nar->register_def(rt, module_name, "neq", nar->new_func(rt, &basics_neq, 2));
-    nar->register_def(rt, module_name, "lt", nar->new_func(rt, &basics_lt, 2));
-    nar->register_def(rt, module_name, "gt", nar->new_func(rt, &basics_gt, 2));
-    nar->register_def(rt, module_name, "le", nar->new_func(rt, &basics_le, 2));
-    nar->register_def(rt, module_name, "ge", nar->new_func(rt, &basics_ge, 2));
-    nar->register_def(rt, module_name, "not", nar->new_func(rt, &basics_not, 1));
-    nar->register_def(rt, module_name, "and", nar->new_func(rt, &basics_and, 2));
-    nar->register_def(rt, module_name, "or", nar->new_func(rt, &basics_or, 2));
-    nar->register_def(rt, module_name, "xor", nar->new_func(rt, &basics_xor, 2));
+    nar->register_def_dynamic(rt, module_name, "eq", "basics_eq", 2);
+    nar->register_def_dynamic(rt, module_name, "neq", "basics_neq", 2);
+    nar->register_def_dynamic(rt, module_name, "lt", "basics_lt", 2);
+    nar->register_def_dynamic(rt, module_name, "gt", "basics_gt", 2);
+    nar->register_def_dynamic(rt, module_name, "le", "basics_le", 2);
+    nar->register_def_dynamic(rt, module_name, "ge", "basics_ge", 2);
+    nar->register_def_dynamic(rt, module_name, "not", "basics_not", 1);
+    nar->register_def_dynamic(rt, module_name, "and", "basics_and", 2);
+    nar->register_def_dynamic(rt, module_name, "or", "basics_or", 2);
+    nar->register_def_dynamic(rt, module_name, "xor", "basics_xor", 2);
 }

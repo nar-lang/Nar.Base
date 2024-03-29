@@ -64,8 +64,8 @@ nar_object_t debug_getType(nar_runtime_t rt, nar_object_t x) {
 
 void register_debug(nar_runtime_t rt) {
     nar_string_t module_name = "Nar.Base.Debug";
-    nar->register_def(rt, module_name, "toString", nar->new_func(rt, &debug_toString, 1));
-    nar->register_def(rt, module_name, "log", nar->new_func(rt, &debug_log, 2));
-    nar->register_def(rt, module_name, "todo", nar->new_func(rt, &debug_todo, 1));
-    nar->register_def(rt, module_name, "getType", nar->new_func(rt, &debug_getType, 1));
+    nar->register_def_dynamic(rt, module_name, "toString", "debug_toString", 1);
+    nar->register_def_dynamic(rt, module_name, "log", "debug_log", 2);
+    nar->register_def_dynamic(rt, module_name, "todo", "debug_todo", 1);
+    nar->register_def_dynamic(rt, module_name, "getType", "debug_getType", 1);
 }

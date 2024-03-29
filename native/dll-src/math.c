@@ -225,22 +225,22 @@ nar_object_t math_logBase(nar_runtime_t rt, nar_object_t base, nar_object_t n) {
 
 void register_math(nar_runtime_t rt) {
     nar_string_t module_name = "Nar.Base.Math";
-    nar->register_def(rt, module_name, "add", nar->new_func(rt, &math_add, 2));
-    nar->register_def(rt, module_name, "sub", nar->new_func(rt, &math_sub, 2));
-    nar->register_def(rt, module_name, "mul", nar->new_func(rt, &math_mul, 2));
-    nar->register_def(rt, module_name, "div", nar->new_func(rt, &math_div, 2));
-    nar->register_def(rt, module_name, "neg", nar->new_func(rt, &math_neg, 1));
-    nar->register_def(rt, module_name, "abs", nar->new_func(rt, &math_abs, 1));
-    nar->register_def(rt, module_name, "toPower", nar->new_func(rt, &math_toPower, 2));
-    nar->register_def(rt, module_name, "isNan", nar->new_func(rt, &math_isNan, 1));
-    nar->register_def(rt, module_name, "isInf", nar->new_func(rt, &math_isInf, 1));
-    nar->register_def(rt, module_name, "toFloat", nar->new_func(rt, &math_toFloat, 1));
-    nar->register_def(rt, module_name, "round", nar->new_func(rt, &math_round, 1));
-    nar->register_def(rt, module_name, "floor", nar->new_func(rt, &math_floor, 1));
-    nar->register_def(rt, module_name, "ceil", nar->new_func(rt, &math_ceil, 1));
-    nar->register_def(rt, module_name, "trunc", nar->new_func(rt, &math_trunc, 1));
-    nar->register_def(rt, module_name, "sqrt", nar->new_func(rt, &math_sqrt, 1));
-    nar->register_def(rt, module_name, "remainderBy", nar->new_func(rt, &math_remainderBy, 2));
-    nar->register_def(rt, module_name, "modBy", nar->new_func(rt, &math_modBy, 2));
-    nar->register_def(rt, module_name, "logBase", nar->new_func(rt, &math_logBase, 2));
+    nar->register_def_dynamic(rt, module_name, "add", "math_add", 2);
+    nar->register_def_dynamic(rt, module_name, "sub", "math_sub", 2);
+    nar->register_def_dynamic(rt, module_name, "mul", "math_mul", 2);
+    nar->register_def_dynamic(rt, module_name, "div", "math_div", 2);
+    nar->register_def_dynamic(rt, module_name, "neg", "math_neg", 1);
+    nar->register_def_dynamic(rt, module_name, "abs", "math_abs", 1);
+    nar->register_def_dynamic(rt, module_name, "toPower", "math_toPower", 2);
+    nar->register_def_dynamic(rt, module_name, "isNan", "math_isNan", 1);
+    nar->register_def_dynamic(rt, module_name, "isInf", "math_isInf", 1);
+    nar->register_def_dynamic(rt, module_name, "toFloat", "math_toFloat", 1);
+    nar->register_def_dynamic(rt, module_name, "round", "math_round", 1);
+    nar->register_def_dynamic(rt, module_name, "floor", "math_floor", 1);
+    nar->register_def_dynamic(rt, module_name, "ceil", "math_ceil", 1);
+    nar->register_def_dynamic(rt, module_name, "trunc", "math_trunc", 1);
+    nar->register_def_dynamic(rt, module_name, "sqrt", "math_sqrt", 1);
+    nar->register_def_dynamic(rt, module_name, "remainderBy", "math_remainderBy", 2);
+    nar->register_def_dynamic(rt, module_name, "modBy", "math_modBy", 2);
+    nar->register_def_dynamic(rt, module_name, "logBase", "math_logBase", 2);
 }

@@ -130,11 +130,11 @@ nar_object_t list_sortBy(nar_runtime_t rt, nar_object_t fn, nar_object_t xs) {
 
 void register_list(nar_runtime_t rt) {
     nar_string_t module_name = "Nar.Base.List";
-    nar->register_def(rt, module_name, "cons", nar->new_func(rt, &list_cons, 2));
-    nar->register_def(rt, module_name, "map2", nar->new_func(rt, &list_map2, 3));
-    nar->register_def(rt, module_name, "map3", nar->new_func(rt, &list_map3, 4));
-    nar->register_def(rt, module_name, "map4", nar->new_func(rt, &list_map4, 5));
-    nar->register_def(rt, module_name, "map5", nar->new_func(rt, &list_map5, 6));
-    nar->register_def(rt, module_name, "sortWith", nar->new_func(rt, &list_sortWith, 2));
-    nar->register_def(rt, module_name, "sortBy", nar->new_func(rt, &list_sortBy, 2));
+    nar->register_def_dynamic(rt, module_name, "cons", "list_cons", 2);
+    nar->register_def_dynamic(rt, module_name, "map2", "list_map2", 3);
+    nar->register_def_dynamic(rt, module_name, "map3", "list_map3", 4);
+    nar->register_def_dynamic(rt, module_name, "map4", "list_map4", 5);
+    nar->register_def_dynamic(rt, module_name, "map5", "list_map5", 6);
+    nar->register_def_dynamic(rt, module_name, "sortWith", "list_sortWith", 2);
+    nar->register_def_dynamic(rt, module_name, "sortBy", "list_sortBy", 2);
 }

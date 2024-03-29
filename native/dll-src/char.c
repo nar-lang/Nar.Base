@@ -19,8 +19,8 @@ nar_object_t char_fromCode(nar_runtime_t rt, nar_object_t code) {
 
 void register_char(nar_runtime_t rt) {
     nar_string_t module_name = "Nar.Base.Char";
-    nar->register_def(rt, module_name, "toUpper", nar->new_func(rt, char_toUpper, 1));
-    nar->register_def(rt, module_name, "toLower", nar->new_func(rt, char_toLower, 1));
-    nar->register_def(rt, module_name, "toCode", nar->new_func(rt, char_toCode, 1));
-    nar->register_def(rt, module_name, "fromCode", nar->new_func(rt, char_fromCode, 1));
+    nar->register_def_dynamic(rt, module_name, "toUpper", "char_toUpper", 1);
+    nar->register_def_dynamic(rt, module_name, "toLower", "char_toLower", 1);
+    nar->register_def_dynamic(rt, module_name, "toCode", "char_toCode", 1);
+    nar->register_def_dynamic(rt, module_name, "fromCode", "char_fromCode", 1);
 }
