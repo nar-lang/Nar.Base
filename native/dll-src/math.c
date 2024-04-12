@@ -1,6 +1,4 @@
 #include "_package.h"
-#include <math.h>
-#include <stdbool.h>
 
 #define INT64_NAN INT64_MAX
 
@@ -9,18 +7,18 @@ nar_object_t math_add(nar_runtime_t rt, nar_object_t x, nar_object_t y) {
     nar_object_kind_t kind_y = nar->object_get_kind(rt, y);
     if (kind_x != kind_y) {
         nar->fail(rt, "Nar.Base.Math.add: types are not equal");
-        return nar->new_unit(rt);
+        return nar->make_unit(rt);
     }
     switch (kind_x) {
         case NAR_OBJECT_KIND_INT: {
-            return nar->new_int(rt, nar->to_int(rt, x) + nar->to_int(rt, y));
+            return nar->make_int(rt, nar->to_int(rt, x) + nar->to_int(rt, y));
         }
         case NAR_OBJECT_KIND_FLOAT: {
-            return nar->new_float(rt, nar->to_float(rt, x) + nar->to_float(rt, y));
+            return nar->make_float(rt, nar->to_float(rt, x) + nar->to_float(rt, y));
         }
         default: {
             nar->fail(rt, "Nar.Base.Math.add: unsupported type");
-            return nar->new_unit(rt);
+            return nar->make_unit(rt);
         }
     }
 }
@@ -30,18 +28,18 @@ nar_object_t math_sub(nar_runtime_t rt, nar_object_t x, nar_object_t y) {
     nar_object_kind_t kind_y = nar->object_get_kind(rt, y);
     if (kind_x != kind_y) {
         nar->fail(rt, "Nar.Base.Math.sub: types are not equal");
-        return nar->new_unit(rt);
+        return nar->make_unit(rt);
     }
     switch (kind_x) {
         case NAR_OBJECT_KIND_INT: {
-            return nar->new_int(rt, nar->to_int(rt, x) - nar->to_int(rt, y));
+            return nar->make_int(rt, nar->to_int(rt, x) - nar->to_int(rt, y));
         }
         case NAR_OBJECT_KIND_FLOAT: {
-            return nar->new_float(rt, nar->to_float(rt, x) - nar->to_float(rt, y));
+            return nar->make_float(rt, nar->to_float(rt, x) - nar->to_float(rt, y));
         }
         default: {
             nar->fail(rt, "Nar.Base.Math.sub: unsupported type");
-            return nar->new_unit(rt);
+            return nar->make_unit(rt);
         }
     }
 }
@@ -51,18 +49,18 @@ nar_object_t math_mul(nar_runtime_t rt, nar_object_t x, nar_object_t y) {
     nar_object_kind_t kind_y = nar->object_get_kind(rt, y);
     if (kind_x != kind_y) {
         nar->fail(rt, "Nar.Base.Math.mul: types are not equal");
-        return nar->new_unit(rt);
+        return nar->make_unit(rt);
     }
     switch (kind_x) {
         case NAR_OBJECT_KIND_INT: {
-            return nar->new_int(rt, nar->to_int(rt, x) * nar->to_int(rt, y));
+            return nar->make_int(rt, nar->to_int(rt, x) * nar->to_int(rt, y));
         }
         case NAR_OBJECT_KIND_FLOAT: {
-            return nar->new_float(rt, nar->to_float(rt, x) * nar->to_float(rt, y));
+            return nar->make_float(rt, nar->to_float(rt, x) * nar->to_float(rt, y));
         }
         default: {
             nar->fail(rt, "Nar.Base.Math.mul: unsupported type");
-            return nar->new_unit(rt);
+            return nar->make_unit(rt);
         }
     }
 }
@@ -72,22 +70,22 @@ nar_object_t math_div(nar_runtime_t rt, nar_object_t x, nar_object_t y) {
     nar_object_kind_t kind_y = nar->object_get_kind(rt, y);
     if (kind_x != kind_y) {
         nar->fail(rt, "Nar.Base.Math.div: types are not equal");
-        return nar->new_unit(rt);
+        return nar->make_unit(rt);
     }
     switch (kind_x) {
         case NAR_OBJECT_KIND_INT: {
             nar_int_t value_y = nar->to_int(rt, y);
             if (value_y == 0) {
-                return nar->new_int(rt, INT64_NAN);
+                return nar->make_int(rt, INT64_NAN);
             }
-            return nar->new_int(rt, nar->to_int(rt, x) / value_y);
+            return nar->make_int(rt, nar->to_int(rt, x) / value_y);
         }
         case NAR_OBJECT_KIND_FLOAT: {
-            return nar->new_float(rt, nar->to_float(rt, x) / nar->to_float(rt, y));
+            return nar->make_float(rt, nar->to_float(rt, x) / nar->to_float(rt, y));
         }
         default: {
             nar->fail(rt, "Nar.Base.Math.div: unsupported type");
-            return nar->new_unit(rt);
+            return nar->make_unit(rt);
         }
     }
 }
@@ -96,14 +94,14 @@ nar_object_t math_neg(nar_runtime_t rt, nar_object_t x) {
     nar_object_kind_t kind_x = nar->object_get_kind(rt, x);
     switch (kind_x) {
         case NAR_OBJECT_KIND_INT: {
-            return nar->new_int(rt, -nar->to_int(rt, x));
+            return nar->make_int(rt, -nar->to_int(rt, x));
         }
         case NAR_OBJECT_KIND_FLOAT: {
-            return nar->new_float(rt, -nar->to_float(rt, x));
+            return nar->make_float(rt, -nar->to_float(rt, x));
         }
         default: {
             nar->fail(rt, "Nar.Base.Math.neg: unsupported type");
-            return nar->new_unit(rt);
+            return nar->make_unit(rt);
         }
     }
 }
@@ -113,15 +111,15 @@ nar_object_t math_abs(nar_runtime_t rt, nar_object_t x) {
     switch (kind_x) {
         case NAR_OBJECT_KIND_INT: {
             nar_int_t value_x = nar->to_int(rt, x);
-            return value_x >= 0 ? x : nar->new_int(rt, -value_x);
+            return value_x >= 0 ? x : nar->make_int(rt, -value_x);
         }
         case NAR_OBJECT_KIND_FLOAT: {
             nar_float_t value_x = nar->to_float(rt, x);
-            return value_x >= 0 ? x : nar->new_float(rt, -value_x);
+            return value_x >= 0 ? x : nar->make_float(rt, -value_x);
         }
         default: {
             nar->fail(rt, "Nar.Base.Math.abs: unsupported type");
-            return nar->new_unit(rt);
+            return nar->make_unit(rt);
         }
     }
 }
@@ -131,20 +129,20 @@ nar_object_t math_toPower(nar_runtime_t rt, nar_object_t powr, nar_object_t num)
     nar_object_kind_t kind_pow = nar->object_get_kind(rt, powr);
     if (kind_num != kind_pow) {
         nar->fail(rt, "Nar.Base.Math.toPower: types are not equal");
-        return nar->new_unit(rt);
+        return nar->make_unit(rt);
     }
     switch (kind_num) {
         case NAR_OBJECT_KIND_INT: {
             nar_float_t fx = (nar_float_t) nar->to_int(rt, num);
             nar_float_t fpowr = (nar_float_t) nar->to_int(rt, powr);
-            return nar->new_int(rt, lround(pow(fx, fpowr)));
+            return nar->make_int(rt, lround(pow(fx, fpowr)));
         }
         case NAR_OBJECT_KIND_FLOAT: {
-            return nar->new_float(rt, pow(nar->to_float(rt, num), nar->to_float(rt, powr)));
+            return nar->make_float(rt, pow(nar->to_float(rt, num), nar->to_float(rt, powr)));
         }
         default: {
             nar->fail(rt, "Nar.Base.Math.toPower: unsupported type");
-            return nar->new_unit(rt);
+            return nar->make_unit(rt);
         }
     }
 }
@@ -153,14 +151,14 @@ nar_object_t math_isNan(nar_runtime_t rt, nar_object_t n) {
     nar_object_kind_t kind_n = nar->object_get_kind(rt, n);
     switch (kind_n) {
         case NAR_OBJECT_KIND_INT: {
-            return nar->new_bool(rt, INT64_NAN == nar->to_int(rt, n));
+            return nar->make_bool(rt, INT64_NAN == nar->to_int(rt, n));
         }
         case NAR_OBJECT_KIND_FLOAT: {
-            return nar->new_bool(rt, isnan(nar->to_float(rt, n)));
+            return nar->make_bool(rt, isnan(nar->to_float(rt, n)));
         }
         default: {
             nar->fail(rt, "Nar.Base.Math.isNan: unsupported type");
-            return nar->new_unit(rt);
+            return nar->make_unit(rt);
         }
     }
 }
@@ -169,58 +167,58 @@ nar_object_t math_isInf(nar_runtime_t rt, nar_object_t n) {
     nar_object_kind_t kind_n = nar->object_get_kind(rt, n);
     switch (kind_n) {
         case NAR_OBJECT_KIND_INT: {
-            return nar->new_bool(rt, nar_false);
+            return nar->make_bool(rt, nar_false);
         }
         case NAR_OBJECT_KIND_FLOAT: {
-            return nar->new_bool(rt, isinf(nar->to_float(rt, n)));
+            return nar->make_bool(rt, isinf(nar->to_float(rt, n)));
         }
         default: {
             nar->fail(rt, "Nar.Base.Math.isInf: unsupported type");
-            return nar->new_unit(rt);
+            return nar->make_unit(rt);
         }
     }
 }
 
 nar_object_t math_toFloat(nar_runtime_t rt, nar_object_t n) {
-    return nar->new_float(rt, (nar_float_t) nar->to_int(rt, n));
+    return nar->make_float(rt, (nar_float_t) nar->to_int(rt, n));
 }
 
 nar_object_t math_round(nar_runtime_t rt, nar_object_t n) {
-    return nar->new_int(rt, lround(nar->to_float(rt, n)));
+    return nar->make_int(rt, lround(nar->to_float(rt, n)));
 }
 
 nar_object_t math_floor(nar_runtime_t rt, nar_object_t n) {
-    return nar->new_int(rt, floor(nar->to_float(rt, n)));
+    return nar->make_int(rt, floor(nar->to_float(rt, n)));
 }
 
 nar_object_t math_ceil(nar_runtime_t rt, nar_object_t n) {
-    return nar->new_int(rt, ceil(nar->to_float(rt, n)));
+    return nar->make_int(rt, ceil(nar->to_float(rt, n)));
 }
 
 nar_object_t math_trunc(nar_runtime_t rt, nar_object_t n) {
-    return nar->new_int(rt, lround(trunc(nar->to_float(rt, n))));
+    return nar->make_int(rt, lround(trunc(nar->to_float(rt, n))));
 }
 
 nar_object_t math_sqrt(nar_runtime_t rt, nar_object_t n) {
-    return nar->new_float(rt, sqrt(nar->to_float(rt, n)));
+    return nar->make_float(rt, sqrt(nar->to_float(rt, n)));
 }
 
 nar_object_t math_remainderBy(nar_runtime_t rt, nar_object_t n, nar_object_t x) {
-    return nar->new_int(rt, nar->to_int(rt, x) % nar->to_int(rt, n));
+    return nar->make_int(rt, nar->to_int(rt, x) % nar->to_int(rt, n));
 }
 
 nar_object_t math_modBy(nar_runtime_t rt, nar_object_t modulus, nar_object_t x) {
     nar_int_t value_modulus = nar->to_int(rt, modulus);
     if (value_modulus == 0) {
-        return nar->new_int(rt, INT64_NAN);
+        return nar->make_int(rt, INT64_NAN);
     }
     const nar_int_t answer = nar->to_int(rt, x) % value_modulus;
     bool add_mod = ((answer > 0 && value_modulus < 0) || (answer < 0 && value_modulus > 0));
-    return nar->new_int(rt, add_mod ? answer + value_modulus : answer);
+    return nar->make_int(rt, add_mod ? answer + value_modulus : answer);
 }
 
 nar_object_t math_logBase(nar_runtime_t rt, nar_object_t base, nar_object_t n) {
-    return nar->new_float(rt, log(nar->to_float(rt, n)) / log(nar->to_float(rt, base)));
+    return nar->make_float(rt, log(nar->to_float(rt, n)) / log(nar->to_float(rt, base)));
 }
 
 void register_math(nar_runtime_t rt) {

@@ -1,9 +1,4 @@
-#include <wchar.h>
-#include <nar-package.h>
-#include <string.h>
-#include <stdbool.h>
 #include "_package.h"
-#include "vector.h"
 
 bool index_of(
         const fchar_t *str, size_t str_len, const fchar_t *sub, size_t sub_len, size_t start,
@@ -45,7 +40,7 @@ nar_object_t fstring_to_obj(nar_runtime_t rt, const fchar_t *str, size_t len) {
     size_t string_result_len = len * MAX_U8_SIZE;
     nar_string_t string_result = nar->alloc(sizeof(char) * (string_result_len + 1));
     fcsntou8s(string_result, str, string_result_len, len);
-    nar_object_t result = nar->new_string(rt, string_result);
+    nar_object_t result = nar->make_string(rt, string_result);
     nar->free(string_result);
     return result;
 }
@@ -53,7 +48,7 @@ nar_object_t fstring_to_obj(nar_runtime_t rt, const fchar_t *str, size_t len) {
 nar_object_t string_length(nar_runtime_t rt, nar_object_t string) {
     size_t len;
     nar->free(new_fstring_from_object(rt, string, &len));
-    return nar->new_int(rt, (nar_int_t) len);
+    return nar->make_int(rt, (nar_int_t) len);
 }
 
 nar_object_t string_reverse(nar_runtime_t rt, nar_object_t string) {
@@ -82,7 +77,7 @@ nar_object_t string_append(nar_runtime_t rt, nar_object_t a, nar_object_t b) {
     strcpy(appended, value_a);
     strcpy(appended + len_a, value_b);
     appended[len_total] = '\0';
-    nar_object_t result = nar->new_string(rt, appended);
+    nar_object_t result = nar->make_string(rt, appended);
     nar->free(appended);
     return result;
 }
@@ -108,7 +103,7 @@ nar_object_t string_split(nar_runtime_t rt, nar_object_t sep, nar_object_t strin
     nar_object_t part = fstring_to_obj(rt, fstring + last_index, fstring_len - last_index);
     vector_push(items, 1, &part);
 
-    nar_object_t result = nar->new_list(rt, vector_size(items), vector_data(items));
+    nar_object_t result = nar->make_list(rt, vector_size(items), vector_data(items));
     nar->free(fstring);
     nar->free(fsep);
     vector_free(items);
@@ -139,7 +134,7 @@ nar_object_t string_join(nar_runtime_t rt, nar_object_t sep, nar_object_t string
         }
     }
     *ptr = '\0';
-    nar_object_t result = nar->new_string(rt, joined);
+    nar_object_t result = nar->make_string(rt, joined);
     nar->free(joined);
     nar->free(ss);
     return result;
@@ -168,7 +163,7 @@ nar_object_t string_words(nar_runtime_t rt, nar_object_t string) {
         vector_push(words, 1, &word);
     }
 
-    nar_object_t result = nar->new_list(rt, vector_size(words), vector_data(words));
+    nar_object_t result = nar->make_list(rt, vector_size(words), vector_data(words));
     nar->free(fstring);
     vector_free(words);
     return result;
@@ -197,7 +192,7 @@ nar_object_t string_lines(nar_runtime_t rt, nar_object_t string) {
         vector_push(words, 1, &word);
     }
 
-    nar_object_t result = nar->new_list(rt, vector_size(words), vector_data(words));
+    nar_object_t result = nar->make_list(rt, vector_size(words), vector_data(words));
     nar->free(fstring);
     vector_free(words);
     return result;
@@ -250,7 +245,7 @@ nar_object_t string_contains(nar_runtime_t rt, nar_object_t sub, nar_object_t st
 
     nar->free(fstring);
     nar->free(fsub);
-    return nar->new_bool(rt, found);
+    return nar->make_bool(rt, found);
 }
 
 nar_object_t string_startsWith(nar_runtime_t rt, nar_object_t sub, nar_object_t string) {
@@ -274,7 +269,7 @@ nar_object_t string_startsWith(nar_runtime_t rt, nar_object_t sub, nar_object_t 
 
     nar->free(fstring);
     nar->free(fsub);
-    return nar->new_bool(rt, found);
+    return nar->make_bool(rt, found);
 }
 
 nar_object_t string_endsWith(nar_runtime_t rt, nar_object_t sub, nar_object_t string) {
@@ -298,7 +293,7 @@ nar_object_t string_endsWith(nar_runtime_t rt, nar_object_t sub, nar_object_t st
 
     nar->free(fstring);
     nar->free(fsub);
-    return nar->new_bool(rt, found);
+    return nar->make_bool(rt, found);
 }
 
 nar_object_t string_indices(nar_runtime_t rt, nar_object_t sub, nar_object_t string) {
@@ -311,12 +306,12 @@ nar_object_t string_indices(nar_runtime_t rt, nar_object_t sub, nar_object_t str
     size_t last_index;
     bool found = index_of(fstring, fstring_len, fsub, fsub_len, 0, &last_index);
     while (found) {
-        nar_object_t index = nar->new_int(rt, (nar_int_t) last_index);
+        nar_object_t index = nar->make_int(rt, (nar_int_t) last_index);
         vector_push(indices, 1, &index);
         found = index_of(fstring, fstring_len, fsub, fsub_len, last_index + 1, &last_index);
     }
 
-    nar_object_t result = nar->new_list(rt, vector_size(indices), vector_data(indices));
+    nar_object_t result = nar->make_list(rt, vector_size(indices), vector_data(indices));
     nar->free(fstring);
     nar->free(fsub);
     vector_free(indices);
@@ -401,10 +396,10 @@ nar_object_t string_toInt(nar_runtime_t rt, nar_object_t s) {
     nar_string_t end;
     nar_int_t result = strtol(value, &end, 10);
     if (end == value || end != value + strlen(value)) {
-        return nar->new_option(rt, "Nar.Base.Maybe.Maybe#Nothing", 0, NULL);
+        return nar->make_option(rt, "Nar.Base.Maybe.Maybe#Nothing", 0, NULL);
     } else {
-        return nar->new_option(rt, "Nar.Base.Maybe.Maybe#Just", 1,
-                (nar_object_t[]) {nar->new_int(rt, result)});
+        return nar->make_option(rt, "Nar.Base.Maybe.Maybe#Just", 1,
+                (nar_object_t[]) {nar->make_int(rt, result)});
     }
 }
 
@@ -412,7 +407,7 @@ nar_object_t string_fromInt(nar_runtime_t rt, nar_object_t n) {
     nar_int_t value = nar->to_int(rt, n);
     nar_string_t buffer = nar->alloc(32 * sizeof(char));
     snprintf(buffer, 32, "%lld", value);
-    nar_object_t result = nar->new_string(rt, buffer);
+    nar_object_t result = nar->make_string(rt, buffer);
     nar->free(buffer);
     return result;
 }
@@ -422,10 +417,10 @@ nar_object_t string_toFloat(nar_runtime_t rt, nar_object_t s) {
     nar_string_t end;
     nar_float_t result = strtod(value, &end);
     if (end == value || end != value + strlen(value)) {
-        return nar->new_option(rt, "Nar.Base.Maybe.Maybe#Nothing", 0, NULL);
+        return nar->make_option(rt, "Nar.Base.Maybe.Maybe#Nothing", 0, NULL);
     } else {
-        return nar->new_option(rt, "Nar.Base.Maybe.Maybe#Just", 1,
-                (nar_object_t[]) {nar->new_float(rt, result)});
+        return nar->make_option(rt, "Nar.Base.Maybe.Maybe#Just", 1,
+                (nar_object_t[]) {nar->make_float(rt, result)});
     }
 }
 
@@ -433,7 +428,7 @@ nar_object_t string_fromFloat(nar_runtime_t rt, nar_object_t n) {
     nar_float_t value = nar->to_float(rt, n);
     nar_string_t buffer = nar->alloc(32 * sizeof(char));
     snprintf(buffer, 32, "%f", value);
-    nar_object_t result = nar->new_string(rt, buffer);
+    nar_object_t result = nar->make_string(rt, buffer);
     nar->free(buffer);
     return result;
 }
@@ -447,7 +442,7 @@ nar_object_t string_cons(nar_runtime_t rt, nar_object_t head, nar_object_t tail)
     nar_string_t consed = nar->alloc((strlen(value_s) + hlen + 1) * sizeof(char));
     strcpy(consed, h);
     strcat(consed, value_s);
-    nar_object_t result = nar->new_string(rt, consed);
+    nar_object_t result = nar->make_string(rt, consed);
     nar->free(consed);
     return result;
 }
@@ -458,17 +453,17 @@ nar_object_t string_uncons(nar_runtime_t rt, nar_object_t string) {
 
     nar_object_t result;
     if (fstring_len == 0) {
-        result = nar->new_option(rt, "Nar.Base.Maybe.Maybe#Nothing", 0, NULL);
+        result = nar->make_option(rt, "Nar.Base.Maybe.Maybe#Nothing", 0, NULL);
     } else {
         size_t string_result_len = (fstring_len - 1) * MAX_U8_SIZE;
         nar_string_t string_result = nar->alloc(sizeof(char) * (string_result_len + 1));
         fcstou8s(string_result, fstring + 1, string_result_len);
-        nar_object_t result_obj = nar->new_string(rt, string_result);
+        nar_object_t result_obj = nar->make_string(rt, string_result);
         nar->free(string_result);
 
-        nar_object_t optValue = nar->new_tuple(rt, 2,
-                (nar_object_t[]) {nar->new_char(rt, fstring[0]), result_obj});
-        result = nar->new_option(rt, "Nar.Base.Maybe.Maybe#Just", 1, &optValue);
+        nar_object_t optValue = nar->make_tuple(rt, 2,
+                (nar_object_t[]) {nar->make_char(rt, fstring[0]), result_obj});
+        result = nar->make_option(rt, "Nar.Base.Maybe.Maybe#Just", 1, &optValue);
     }
 
     nar->free(fstring);
@@ -480,7 +475,7 @@ nar_object_t string_map(nar_runtime_t rt, nar_object_t func, nar_object_t string
     fchar_t *fstring = new_fstring_from_object(rt, string, &fstring_len);
 
     for (size_t i = 0; i < fstring_len; i++) {
-        nar_object_t c = nar->new_char(rt, fstring[i]);
+        nar_object_t c = nar->make_char(rt, fstring[i]);
         c = nar->apply_func(rt, func, 1, &c);
         fstring[i] = nar->to_char(rt, c);
     }
@@ -495,7 +490,7 @@ nar_object_t string_filter(nar_runtime_t rt, nar_object_t f, nar_object_t string
     fchar_t *fstring = new_fstring_from_object(rt, string, &fstring_len);
     size_t skipped = 0;
     for (size_t i = 0; i < fstring_len; i++) {
-        nar_object_t arg = nar->new_char(rt, fstring[i]);
+        nar_object_t arg = nar->make_char(rt, fstring[i]);
         nar_object_t result = nar->apply_func(rt, f, 1, &arg);
         if (!nar->to_bool(rt, result)) {
             skipped++;
@@ -516,7 +511,7 @@ nar_object_t string_foldl(
 
     nar_object_t result = acc;
     for (size_t i = 0; i < fstring_len; i++) {
-        nar_object_t arg[2] = {nar->new_char(rt, fstring[i]), result};
+        nar_object_t arg[2] = {nar->make_char(rt, fstring[i]), result};
         result = nar->apply_func(rt, func, 2, arg);
     }
 
@@ -531,7 +526,7 @@ nar_object_t string_foldr(
 
     nar_object_t result = acc;
     for (size_t i = fstring_len; i > 0; i--) {
-        nar_object_t arg[2] = {nar->new_char(rt, fstring[i - 1]), result};
+        nar_object_t arg[2] = {nar->make_char(rt, fstring[i - 1]), result};
         result = nar->apply_func(rt, func, 2, arg);
     }
 
@@ -545,7 +540,7 @@ nar_object_t string_any(nar_runtime_t rt, nar_object_t func, nar_object_t string
 
     nar_bool_t result = false;
     for (size_t i = 0; i < fstring_len; i++) {
-        nar_object_t c = nar->new_char(rt, fstring[i]);
+        nar_object_t c = nar->make_char(rt, fstring[i]);
         result = nar->to_bool(rt, nar->apply_func(rt, func, 1, &c));
         if (result) {
             break;
@@ -553,7 +548,7 @@ nar_object_t string_any(nar_runtime_t rt, nar_object_t func, nar_object_t string
     }
 
     nar->free(fstring);
-    return nar->new_bool(rt, result);
+    return nar->make_bool(rt, result);
 }
 
 nar_object_t string_all(nar_runtime_t rt, nar_object_t func, nar_object_t string) {
@@ -565,7 +560,7 @@ nar_object_t string_all(nar_runtime_t rt, nar_object_t func, nar_object_t string
         result = false;
     } else {
         for (size_t i = 0; i < fstring_len; i++) {
-            nar_object_t c = nar->new_char(rt, fstring[i]);
+            nar_object_t c = nar->make_char(rt, fstring[i]);
             result = nar->to_bool(rt, nar->apply_func(rt, func, 1, &c));
             if (!result) {
                 break;
@@ -574,7 +569,7 @@ nar_object_t string_all(nar_runtime_t rt, nar_object_t func, nar_object_t string
     }
 
     nar->free(fstring);
-    return nar->new_bool(rt, result);
+    return nar->make_bool(rt, result);
 }
 
 void register_string(nar_runtime_t rt) {

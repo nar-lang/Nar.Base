@@ -1,6 +1,4 @@
-#include <string.h>
 #include "_package.h"
-#include "utils.h"
 
 nar_object_t debug_toString(nar_runtime_t rt, nar_object_t x) {
     return stringify(rt, x);
@@ -24,41 +22,41 @@ nar_object_t debug_log(nar_runtime_t rt, nar_object_t msg, nar_object_t a) {
 
 nar_object_t debug_todo(nar_runtime_t rt, nar_object_t msg) {
     nar->fail(rt, nar->to_string(rt, msg));
-    return nar->new_unit(rt);
+    return nar->make_unit(rt);
 }
 
 nar_object_t debug_getType(nar_runtime_t rt, nar_object_t x) {
     nar_object_kind_t kind = nar->object_get_kind(rt, x);
     switch (kind) {
         case NAR_OBJECT_KIND_UNKNOWN:
-            return nar->new_option(rt, "Nar.Base.Debug.Type#TypeUnknown", 0, NULL);
+            return nar->make_option(rt, "Nar.Base.Debug.Type#TypeUnknown", 0, NULL);
         case NAR_OBJECT_KIND_UNIT:
-            return nar->new_option(rt, "Nar.Base.Debug.Type#TypeUnit", 0, NULL);
+            return nar->make_option(rt, "Nar.Base.Debug.Type#TypeUnit", 0, NULL);
         case NAR_OBJECT_KIND_INT:
-            return nar->new_option(rt, "Nar.Base.Debug.Type#TypeInt", 0, NULL);
+            return nar->make_option(rt, "Nar.Base.Debug.Type#TypeInt", 0, NULL);
         case NAR_OBJECT_KIND_FLOAT:
-            return nar->new_option(rt, "Nar.Base.Debug.Type#TypeFloat", 0, NULL);
+            return nar->make_option(rt, "Nar.Base.Debug.Type#TypeFloat", 0, NULL);
         case NAR_OBJECT_KIND_STRING:
-            return nar->new_option(rt, "Nar.Base.Debug.Type#TypeString", 0, NULL);
+            return nar->make_option(rt, "Nar.Base.Debug.Type#TypeString", 0, NULL);
         case NAR_OBJECT_KIND_CHAR:
-            return nar->new_option(rt, "Nar.Base.Debug.Type#TypeChar", 0, NULL);
+            return nar->make_option(rt, "Nar.Base.Debug.Type#TypeChar", 0, NULL);
         case NAR_OBJECT_KIND_RECORD:
-            return nar->new_option(rt, "Nar.Base.Debug.Type#TypeRecord", 0, NULL);
+            return nar->make_option(rt, "Nar.Base.Debug.Type#TypeRecord", 0, NULL);
         case NAR_OBJECT_KIND_TUPLE:
-            return nar->new_option(rt, "Nar.Base.Debug.Type#TypeTuple", 0, NULL);
+            return nar->make_option(rt, "Nar.Base.Debug.Type#TypeTuple", 0, NULL);
         case NAR_OBJECT_KIND_LIST:
-            return nar->new_option(rt, "Nar.Base.Debug.Type#TypeList", 0, NULL);
+            return nar->make_option(rt, "Nar.Base.Debug.Type#TypeList", 0, NULL);
         case NAR_OBJECT_KIND_OPTION:
-            return nar->new_option(rt, "Nar.Base.Debug.Type#TypeOption", 0, NULL);
+            return nar->make_option(rt, "Nar.Base.Debug.Type#TypeOption", 0, NULL);
         case NAR_OBJECT_KIND_FUNCTION:
-            return nar->new_option(rt, "Nar.Base.Debug.Type#TypeFunction", 0, NULL);
+            return nar->make_option(rt, "Nar.Base.Debug.Type#TypeFunction", 0, NULL);
         case NAR_OBJECT_KIND_CLOSURE:
-            return nar->new_option(rt, "Nar.Base.Debug.Type#TypeClosure", 0, NULL);
+            return nar->make_option(rt, "Nar.Base.Debug.Type#TypeClosure", 0, NULL);
         case NAR_OBJECT_KIND_NATIVE:
-            return nar->new_option(rt, "Nar.Base.Debug.Type#TypeNative", 0, NULL);
+            return nar->make_option(rt, "Nar.Base.Debug.Type#TypeNative", 0, NULL);
         default:
             nar->fail(rt, "debug_getType: enum case is out of range");
-            return nar->new_unit(rt);
+            return nar->make_unit(rt);
     }
 }
 

@@ -2,10 +2,6 @@
 #pragma ide diagnostic ignored "misc-no-recursion"
 
 #include "_package.h"
-#include <string.h>
-#include <stdio.h>
-#include <wchar.h>
-#include "utils.h"
 
 nar_int_t cmp(nar_runtime_t rt, nar_object_t a, nar_object_t b) {
     nar_object_kind_t kind_a = nar->object_get_kind(rt, a);
@@ -130,7 +126,9 @@ nar_int_t cmp(nar_runtime_t rt, nar_object_t a, nar_object_t b) {
                 } else if ((void *) a_.cmp > (void *) b_.cmp) {
                     return 1;
                 }
-                return a_.cmp(rt, a_.ptr, b_.ptr);
+                if (a_.cmp != NULL) {
+                    return a_.cmp(rt, a_.ptr, b_.ptr);
+                }
             }
             default: {
                 nar->fail(rt, "cmp: enum case is out of range");
@@ -184,24 +182,24 @@ nar_object_t stringify(nar_runtime_t rt, nar_object_t a) {
     nar_object_kind_t kind = nar->object_get_kind(rt, a);
     switch (kind) {
         case NAR_OBJECT_KIND_UNIT: {
-            return nar->new_string(rt, "()");
+            return nar->make_string(rt, "()");
         }
         case NAR_OBJECT_KIND_CHAR: {
             nar_char_t c = nar->to_char(rt, a);
             char str[MAX_U8_SIZE + 1];
             size_t len = fctou8(str, c);
             str[len] = '\0';
-            return nar->new_string(rt, str);
+            return nar->make_string(rt, str);
         }
         case NAR_OBJECT_KIND_INT: {
             char str[32];
             snprintf(str, 32, "%lld", nar->to_int(rt, a));
-            return nar->new_string(rt, str);
+            return nar->make_string(rt, str);
         }
         case NAR_OBJECT_KIND_FLOAT: {
             char buffer[32];
             snprintf(buffer, 32, "%g", nar->to_float(rt, a));
-            return nar->new_string(rt, buffer);
+            return nar->make_string(rt, buffer);
         }
         case NAR_OBJECT_KIND_STRING: {
             return a;
@@ -238,7 +236,7 @@ nar_object_t stringify(nar_runtime_t rt, nar_object_t a) {
             }
             *ptr++ = '}';
             *ptr = '\0';
-            nar_object_t str = nar->new_string(rt, result);
+            nar_object_t str = nar->make_string(rt, result);
 
             nar->free(result);
             nar->free(valueStrings);
@@ -252,7 +250,7 @@ nar_object_t stringify(nar_runtime_t rt, nar_object_t a) {
                 strings[i] = stringify(rt, tuple.values[i]);
             }
             nar_string_t result = new_joined_strings(rt, tuple.size, strings, ", ", "(", ")");
-            nar_object_t str = nar->new_string(rt, result);
+            nar_object_t str = nar->make_string(rt, result);
             nar->free(result);
             nar->free(strings);
             return str;
@@ -264,7 +262,7 @@ nar_object_t stringify(nar_runtime_t rt, nar_object_t a) {
                 strings[i] = stringify(rt, list.items[i]);
             }
             nar_string_t result = new_joined_strings(rt, list.size, strings, ", ", "[", "]");
-            nar_object_t str = nar->new_string(rt, result);
+            nar_object_t str = nar->make_string(rt, result);
             nar->free(strings);
             nar->free(result);
             return str;
@@ -281,7 +279,7 @@ nar_object_t stringify(nar_runtime_t rt, nar_object_t a) {
             name[len_name] = '(';
             name[len_name + 1] = '\0';
             nar_string_t result = new_joined_strings(rt, option.size, values, ", ", name, ")");
-            nar_object_t str = nar->new_string(rt, result);
+            nar_object_t str = nar->make_string(rt, result);
             nar->free(result);
             nar->free(values);
             nar->free(name);
@@ -291,20 +289,20 @@ nar_object_t stringify(nar_runtime_t rt, nar_object_t a) {
             nar_func_t func = nar->to_func(rt, a);
             char result[32];
             snprintf(result, 32, "function/%p(%ld)", func.ptr, func.arity);
-            return nar->new_string(rt, result);
+            return nar->make_string(rt, result);
         }
         case NAR_OBJECT_KIND_CLOSURE: {
-            return nar->new_string(rt, "closure");
+            return nar->make_string(rt, "closure");
         }
         case NAR_OBJECT_KIND_NATIVE: {
             nar_native_t native = nar->to_native(rt, a);
             char result[32];
             snprintf(result, 32, "native/%p(%p)", native.ptr, native.cmp);
-            return nar->new_string(rt, result);
+            return nar->make_string(rt, result);
         }
         default: {
             nar->fail(rt, "stringify: enum case is out of range");
-            return nar->new_string(rt, "?");
+            return nar->make_string(rt, "?");
         }
     }
 }

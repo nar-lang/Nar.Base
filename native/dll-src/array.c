@@ -1,6 +1,4 @@
-#include <memory.h>
 #include "_package.h"
-#include "utils.h"
 
 typedef struct {
     nar_size_t size;
@@ -38,7 +36,7 @@ nar_int_t cmp_chunks(nar_runtime_t rt, void *pa, void *pb) {
 }
 
 nar_object_t chunk_to_object(nar_runtime_t rt, chunk_t *chunk) {
-    return nar->new_native(rt, chunk, &cmp_chunks);
+    return nar->make_native(rt, chunk, &cmp_chunks);
 }
 
 chunk_t *object_to_chunk(nar_runtime_t rt, nar_object_t array) {
@@ -57,7 +55,7 @@ nar_object_t array_singleton(nar_runtime_t rt, nar_object_t item) {
 
 nar_object_t array_length(nar_runtime_t rt, nar_object_t array) {
     chunk_t *chunk = object_to_chunk(rt, array);
-    return nar->new_int(rt, (nar_int_t) chunk->size);
+    return nar->make_int(rt, (nar_int_t) chunk->size);
 }
 
 nar_object_t array_initialize(
@@ -69,7 +67,7 @@ nar_object_t array_initialize(
     }
     chunk_t *chunk = alloc_chunk(rt, (nar_size_t) size_);
     for (nar_int_t i = 0; i < size_; i++) {
-        nar_object_t arg = nar->new_int(rt, offset_ + i);
+        nar_object_t arg = nar->make_int(rt, offset_ + i);
         chunk->items[i] = nar->apply_func(rt, func, 1, &arg);
     }
     return chunk_to_object(rt, chunk);
@@ -80,18 +78,18 @@ nar_object_t array_initializeFromList(nar_runtime_t rt, nar_object_t max, nar_ob
     nar_list_t ls_ = nar->to_list(rt, ls);
     if (max_ <= 0) {
         nar_object_t arg[2] = {array_empty(rt), ls};
-        return nar->new_tuple(rt, 2, arg);
+        return nar->make_tuple(rt, 2, arg);
     }
     chunk_t *chunk = alloc_chunk(rt, ls_.size < max_ ? ls_.size : (nar_size_t) max_);
     memcpy(chunk->items, ls_.items, chunk->size * sizeof(nar_object_t));
     nar_size_t rest_size = ls_.size - chunk->size;
     nar_object_t rest;
     if (rest_size == 0) {
-        rest = nar->new_list(rt, 0, NULL);
+        rest = nar->make_list(rt, 0, NULL);
     } else {
-        rest = nar->new_list(rt, rest_size, ls_.items + chunk->size);
+        rest = nar->make_list(rt, rest_size, ls_.items + chunk->size);
     }
-    return nar->new_tuple(rt, 2, (nar_object_t[]) {chunk_to_object(rt, chunk), rest});
+    return nar->make_tuple(rt, 2, (nar_object_t[]) {chunk_to_object(rt, chunk), rest});
 }
 
 nar_object_t array_unsafeGet(nar_runtime_t rt, nar_object_t index, nar_object_t array) {
@@ -153,7 +151,7 @@ nar_object_t array_indexedMap(
     chunk_t *chunk = object_to_chunk(rt, array);
     chunk_t *result = alloc_chunk(rt, chunk->size);
     for (nar_int_t i = 0; i < chunk->size; i++) {
-        nar_object_t args[2] = {nar->new_int(rt, offset_ + i), chunk->items[i]};
+        nar_object_t args[2] = {nar->make_int(rt, offset_ + i), chunk->items[i]};
         result->items[i] = nar->apply_func(rt, func, 2, args);
     }
     return chunk_to_object(rt, result);

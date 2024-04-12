@@ -1,12 +1,9 @@
-#include <stdlib.h>
-#include <string.h>
 #include "_package.h"
-#include "utils.h"
 
 //TODO: iterate lists instead of using nar_un_list
 
 nar_object_t list_cons(nar_runtime_t rt, nar_object_t head, nar_object_t tail) {
-    return nar->new_list_cons(rt, head, tail);
+    return nar->make_list_cons(rt, head, tail);
 }
 
 nar_object_t list_map2(nar_runtime_t rt, nar_object_t fn, nar_object_t a, nar_object_t b) {
@@ -18,7 +15,7 @@ nar_object_t list_map2(nar_runtime_t rt, nar_object_t fn, nar_object_t a, nar_ob
         nar_object_t arg[2] = {a_.items[i], b_.items[i]};
         items[i] = nar->apply_func(rt, fn, 2, arg);
     }
-    nar_object_t result = nar->new_list(rt, size, items);
+    nar_object_t result = nar->make_list(rt, size, items);
     nar->free(items);
     return result;
 }
@@ -35,7 +32,7 @@ nar_object_t list_map3(
         nar_object_t arg[3] = {a_.items[i], b_.items[i], c_.items[i]};
         items[i] = nar->apply_func(rt, fn, 3, arg);
     }
-    nar_object_t result = nar->new_list(rt, size, items);
+    nar_object_t result = nar->make_list(rt, size, items);
     nar->free(items);
     return result;
 }
@@ -55,7 +52,7 @@ nar_object_t list_map4(
         nar_object_t arg[4] = {a_.items[i], b_.items[i], c_.items[i], d_.items[i]};
         items[i] = nar->apply_func(rt, fn, 4, arg);
     }
-    nar_object_t result = nar->new_list(rt, size, items);
+    nar_object_t result = nar->make_list(rt, size, items);
     nar->free(items);
     return result;
 }
@@ -77,7 +74,7 @@ nar_object_t list_map5(
         nar_object_t arg[5] = {a_.items[i], b_.items[i], c_.items[i], d_.items[i], e_.items[i]};
         items[i] = nar->apply_func(rt, fn, 5, arg);
     }
-    nar_object_t result = nar->new_list(rt, size, items);
+    nar_object_t result = nar->make_list(rt, size, items);
     nar->free(items);
     return result;
 }
@@ -110,7 +107,7 @@ nar_object_t list_sortWith(nar_runtime_t rt, nar_object_t fn, nar_object_t xs) {
     nar_list_t xs_ = nar->to_list(rt, xs);
     rt_and_fn data = {rt, fn};
     qsort_r(xs_.items, xs_.size, sizeof(nar_object_t), &data, &with_fn);
-    return nar->new_list(rt, xs_.size, xs_.items);
+    return nar->make_list(rt, xs_.size, xs_.items);
 }
 
 int by_fn(void *data, const void *a, const void *b) {
@@ -125,7 +122,7 @@ nar_object_t list_sortBy(nar_runtime_t rt, nar_object_t fn, nar_object_t xs) {
     nar_list_t xs_ = nar->to_list(rt, xs);
     rt_and_fn data = {rt, fn};
     qsort_r(xs_.items, xs_.size, sizeof(nar_object_t), &data, &by_fn);
-    return nar->new_list(rt, xs_.size, xs_.items);
+    return nar->make_list(rt, xs_.size, xs_.items);
 }
 
 void register_list(nar_runtime_t rt) {
