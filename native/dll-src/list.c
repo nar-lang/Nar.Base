@@ -90,13 +90,13 @@ int with_fn(void *data, const void *a, const void *b) {
     nar_object_t arg[2] = {*(nar_object_t *) a, *(nar_object_t *) b};
     nar_object_t res = nar->apply_func(rt, fn, 2, arg);
     nar_option_t res_ = nar->to_option(rt, res);
-    if (strcmp(res_.name, "Nar.Base.Basics.Order#LT") == 0) {
+    if (strcmp(res_.name, Nar_Base_Basics_Order__LT) == 0) {
         return -1;
     }
-    if (strcmp(res_.name, "Nar.Base.Basics.Order#GT") == 0) {
+    if (strcmp(res_.name, Nar_Base_Basics_Order__GT) == 0) {
         return 1;
     }
-    if (strcmp(res_.name, "Nar.Base.Basics.Order#EQ") == 0) {
+    if (strcmp(res_.name, Nar_Base_Basics_Order__EQ) == 0) {
         return 0;
     }
     nar->fail(rt, "Nar.Base.List.sortWith: expected that predicate returns Nar.Base.Basics.Order");

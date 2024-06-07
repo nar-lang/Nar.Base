@@ -396,9 +396,9 @@ nar_object_t string_toInt(nar_runtime_t rt, nar_object_t s) {
     nar_string_t end;
     nar_int_t result = strtol(value, &end, 10);
     if (end == value || end != value + strlen(value)) {
-        return nar->make_option(rt, "Nar.Base.Maybe.Maybe#Nothing", 0, NULL);
+        return nar->make_option(rt, Nar_Base_Maybe_Maybe__Nothing, 0, NULL);
     } else {
-        return nar->make_option(rt, "Nar.Base.Maybe.Maybe#Just", 1,
+        return nar->make_option(rt, Nar_Base_Maybe_Maybe__Just, 1,
                 (nar_object_t[]) {nar->make_int(rt, result)});
     }
 }
@@ -417,9 +417,9 @@ nar_object_t string_toFloat(nar_runtime_t rt, nar_object_t s) {
     nar_string_t end;
     nar_float_t result = strtod(value, &end);
     if (end == value || end != value + strlen(value)) {
-        return nar->make_option(rt, "Nar.Base.Maybe.Maybe#Nothing", 0, NULL);
+        return nar->make_option(rt, Nar_Base_Maybe_Maybe__Nothing, 0, NULL);
     } else {
-        return nar->make_option(rt, "Nar.Base.Maybe.Maybe#Just", 1,
+        return nar->make_option(rt, Nar_Base_Maybe_Maybe__Just, 1,
                 (nar_object_t[]) {nar->make_float(rt, result)});
     }
 }
@@ -453,7 +453,7 @@ nar_object_t string_uncons(nar_runtime_t rt, nar_object_t string) {
 
     nar_object_t result;
     if (fstring_len == 0) {
-        result = nar->make_option(rt, "Nar.Base.Maybe.Maybe#Nothing", 0, NULL);
+        result = nar->make_option(rt, Nar_Base_Maybe_Maybe__Nothing, 0, NULL);
     } else {
         size_t string_result_len = (fstring_len - 1) * MAX_U8_SIZE;
         nar_string_t string_result = nar->alloc(sizeof(char) * (string_result_len + 1));
@@ -463,7 +463,7 @@ nar_object_t string_uncons(nar_runtime_t rt, nar_object_t string) {
 
         nar_object_t optValue = nar->make_tuple(rt, 2,
                 (nar_object_t[]) {nar->make_char(rt, fstring[0]), result_obj});
-        result = nar->make_option(rt, "Nar.Base.Maybe.Maybe#Just", 1, &optValue);
+        result = nar->make_option(rt, Nar_Base_Maybe_Maybe__Just, 1, &optValue);
     }
 
     nar->free(fstring);

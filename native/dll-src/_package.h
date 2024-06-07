@@ -8,6 +8,7 @@
 #include <stdbool.h>
 #include <vector.h>
 #include <wchar.h>
+#include "include/Nar.Base.h"
 
 nar_t *nar;
 

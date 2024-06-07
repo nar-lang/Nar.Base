@@ -29,31 +29,31 @@ nar_object_t debug_getType(nar_runtime_t rt, nar_object_t x) {
     nar_object_kind_t kind = nar->object_get_kind(rt, x);
     switch (kind) {
         case NAR_OBJECT_KIND_UNKNOWN:
-            return nar->make_option(rt, "Nar.Base.Debug.Type#TypeUnknown", 0, NULL);
+            return nar->make_option(rt, Nar_Base_Debug_Type__TypeUnknown, 0, NULL);
         case NAR_OBJECT_KIND_UNIT:
-            return nar->make_option(rt, "Nar.Base.Debug.Type#TypeUnit", 0, NULL);
+            return nar->make_option(rt, Nar_Base_Debug_Type__TypeUnit, 0, NULL);
         case NAR_OBJECT_KIND_INT:
-            return nar->make_option(rt, "Nar.Base.Debug.Type#TypeInt", 0, NULL);
+            return nar->make_option(rt, Nar_Base_Debug_Type__TypeInt, 0, NULL);
         case NAR_OBJECT_KIND_FLOAT:
-            return nar->make_option(rt, "Nar.Base.Debug.Type#TypeFloat", 0, NULL);
+            return nar->make_option(rt, Nar_Base_Debug_Type__TypeFloat, 0, NULL);
         case NAR_OBJECT_KIND_STRING:
-            return nar->make_option(rt, "Nar.Base.Debug.Type#TypeString", 0, NULL);
+            return nar->make_option(rt, Nar_Base_Debug_Type__TypeString, 0, NULL);
         case NAR_OBJECT_KIND_CHAR:
-            return nar->make_option(rt, "Nar.Base.Debug.Type#TypeChar", 0, NULL);
+            return nar->make_option(rt, Nar_Base_Debug_Type__TypeChar, 0, NULL);
         case NAR_OBJECT_KIND_RECORD:
-            return nar->make_option(rt, "Nar.Base.Debug.Type#TypeRecord", 0, NULL);
+            return nar->make_option(rt, Nar_Base_Debug_Type__TypeRecord, 0, NULL);
         case NAR_OBJECT_KIND_TUPLE:
-            return nar->make_option(rt, "Nar.Base.Debug.Type#TypeTuple", 0, NULL);
+            return nar->make_option(rt, Nar_Base_Debug_Type__TypeTuple, 0, NULL);
         case NAR_OBJECT_KIND_LIST:
-            return nar->make_option(rt, "Nar.Base.Debug.Type#TypeList", 0, NULL);
+            return nar->make_option(rt, Nar_Base_Debug_Type__TypeList, 0, NULL);
         case NAR_OBJECT_KIND_OPTION:
-            return nar->make_option(rt, "Nar.Base.Debug.Type#TypeOption", 0, NULL);
+            return nar->make_option(rt, Nar_Base_Debug_Type__TypeOption, 0, NULL);
         case NAR_OBJECT_KIND_FUNCTION:
-            return nar->make_option(rt, "Nar.Base.Debug.Type#TypeFunction", 0, NULL);
+            return nar->make_option(rt, Nar_Base_Debug_Type__TypeFunction, 0, NULL);
         case NAR_OBJECT_KIND_CLOSURE:
-            return nar->make_option(rt, "Nar.Base.Debug.Type#TypeClosure", 0, NULL);
+            return nar->make_option(rt, Nar_Base_Debug_Type__TypeClosure, 0, NULL);
         case NAR_OBJECT_KIND_NATIVE:
-            return nar->make_option(rt, "Nar.Base.Debug.Type#TypeNative", 0, NULL);
+            return nar->make_option(rt, Nar_Base_Debug_Type__TypeNative, 0, NULL);
         default:
             nar->fail(rt, "debug_getType: enum case is out of range");
             return nar->make_unit(rt);
