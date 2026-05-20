@@ -1,6 +1,5 @@
 {
   "name": "Nar.Base",
-  "version": 100,
-  "nar-version": 100,
-  "dependencies": {}
+  "repository": "github.com/nar-lang/Nar.Base",
+  "dependencies": []
 }
