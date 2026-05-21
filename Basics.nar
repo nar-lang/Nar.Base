@@ -19,27 +19,27 @@ alias native Unit
 
 // EQUALITY
 
-def native eq(a: eq, b: eq): Bool
+def native eq(a: eq, b: eq) -> Bool
 
-def native neq(a: eq, b: eq): Bool
+def native neq(a: eq, b: eq) -> Bool
 
 // COMPARISONS
 
-def native lt(l: cmp, r: cmp): Bool
+def native lt(l: cmp, r: cmp) -> Bool
 
-def native gt(l: cmp, r: cmp): Bool
+def native gt(l: cmp, r: cmp) -> Bool
 
-def native le(l: cmp, r: cmp): Bool
+def native le(l: cmp, r: cmp) -> Bool
 
-def native ge(l: cmp, r: cmp): Bool
+def native ge(l: cmp, r: cmp) -> Bool
 
-def min(x: cmp, y: cmp): cmp =
+def min(x: cmp, y: cmp) -> cmp =
   if lt(x, y) then x else y
 
-def max(x: cmp, y: cmp): cmp =
+def max(x: cmp, y: cmp) -> cmp =
   if gt(x, y) then x else y
 
-def compare(l: cmp, r: cmp): Order =
+def compare(l: cmp, r: cmp) -> Order =
   if eq(l, r)
   then EQ
   else if lt(l, r) then LT else GT
@@ -55,38 +55,38 @@ type Bool
   = True
   | False
 
-def native not(x: Bool): Bool
+def native not(x: Bool) -> Bool
 
-def native and(x: Bool, y: Bool): Bool
+def native and(x: Bool, y: Bool) -> Bool
 
-def native or(x: Bool, y: Bool): Bool
+def native or(x: Bool, y: Bool) -> Bool
 
-def native xor(x: Bool, y: Bool): Bool
+def native xor(x: Bool, y: Bool) -> Bool
 
 // FUNCTION HELPERS
 
-def composeL(g: (b):c, f: (a):b, x: a): c =
+def composeL(g: (b) -> c, f: (a) -> b, x: a) -> c =
   g(f(x))
 
-def composeR(f: (a):b, g: (b):c, x: a): c =
+def composeR(f: (a) -> b, g: (b) -> c, x: a) -> c =
   g(f(x))
 
-def apR(x: a, f: (a):b): b =
+def apR(x: a, f: (a) -> b) -> b =
   f(x)
 
-def apL(f: (a):b, x: a): b =
+def apL(f: (a) -> b, x: a) -> b =
   f(x)
 
-def identity(x: a): a =
+def identity(x: a) -> a =
   x
 
-def always(a: a, _: b): a =
+def always(a: a, _: b) -> a =
   a
 
 type Never
   = hidden JustOneMore(Never)
 
-def never(x: Never): a =
+def never(x: Never) -> a =
   select x
-    case JustOneMore(n) -> never(n)
+    case JustOneMore(n) => never(n)
   end

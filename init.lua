@@ -3,6 +3,8 @@ local rt = require("lunar.runtime")
 local Object = rt.Object
 
 -- Helper: compare two values according to Nar semantics
+local cmp -- forward declaration (mutually recursive with cmpList)
+
 local function cmpList(la, lb)
     if #la < #lb then
         return -1
@@ -19,7 +21,7 @@ local function cmpList(la, lb)
     end
 end
 
-local function cmp(a, b)
+function cmp(a, b)
     local ka, kb = rt:objectKind(a), rt:objectKind(b)
     if ka ~= kb then
         error("types are not equal")
@@ -244,32 +246,41 @@ rt:registerDef("Nar.Base.Math", "logBase", function(rt, base, n)
 end, 2)
 
 -- === Nar.Base.Bitwise ===
+-- Arithmetic right shift emulated on top of Lua 5.3+ logical `>>`.
+local function arshift(x, n)
+    if x < 0 then
+        return ~((~x) >> n)
+    else
+        return x >> n
+    end
+end
+
 rt:registerDef("Nar.Base.Bitwise", "and", function(rt, x, y)
-    return rt:makeInt(bit32.band(x.value, y.value))
+    return rt:makeInt(x.value & y.value)
 end, 2)
 
 rt:registerDef("Nar.Base.Bitwise", "or", function(rt, x, y)
-    return rt:makeInt(bit32.bor(x.value, y.value))
+    return rt:makeInt(x.value | y.value)
 end, 2)
 
 rt:registerDef("Nar.Base.Bitwise", "xor", function(rt, x, y)
-    return rt:makeInt(bit32.bxor(x.value, y.value))
+    return rt:makeInt(x.value ~ y.value)
 end, 2)
 
 rt:registerDef("Nar.Base.Bitwise", "complement", function(rt, x)
-    return rt:makeInt(bit32.bnot(x.value))
+    return rt:makeInt(~x.value)
 end, 1)
 
 rt:registerDef("Nar.Base.Bitwise", "shiftLeftBy", function(rt, x, y)
-    return rt:makeInt(bit32.lshift(y.value, x.value))
+    return rt:makeInt(y.value << x.value)
 end, 2)
 
 rt:registerDef("Nar.Base.Bitwise", "shiftRightBy", function(rt, x, y)
-    return rt:makeInt(bit32.arshift(y.value, x.value))
+    return rt:makeInt(arshift(y.value, x.value))
 end, 2)
 
 rt:registerDef("Nar.Base.Bitwise", "shiftRightZfBy", function(rt, x, y)
-    return rt:makeInt(bit32.rshift(y.value, x.value))
+    return rt:makeInt(y.value >> x.value)
 end, 2)
 
 -- === Nar.Base.Char ===
