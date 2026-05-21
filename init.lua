@@ -113,9 +113,13 @@ rt:registerDef("Nar.Base.Math", "add", function(rt, x, y)
     if rt:objectKind(x) ~= rt:objectKind(y) then error("types are not equal") end
     local kind = rt:objectKind(x)
     local v = x.value + y.value
-    if kind == OK.INT then return rt:makeInt(v)
-    elseif kind == OK.FLOAT then return rt:makeFloat(v)
-    else error("unsupported kind") end
+    if kind == OK.INT then
+        return rt:makeInt(v)
+    elseif kind == OK.FLOAT then
+        return rt:makeFloat(v)
+    else
+        error("unsupported kind")
+    end
 end, 2)
 
 rt:registerDef("Nar.Base.Math", "sub", function(rt, x, y)
@@ -123,9 +127,13 @@ rt:registerDef("Nar.Base.Math", "sub", function(rt, x, y)
     if rt:objectKind(x) ~= rt:objectKind(y) then error("types are not equal") end
     local kind = rt:objectKind(x)
     local v = x.value - y.value
-    if kind == OK.INT then return rt:makeInt(v)
-    elseif kind == OK.FLOAT then return rt:makeFloat(v)
-    else error("unsupported kind") end
+    if kind == OK.INT then
+        return rt:makeInt(v)
+    elseif kind == OK.FLOAT then
+        return rt:makeFloat(v)
+    else
+        error("unsupported kind")
+    end
 end, 2)
 
 rt:registerDef("Nar.Base.Math", "mul", function(rt, x, y)
@@ -133,9 +141,13 @@ rt:registerDef("Nar.Base.Math", "mul", function(rt, x, y)
     if rt:objectKind(x) ~= rt:objectKind(y) then error("types are not equal") end
     local kind = rt:objectKind(x)
     local v = x.value * y.value
-    if kind == OK.INT then return rt:makeInt(v)
-    elseif kind == OK.FLOAT then return rt:makeFloat(v)
-    else error("unsupported kind") end
+    if kind == OK.INT then
+        return rt:makeInt(v)
+    elseif kind == OK.FLOAT then
+        return rt:makeFloat(v)
+    else
+        error("unsupported kind")
+    end
 end, 2)
 
 rt:registerDef("Nar.Base.Math", "div", function(rt, x, y)
@@ -158,7 +170,8 @@ rt:registerDef("Nar.Base.Math", "neg", function(rt, x)
 end, 1)
 
 rt:registerDef("Nar.Base.Math", "abs", function(rt, x)
-    if x.value >= 0 then return x
+    if x.value >= 0 then
+        return x
     else
         if rt:objectKind(x) == Object.ObjectKind.INT then
             return rt:makeInt(-x.value)
@@ -172,8 +185,11 @@ rt:registerDef("Nar.Base.Math", "toPower", function(rt, pow, num)
     if rt:objectKind(pow) ~= rt:objectKind(num) then error("types are not equal") end
     local kind = rt:objectKind(num)
     local v = num.value ^ pow.value
-    if kind == Object.ObjectKind.INT then return rt:makeInt(v)
-    else return rt:makeFloat(v) end
+    if kind == Object.ObjectKind.INT then
+        return rt:makeInt(v)
+    else
+        return rt:makeFloat(v)
+    end
 end, 2)
 
 rt:registerDef("Nar.Base.Math", "isNan", function(rt, n)
@@ -354,7 +370,7 @@ end, 1)
 
 rt:registerDef("Nar.Base.String", "slice", function(rt, begin, end_, s)
     local str = rt:toString(s)
-    local b = rt:toInt(begin) + 1  -- Lua is 1-indexed
+    local b = rt:toInt(begin) + 1 -- Lua is 1-indexed
     local e = rt:toInt(end_)
     return rt:makeString(str:sub(b, e))
 end, 3)
@@ -370,7 +386,7 @@ end, 2)
 rt:registerDef("Nar.Base.String", "endsWith", function(rt, sub, string)
     local s = rt:toString(string)
     local u = rt:toString(sub)
-    return rt:makeBool(s:sub(-#u) == u)
+    return rt:makeBool(s:sub(- #u) == u)
 end, 2)
 
 rt:registerDef("Nar.Base.String", "toUpper", function(rt, s)
