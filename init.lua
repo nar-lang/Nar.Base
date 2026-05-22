@@ -1,6 +1,14 @@
 --- Nar.Base native implementations (Lua), ported from JavaScript.
-local rt = require("lunar.runtime")
-local Object = rt.Object
+---
+--- The package returns `function(rt)` so the host CLI can wire natives into a
+--- specific `Runtime` instance after loading the bytecode. Helpers that
+--- reference `rt` (e.g. `cmp`) live inside the returned function so they
+--- close over the real runtime, not the module table.
+local _Runtime = require("lunar.runtime")
+local Object = _Runtime.Object
+local ObjectKind = _Runtime.ObjectKind
+
+return function(rt)
 
 -- Helper: compare two values according to Nar semantics
 local cmp -- forward declaration (mutually recursive with cmpList)
@@ -27,7 +35,7 @@ function cmp(a, b)
         error("types are not equal")
     end
 
-    local OK = Object.ObjectKind
+    local OK = ObjectKind
     if ka == OK.INT or ka == OK.FLOAT or ka == OK.CHAR or ka == OK.STRING then
         local va, vb = a.value, b.value
         if va < vb then return -1 elseif va > vb then return 1 else return 0 end
@@ -111,7 +119,7 @@ end, 2)
 
 -- === Nar.Base.Math ===
 rt:registerDef("Nar.Base.Math", "add", function(rt, x, y)
-    local OK = Object.ObjectKind
+    local OK = ObjectKind
     if rt:objectKind(x) ~= rt:objectKind(y) then error("types are not equal") end
     local kind = rt:objectKind(x)
     local v = x.value + y.value
@@ -125,7 +133,7 @@ rt:registerDef("Nar.Base.Math", "add", function(rt, x, y)
 end, 2)
 
 rt:registerDef("Nar.Base.Math", "sub", function(rt, x, y)
-    local OK = Object.ObjectKind
+    local OK = ObjectKind
     if rt:objectKind(x) ~= rt:objectKind(y) then error("types are not equal") end
     local kind = rt:objectKind(x)
     local v = x.value - y.value
@@ -139,7 +147,7 @@ rt:registerDef("Nar.Base.Math", "sub", function(rt, x, y)
 end, 2)
 
 rt:registerDef("Nar.Base.Math", "mul", function(rt, x, y)
-    local OK = Object.ObjectKind
+    local OK = ObjectKind
     if rt:objectKind(x) ~= rt:objectKind(y) then error("types are not equal") end
     local kind = rt:objectKind(x)
     local v = x.value * y.value
@@ -153,7 +161,7 @@ rt:registerDef("Nar.Base.Math", "mul", function(rt, x, y)
 end, 2)
 
 rt:registerDef("Nar.Base.Math", "div", function(rt, x, y)
-    local OK = Object.ObjectKind
+    local OK = ObjectKind
     if rt:objectKind(x) ~= rt:objectKind(y) then error("types are not equal") end
     if rt:objectKind(x) == OK.INT then
         if y.value == 0 then return rt:makeInt(0) end
@@ -164,7 +172,7 @@ rt:registerDef("Nar.Base.Math", "div", function(rt, x, y)
 end, 2)
 
 rt:registerDef("Nar.Base.Math", "neg", function(rt, x)
-    if rt:objectKind(x) == Object.ObjectKind.INT then
+    if rt:objectKind(x) == ObjectKind.INT then
         return rt:makeInt(-x.value)
     else
         return rt:makeFloat(-x.value)
@@ -175,7 +183,7 @@ rt:registerDef("Nar.Base.Math", "abs", function(rt, x)
     if x.value >= 0 then
         return x
     else
-        if rt:objectKind(x) == Object.ObjectKind.INT then
+        if rt:objectKind(x) == ObjectKind.INT then
             return rt:makeInt(-x.value)
         else
             return rt:makeFloat(-x.value)
@@ -187,7 +195,7 @@ rt:registerDef("Nar.Base.Math", "toPower", function(rt, pow, num)
     if rt:objectKind(pow) ~= rt:objectKind(num) then error("types are not equal") end
     local kind = rt:objectKind(num)
     local v = num.value ^ pow.value
-    if kind == Object.ObjectKind.INT then
+    if kind == ObjectKind.INT then
         return rt:makeInt(v)
     else
         return rt:makeFloat(v)
@@ -302,7 +310,7 @@ end, 1)
 
 -- === Nar.Base.Debug ===
 local function valueToString(x)
-    local OK = Object.ObjectKind
+    local OK = ObjectKind
     local kind = Object.getKind(x)
     if kind == OK.CHAR then
         return string.format("'%c'", x.value)
@@ -419,3 +427,5 @@ end, 1)
 rt:registerDef("Nar.Base.String", "trimRight", function(rt, s)
     return rt:makeString(rt:toString(s):match("(.-)%s*$"))
 end, 1)
+
+end -- return function(rt)
