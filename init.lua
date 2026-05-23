@@ -38,37 +38,64 @@ return function(rt)
         if ka == OK.INT or ka == OK.FLOAT or ka == OK.CHAR or ka == OK.STRING then
             local va, vb = a.value, b.value
             if va < vb then return -1 elseif va > vb then return 1 else return 0 end
-        elseif ka == OK.LIST or ka == OK.TUPLE then
+        elseif ka == OK.LIST then
             local la, lb = rt:toList(a), rt:toList(b)
+            return cmpList(la, lb)
+        elseif ka == OK.TUPLE then
+            local la, lb = rt:toTuple(a), rt:toTuple(b)
             return cmpList(la, lb)
         elseif ka == OK.UNIT then
             return 0
-        elseif ka == OK.RECORD then
-            local ra, rb = rt:toRecord(a), rt:toRecord(b)
-            local ka_keys, kb_keys = {}, {}
-            for k, _ in pairs(ra) do ka_keys[#ka_keys + 1] = k end
-            for k, _ in pairs(rb) do kb_keys[#kb_keys + 1] = k end
-            table.sort(ka_keys)
-            table.sort(kb_keys)
-            if #ka_keys < #kb_keys then
+        elseif ka == OK.OPTION then
+            if a.name < b.name then
                 return -1
-            elseif #ka_keys > #kb_keys then
+            elseif a.name > b.name then
                 return 1
             else
-                for i = 1, #ka_keys do
-                    if ka_keys[i] ~= kb_keys[i] then
-                        return ka_keys[i] < kb_keys[i] and -1 or 1
+                if a.name == "Nar.Base.Array.Array#ArrayImpl" then
+                    local fnIndex = rt.program.exports["Nar.Base.Array.toList"]
+                    if fnIndex then
+                        local clos = Object.makeClosure(fnIndex, {})
+                        return cmp(rt:applyFunc(clos, { a }), rt:applyFunc(clos, { b }))
                     end
                 end
-                for i = 1, #ka_keys do
-                    local c = cmp(ra[ka_keys[i]], rb[kb_keys[i]])
-                    if c ~= 0 then return c end
-                end
-                return 0
+                return cmpList(a.values, b.values)
             end
-        elseif ka == OK.FUNC then
-            local ia, ib = a.index or 0, b.index or 0
+        elseif ka == OK.RECORD then
+            local rka, rva = rt:toRecord(a)
+            local rkb, rvb = rt:toRecord(b)
+            if #rka < #rkb then
+                return -1
+            elseif #rka > #rkb then
+                return 1
+            end
+            -- Sort key arrays alongside their value arrays for stable comparison.
+            local idxA, idxB = {}, {}
+            for i = 1, #rka do
+                idxA[i] = i; idxB[i] = i
+            end
+            table.sort(idxA, function(x, y) return rka[x] < rka[y] end)
+            table.sort(idxB, function(x, y) return rkb[x] < rkb[y] end)
+            for i = 1, #rka do
+                local kxa, kxb = rka[idxA[i]], rkb[idxB[i]]
+                if kxa ~= kxb then
+                    return kxa < kxb and -1 or 1
+                end
+            end
+            for i = 1, #rka do
+                local c = cmp(rva[idxA[i]], rvb[idxB[i]])
+                if c ~= 0 then return c end
+            end
+            return 0
+        elseif ka == OK.FUNCTION or ka == OK.CLOSURE then
+            local ia = a.fnIndex or a.arity or 0
+            local ib = b.fnIndex or b.arity or 0
             if ia < ib then return -1 elseif ia > ib then return 1 else return 0 end
+        elseif ka == OK.NATIVE then
+            if a.ptr == b.ptr then return 0 end
+            local la = type(a.ptr) == "table" and #a.ptr or 0
+            local lb = type(b.ptr) == "table" and #b.ptr or 0
+            if la < lb then return -1 else return 1 end
         else
             error("unsupported kind for comparison")
         end
@@ -163,8 +190,11 @@ return function(rt)
         local OK = ObjectKind
         if rt:objectKind(x) ~= rt:objectKind(y) then error("types are not equal") end
         if rt:objectKind(x) == OK.INT then
-            if y.value == 0 then return rt:makeInt(0) end
-            return rt:makeInt(math.floor(x.value / y.value))
+            if y.value == 0 then return rt:makeInt(0 / 0) end
+            -- JS uses `| 0` truncation; Lua // is floor division. Use trunc.
+            local q = x.value / y.value
+            if q >= 0 then return rt:makeInt(math.floor(q)) end
+            return rt:makeInt(-math.floor(-q))
         else
             return rt:makeFloat(x.value / y.value)
         end
@@ -235,7 +265,9 @@ return function(rt)
     end, 1)
 
     rt:registerDef("Nar.Base.Math", "remainderBy", function(rt, n, x)
-        return rt:makeInt(x.value % n.value)
+        if n.value == 0 then return rt:makeInt(0 / 0) end
+        -- JS `%` is trunc-mod (result has sign of dividend); Lua `%` is floor-mod.
+        return rt:makeInt(math.floor(math.fmod(x.value, n.value)))
     end, 2)
 
     rt:registerDef("Nar.Base.Math", "modBy", function(rt, modulus, x)
@@ -308,17 +340,59 @@ return function(rt)
     end, 1)
 
     -- === Nar.Base.Debug ===
-    local function valueToString(x)
+    local valueToString
+    valueToString = function(x)
         local OK = ObjectKind
         local kind = Object.getKind(x)
         if kind == OK.CHAR then
-            return string.format("'%c'", x.value)
+            return utf8.char(x.value)
         elseif kind == OK.STRING then
-            return string.format('"%s"', x.value:gsub('"', '\\"'))
-        elseif kind == OK.INT or kind == OK.FLOAT then
+            return x.value
+        elseif kind == OK.INT then
             return tostring(x.value)
+        elseif kind == OK.FLOAT then
+            local v = x.value
+            if v ~= v then return "NaN" end
+            if v == math.huge then return "Infinity" end
+            if v == -math.huge then return "-Infinity" end
+            local s = tostring(v)
+            -- Lua prints 42.0 for floats; Nar tests don't exercise this,
+            -- but keep a trailing ".0" so float/int are distinguishable.
+            if not s:find("[%.eE]") then s = s .. ".0" end
+            return s
+        elseif kind == OK.UNIT then
+            return "()"
+        elseif kind == OK.LIST then
+            local items = rt:toList(x)
+            local parts = {}
+            for i, it in ipairs(items) do parts[i] = valueToString(it) end
+            return "[" .. table.concat(parts, ", ") .. "]"
+        elseif kind == OK.TUPLE then
+            local items = rt:toTuple(x)
+            local parts = {}
+            for i, it in ipairs(items) do parts[i] = valueToString(it) end
+            return "(" .. table.concat(parts, ", ") .. ")"
+        elseif kind == OK.RECORD then
+            local keys, values = rt:toRecord(x)
+            local parts = {}
+            for i = 1, #keys do
+                parts[i] = keys[i] .. " = " .. valueToString(values[i])
+            end
+            return "{" .. table.concat(parts, ", ") .. "}"
+        elseif kind == OK.OPTION then
+            local name, values = rt:toOption(x)
+            -- Option names are stored as "Module.Type#Ctor"; render just the ctor.
+            local ctor = name:match("#(.+)$") or name
+            if #values == 0 then return ctor end
+            local parts = {}
+            for i, v in ipairs(values) do parts[i] = valueToString(v) end
+            return ctor .. "(" .. table.concat(parts, ", ") .. ")"
+        elseif kind == OK.NATIVE then
+            return "<native>"
+        elseif kind == OK.FUNCTION or kind == OK.CLOSURE then
+            return "<function>"
         else
-            return "{...}"
+            return "<unknown>"
         end
     end
 
@@ -342,7 +416,14 @@ return function(rt)
     end, 1)
 
     rt:registerDef("Nar.Base.String", "reverse", function(rt, s)
-        return rt:makeString(string.reverse(rt:toString(s)))
+        local str = rt:toString(s)
+        local cps = {}
+        local n = 0
+        for _, cp in utf8.codes(str) do
+            n = n + 1; cps[n] = cp
+        end
+        for i = 1, n // 2 do cps[i], cps[n - i + 1] = cps[n - i + 1], cps[i] end
+        return rt:makeString(utf8.char(table.unpack(cps)))
     end, 1)
 
     rt:registerDef("Nar.Base.String", "append", function(rt, a, b)
@@ -353,8 +434,21 @@ return function(rt)
         local str = rt:toString(string)
         local pattern = rt:toString(sep)
         local result = {}
-        for part in str:gmatch("([^" .. pattern .. "]+)") do
-            table.insert(result, rt:makeString(part))
+        if #pattern == 0 then
+            for i = 1, #str do
+                result[i] = rt:makeString(str:sub(i, i))
+            end
+            return rt:makeList(result)
+        end
+        local startPos = 1
+        while true do
+            local i, j = str:find(pattern, startPos, true)
+            if i == nil then
+                result[#result + 1] = rt:makeString(str:sub(startPos))
+                break
+            end
+            result[#result + 1] = rt:makeString(str:sub(startPos, i - 1))
+            startPos = j + 1
         end
         return rt:makeList(result)
     end, 2)
@@ -388,9 +482,15 @@ return function(rt)
 
     rt:registerDef("Nar.Base.String", "slice", function(rt, begin, end_, s)
         local str = rt:toString(s)
-        local b = rt:toInt(begin) + 1 -- Lua is 1-indexed
+        local len = #str
+        local b = rt:toInt(begin)
         local e = rt:toInt(end_)
-        return rt:makeString(str:sub(b, e))
+        -- JS `String.slice`: negative indices wrap from end; clamp to length.
+        if b < 0 then b = math.max(0, len + b) end
+        if e < 0 then e = math.max(0, len + e) end
+        if e > len then e = len end
+        if b >= e then return rt:makeString("") end
+        return rt:makeString(str:sub(b + 1, e))
     end, 3)
 
     rt:registerDef("Nar.Base.String", "contains", function(rt, sub, string)
@@ -426,4 +526,365 @@ return function(rt)
     rt:registerDef("Nar.Base.String", "trimRight", function(rt, s)
         return rt:makeString(rt:toString(s):match("(.-)%s*$"))
     end, 1)
+
+    rt:registerDef("Nar.Base.String", "indices", function(rt, sub, string)
+        local s = rt:toString(string)
+        local u = rt:toString(sub)
+        if #u == 0 then return rt:makeList({}) end
+        local result = {}
+        local idx = 1
+        while true do
+            local i = s:find(u, idx, true)
+            if i == nil then break end
+            result[#result + 1] = rt:makeInt(i - 1)
+            idx = i + 1
+        end
+        return rt:makeList(result)
+    end, 2)
+
+    local MAYBE_NOTHING = "Nar.Base.Maybe.Maybe#Nothing"
+    local MAYBE_JUST = "Nar.Base.Maybe.Maybe#Just"
+
+    rt:registerDef("Nar.Base.String", "toInt", function(rt, n)
+        local str = rt:toString(n)
+        if #str == 0 then return rt:makeOption(MAYBE_NOTHING, {}) end
+        local code0 = str:byte(1)
+        local start = (code0 == 0x2B or code0 == 0x2D) and 2 or 1
+        local total = 0
+        local consumed = false
+        for j = start, #str do
+            local code = str:byte(j)
+            if code < 0x30 or code > 0x39 then
+                return rt:makeOption(MAYBE_NOTHING, {})
+            end
+            total = 10 * total + code - 0x30
+            consumed = true
+        end
+        if not consumed then return rt:makeOption(MAYBE_NOTHING, {}) end
+        if code0 == 0x2D then total = -total end
+        return rt:makeOption(MAYBE_JUST, { rt:makeInt(total) })
+    end, 1)
+
+    rt:registerDef("Nar.Base.String", "fromInt", function(rt, n)
+        return rt:makeString(tostring(rt:toInt(n)))
+    end, 1)
+
+    rt:registerDef("Nar.Base.String", "toFloat", function(rt, n)
+        local s = rt:toString(n)
+        if #s == 0 or s:find("[%sxbo]") then
+            return rt:makeOption(MAYBE_NOTHING, {})
+        end
+        local x = tonumber(s)
+        if x == nil or x ~= x then
+            return rt:makeOption(MAYBE_NOTHING, {})
+        end
+        return rt:makeOption(MAYBE_JUST, { rt:makeFloat(x) })
+    end, 1)
+
+    rt:registerDef("Nar.Base.String", "fromFloat", function(rt, n)
+        return rt:makeString(tostring(rt:toFloat(n)))
+    end, 1)
+
+    rt:registerDef("Nar.Base.String", "fromList", function(rt, chars)
+        local list = rt:toList(chars)
+        local parts = {}
+        for i, c in ipairs(list) do
+            parts[i] = utf8.char(c.value)
+        end
+        return rt:makeString(table.concat(parts))
+    end, 1)
+
+    rt:registerDef("Nar.Base.String", "cons", function(rt, c, s)
+        return rt:makeString(utf8.char(rt:toChar(c)) .. rt:toString(s))
+    end, 2)
+
+    rt:registerDef("Nar.Base.String", "uncons", function(rt, str)
+        local s = rt:toString(str)
+        if #s == 0 then
+            return rt:makeOption(MAYBE_NOTHING, {})
+        end
+        local c = utf8.codepoint(s, 1)
+        local nextOffset = utf8.offset(s, 2) or (#s + 1)
+        local rest = s:sub(nextOffset)
+        return rt:makeOption(MAYBE_JUST, {
+            rt:makeTuple({ rt:makeChar(c), rt:makeString(rest) })
+        })
+    end, 1)
+
+    rt:registerDef("Nar.Base.String", "map", function(rt, f, str)
+        local s = rt:toString(str)
+        local parts = {}
+        local n = 0
+        for _, cp in utf8.codes(s) do
+            local r = rt:applyFunc(f, { rt:makeChar(cp) })
+            n = n + 1
+            parts[n] = utf8.char(rt:toChar(r))
+        end
+        return rt:makeString(table.concat(parts))
+    end, 2)
+
+    rt:registerDef("Nar.Base.String", "filter", function(rt, f, str)
+        local s = rt:toString(str)
+        local parts = {}
+        local n = 0
+        for _, cp in utf8.codes(s) do
+            if rt:toBool(rt:applyFunc(f, { rt:makeChar(cp) })) then
+                n = n + 1
+                parts[n] = utf8.char(cp)
+            end
+        end
+        return rt:makeString(table.concat(parts))
+    end, 2)
+
+    rt:registerDef("Nar.Base.String", "foldl", function(rt, f, acc, str)
+        local s = rt:toString(str)
+        for _, cp in utf8.codes(s) do
+            acc = rt:applyFunc(f, { rt:makeChar(cp), acc })
+        end
+        return acc
+    end, 3)
+
+    rt:registerDef("Nar.Base.String", "foldr", function(rt, f, acc, str)
+        local s = rt:toString(str)
+        local cps = {}
+        local n = 0
+        for _, cp in utf8.codes(s) do
+            n = n + 1; cps[n] = cp
+        end
+        for i = n, 1, -1 do
+            acc = rt:applyFunc(f, { rt:makeChar(cps[i]), acc })
+        end
+        return acc
+    end, 3)
+
+    rt:registerDef("Nar.Base.String", "any", function(rt, f, str)
+        local s = rt:toString(str)
+        for _, cp in utf8.codes(s) do
+            if rt:toBool(rt:applyFunc(f, { rt:makeChar(cp) })) then
+                return rt:makeBool(true)
+            end
+        end
+        return rt:makeBool(false)
+    end, 2)
+
+    rt:registerDef("Nar.Base.String", "all", function(rt, f, str)
+        local s = rt:toString(str)
+        for _, cp in utf8.codes(s) do
+            if not rt:toBool(rt:applyFunc(f, { rt:makeChar(cp) })) then
+                return rt:makeBool(false)
+            end
+        end
+        return rt:makeBool(true)
+    end, 2)
+
+    -- === Nar.Base.List ===
+    rt:registerDef("Nar.Base.List", "cons", function(rt, head, tail)
+        return rt:makeListCons(head, tail)
+    end, 2)
+
+    local function listMapN(rt, f, lists)
+        local arrs = {}
+        local minLen = math.huge
+        for i, l in ipairs(lists) do
+            arrs[i] = rt:toList(l)
+            if #arrs[i] < minLen then minLen = #arrs[i] end
+        end
+        if minLen == math.huge then minLen = 0 end
+        local r = {}
+        for i = 1, minLen do
+            local args = {}
+            for j = 1, #arrs do args[j] = arrs[j][i] end
+            r[i] = rt:applyFunc(f, args)
+        end
+        return rt:makeList(r)
+    end
+
+    rt:registerDef("Nar.Base.List", "map2", function(rt, f, a, b)
+        return listMapN(rt, f, { a, b })
+    end, 3)
+
+    rt:registerDef("Nar.Base.List", "map3", function(rt, f, a, b, c)
+        return listMapN(rt, f, { a, b, c })
+    end, 4)
+
+    rt:registerDef("Nar.Base.List", "map4", function(rt, f, a, b, c, d)
+        return listMapN(rt, f, { a, b, c, d })
+    end, 5)
+
+    rt:registerDef("Nar.Base.List", "map5", function(rt, f, a, b, c, d, e)
+        return listMapN(rt, f, { a, b, c, d, e })
+    end, 6)
+
+    rt:registerDef("Nar.Base.List", "sortWith", function(rt, f, xs)
+        local l = rt:toList(xs)
+        table.sort(l, function(a, b)
+            local res = rt:applyFunc(f, { a, b })
+            if res.name == "Nar.Base.Basics.Order#LT" then return true end
+            if res.name == "Nar.Base.Basics.Order#GT" then return false end
+            if res.name == "Nar.Base.Basics.Order#EQ" then return false end
+            error("expected Nar.Base.Basics.Order")
+        end)
+        return rt:makeList(l)
+    end, 2)
+
+    rt:registerDef("Nar.Base.List", "sortBy", function(rt, f, xs)
+        local l = rt:toList(xs)
+        table.sort(l, function(a, b)
+            local xa = rt:applyFunc(f, { a })
+            local xb = rt:applyFunc(f, { b })
+            return cmp(xa, xb) < 0
+        end)
+        return rt:makeList(l)
+    end, 2)
+
+    -- === Nar.Base.Debug.getType ===
+    -- (not present in the JS reference; Debug.nar declares it as native and
+    -- Nar.Tests/Expect.nar uses it, so map ObjectKind → Debug.Type option.)
+    local TYPE_OPTION = {
+        [ObjectKind.UNKNOWN] = "Nar.Base.Debug.Type#TypeUnknown",
+        [ObjectKind.UNIT] = "Nar.Base.Debug.Type#TypeUnit",
+        [ObjectKind.INT] = "Nar.Base.Debug.Type#TypeInt",
+        [ObjectKind.FLOAT] = "Nar.Base.Debug.Type#TypeFloat",
+        [ObjectKind.STRING] = "Nar.Base.Debug.Type#TypeString",
+        [ObjectKind.CHAR] = "Nar.Base.Debug.Type#TypeChar",
+        [ObjectKind.RECORD] = "Nar.Base.Debug.Type#TypeRecord",
+        [ObjectKind.TUPLE] = "Nar.Base.Debug.Type#TypeTuple",
+        [ObjectKind.LIST] = "Nar.Base.Debug.Type#TypeList",
+        [ObjectKind.OPTION] = "Nar.Base.Debug.Type#TypeOption",
+        [ObjectKind.FUNCTION] = "Nar.Base.Debug.Type#TypeFunction",
+        [ObjectKind.CLOSURE] = "Nar.Base.Debug.Type#TypeClosure",
+        [ObjectKind.NATIVE] = "Nar.Base.Debug.Type#TypeNative",
+    }
+    rt:registerDef("Nar.Base.Debug", "getType", function(rt, x)
+        local name = TYPE_OPTION[rt:objectKind(x)] or "Nar.Base.Debug.Type#TypeUnknown"
+        return rt:makeOption(name, {})
+    end, 1)
+
+    -- === Nar.Base.NativeArray ===
+    local EMPTY_ARRAY = rt:makeNative({})
+
+    rt:registerDef("Nar.Base.NativeArray", "empty", function(_rt)
+        return EMPTY_ARRAY
+    end, 0)
+
+    rt:registerDef("Nar.Base.NativeArray", "singleton", function(rt, item)
+        return rt:makeNative({ item })
+    end, 1)
+
+    rt:registerDef("Nar.Base.NativeArray", "length", function(rt, array)
+        return rt:makeInt(#array.ptr)
+    end, 1)
+
+    rt:registerDef("Nar.Base.NativeArray", "initialize", function(rt, size, offset, func)
+        local n = rt:toInt(size)
+        local off = rt:toInt(offset)
+        local result = {}
+        for i = 1, n do
+            result[i] = rt:applyFunc(func, { rt:makeInt(off + i - 1) })
+        end
+        return rt:makeNative(result)
+    end, 3)
+
+    rt:registerDef("Nar.Base.NativeArray", "initializeFromList", function(rt, max, ls)
+        local maxV = rt:toInt(max)
+        local result = {}
+        local current = ls
+        local i = 0
+        while i < maxV and getmetatable(current) == Object.META.LIST do
+            i = i + 1
+            result[i] = current.value
+            current = current.next
+        end
+        if current == nil then current = rt:makeEmptyList() end
+        return rt:makeTuple({ rt:makeNative(result), current })
+    end, 2)
+
+    rt:registerDef("Nar.Base.NativeArray", "unsafeGet", function(_rt, index, array)
+        return array.ptr[index.value + 1]
+    end, 2)
+
+    rt:registerDef("Nar.Base.NativeArray", "unsafeSet", function(rt, index, value, array)
+        local src = array.ptr
+        local result = {}
+        for i = 1, #src do result[i] = src[i] end
+        result[index.value + 1] = value
+        return rt:makeNative(result)
+    end, 3)
+
+    rt:registerDef("Nar.Base.NativeArray", "push", function(rt, value, array)
+        local src = array.ptr
+        local n = #src
+        local result = {}
+        for i = 1, n do result[i] = src[i] end
+        result[n + 1] = value
+        return rt:makeNative(result)
+    end, 2)
+
+    rt:registerDef("Nar.Base.NativeArray", "foldl", function(rt, func, acc, array)
+        local src = array.ptr
+        for i = 1, #src do
+            acc = rt:applyFunc(func, { src[i], acc })
+        end
+        return acc
+    end, 3)
+
+    rt:registerDef("Nar.Base.NativeArray", "foldr", function(rt, func, acc, array)
+        local src = array.ptr
+        for i = #src, 1, -1 do
+            acc = rt:applyFunc(func, { src[i], acc })
+        end
+        return acc
+    end, 3)
+
+    rt:registerDef("Nar.Base.NativeArray", "map", function(rt, func, array)
+        local src = array.ptr
+        local n = #src
+        local result = {}
+        for i = 1, n do
+            result[i] = rt:applyFunc(func, { src[i] })
+        end
+        return rt:makeNative(result)
+    end, 2)
+
+    rt:registerDef("Nar.Base.NativeArray", "indexedMap", function(rt, func, offset, array)
+        local src = array.ptr
+        local off = rt:toInt(offset)
+        local n = #src
+        local result = {}
+        for i = 1, n do
+            result[i] = rt:applyFunc(func, { rt:makeInt(off + i - 1), src[i] })
+        end
+        return rt:makeNative(result)
+    end, 3)
+
+    rt:registerDef("Nar.Base.NativeArray", "slice", function(rt, from, to, array)
+        local src = array.ptr
+        local f = rt:toInt(from)
+        local t = rt:toInt(to)
+        -- JS Array.slice: indices are 0-based, end exclusive, negative wraps from end.
+        local len = #src
+        if f < 0 then f = math.max(0, len + f) end
+        if t < 0 then t = math.max(0, len + t) end
+        if t > len then t = len end
+        local result = {}
+        local idx = 0
+        for i = f + 1, t do
+            idx = idx + 1
+            result[idx] = src[i]
+        end
+        return rt:makeNative(result)
+    end, 3)
+
+    rt:registerDef("Nar.Base.NativeArray", "appendN", function(rt, n, dest, source)
+        local destArr = dest.ptr
+        local srcArr = source.ptr
+        local destLen = #destArr
+        local itemsToCopy = rt:toInt(n) - destLen
+        if itemsToCopy > #srcArr then itemsToCopy = #srcArr end
+        if itemsToCopy < 0 then itemsToCopy = 0 end
+        local result = {}
+        for i = 1, destLen do result[i] = destArr[i] end
+        for i = 1, itemsToCopy do result[destLen + i] = srcArr[i] end
+        return rt:makeNative(result)
+    end, 3)
 end -- return function(rt)
