@@ -5,32 +5,56 @@ import Nar.Base.Math exposing (Int, Float, (+), (-), (*), (/))
 import Nar.Base.String exposing (String, (<>))
 import Nar.Base.List exposing (List, (|), (++))
 
+/// Host-backed contiguous array. Used as a building block by
+/// [`Array`](#nar-base-array) and other collection types. Most user
+/// code should reach for `Array` or `List` instead — `NativeArray`
+/// has no bounds checks on `unsafeGet`/`unsafeSet`.
 alias native NativeArray[a]
 
+/// Zero-length array constant.
 def native empty: NativeArray[a]
 
+/// One-element array containing `item`.
 def native singleton(item: a) -> NativeArray[a]
 
+/// Number of elements stored in the array.
 def native length(arr: NativeArray[a]) -> Int
 
+/// Build an `n`-element array where the value at index `i` is
+/// `fn(i + offset)`.
 def native initialize(n: Int, offset: Int, fn: (Int) -> a) -> NativeArray[a]
 
+/// Take up to `n` elements from `ls`, returning the array and the
+/// (possibly empty) list of leftovers.
 def native initializeFromList(n: Int, ls: List[a]) -> ( NativeArray[a], List[a] )
 
+/// Read the element at `index` with NO bounds check. Calling with an
+/// out-of-range index is undefined behaviour.
 def native unsafeGet(index: Int, array: NativeArray[a]) ->  a
 
+/// Replace the element at `index` with NO bounds check. The original
+/// array is unchanged.
 def native unsafeSet(index: Int, value: a, array: NativeArray[a]) -> NativeArray[a]
 
+/// Return a new array with `value` appended.
 def native push(value: a, array: NativeArray[a]) -> NativeArray[a]
 
+/// Left-to-right fold.
 def native foldl(f: (a,b) -> b, acc: b, array: NativeArray[a]) -> b
 
+/// Right-to-left fold.
 def native foldr(f: (a,b) -> b, acc: b, array: NativeArray[a]) -> b
 
+/// Apply `f` to every element.
 def native map(f: (a) -> b, array: NativeArray[a]) -> NativeArray[b]
 
+/// Apply `f` to every element along with its index (shifted by `offset`).
 def native indexedMap(f: (Int, a) -> b, offset: Int, array: NativeArray[a]) -> NativeArray[b]
 
+/// Sub-array from `start` (inclusive) to `end` (exclusive). Negative
+/// indices count from the end.
 def native slice(start: Int, end: Int, array: NativeArray[a]) -> NativeArray[a]
 
+/// Append up to `n` elements from `from` onto `to`, returning the
+/// combined array.
 def native appendN(n: Int, from: NativeArray[a], to: NativeArray[a]) -> NativeArray[a]

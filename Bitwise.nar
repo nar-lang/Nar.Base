@@ -7,18 +7,28 @@ infix (%) : (left 6) = or
 infix (^) : (left 6) = xor
 infix (&) : (left 7) = and
 
+/// Bitwise AND of two integers (use the `&` operator).
 def native and(x: Int, y: Int) -> Int
 
+/// Bitwise OR of two integers (use the `%` operator).
 def native or(x: Int, y: Int) -> Int
 
+/// Bitwise exclusive-or of two integers (use the `^` operator).
 def native xor(x: Int, y: Int) -> Int
 
+/// Bitwise NOT (one's complement) of an integer.
 def native complement(x: Int) -> Int
 
+/// Shift `x` left by `y` bits, filling the low bits with zero.
+/// The `<<` operator is `x << y == shiftLeftBy(y, x)`.
 def native shiftLeftBy(x: Int, y: Int) -> Int
 
+/// Arithmetic right shift: shift `x` right by `y` bits, preserving the
+/// sign bit. The `>>` operator is `x >> y == shiftRightBy(y, x)`.
 def native shiftRightBy(x: Int, y: Int) -> Int
 
+/// Logical right shift: shift `x` right by `y` bits, filling the high
+/// bits with zero. The `>>>` operator is `x >>> y == shiftRightZfBy(y, x)`.
 def native shiftRightZfBy(x: Int, y: Int) -> Int
 
 def hidden shiftLeft(x: Int, y: Int) -> Int =

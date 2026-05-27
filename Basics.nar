@@ -15,35 +15,54 @@ infix (<~): (left  9) = composeL
 infix (~>): (right 9) = composeR
 
 
+/// The unit value, sole inhabitant of the `Unit` type. Returned by
+/// functions that exist purely for their effects and have no useful
+/// value to hand back.
 alias native Unit
 
 // EQUALITY
 
+/// Structural equality. Works on any type that supports the `eq`
+/// constraint (primitives, tuples, records, lists, custom types built
+/// out of them). Use the `==` operator instead of calling this directly.
 def native eq(a: eq, b: eq) -> Bool
 
+/// Structural inequality; the logical inverse of `eq`. Prefer the `!=`
+/// operator at call sites.
 def native neq(a: eq, b: eq) -> Bool
 
 // COMPARISONS
 
+/// Strict less-than. Works on any `cmp`-constrained type (numbers,
+/// chars, strings, and tuples thereof). Use the `<` operator.
 def native lt(l: cmp, r: cmp) -> Bool
 
+/// Strict greater-than. Use the `>` operator.
 def native gt(l: cmp, r: cmp) -> Bool
 
+/// Less-than-or-equal. Use the `<=` operator.
 def native le(l: cmp, r: cmp) -> Bool
 
+/// Greater-than-or-equal. Use the `>=` operator.
 def native ge(l: cmp, r: cmp) -> Bool
 
+/// The smaller of two comparable values. Ties return `x`.
 def min(x: cmp, y: cmp) -> cmp =
   if lt(x, y) then x else y
 
+/// The larger of two comparable values. Ties return `x`.
 def max(x: cmp, y: cmp) -> cmp =
   if gt(x, y) then x else y
 
+/// Three-way comparison reported as an `Order`. Handy when sorting or
+/// implementing custom ordered structures.
 def compare(l: cmp, r: cmp) -> Order =
   if eq(l, r)
   then EQ
   else if lt(l, r) then LT else GT
 
+/// The result of a three-way comparison: `LT` (less), `EQ` (equal), or
+/// `GT` (greater).
 type Order
   = LT
   | EQ
@@ -51,41 +70,62 @@ type Order
 
 // BOOLEANS
 
+/// The boolean type. Pattern-match on `True` / `False` or use the
+/// dedicated operators `&&`, `||`, `^^`, and the `not` function.
 type Bool
   = True
   | False
 
+/// Logical negation.
 def native not(x: Bool) -> Bool
 
+/// Logical conjunction (short-circuiting via the `&&` operator).
 def native and(x: Bool, y: Bool) -> Bool
 
+/// Logical disjunction (short-circuiting via the `||` operator).
 def native or(x: Bool, y: Bool) -> Bool
 
+/// Logical exclusive-or.
 def native xor(x: Bool, y: Bool) -> Bool
 
 // FUNCTION HELPERS
 
+/// Right-to-left function composition: `(g <~ f)(x) == g(f(x))`. Use
+/// the `<~` operator.
 def composeL(g: (b) -> c, f: (a) -> b, x: a) -> c =
   g(f(x))
 
+/// Left-to-right function composition: `(f ~> g)(x) == g(f(x))`. Use
+/// the `~>` operator.
 def composeR(f: (a) -> b, g: (b) -> c, x: a) -> c =
   g(f(x))
 
+/// Forward pipe: feed a value into a function. `x |> f` is `f(x)`.
 def apR(x: a, f: (a) -> b) -> b =
   f(x)
 
+/// Backward pipe: apply a function to a value. `f <| x` is `f(x)`.
 def apL(f: (a) -> b, x: a) -> b =
   f(x)
 
+/// The identity function: returns its argument unchanged.
 def identity(x: a) -> a =
   x
 
+/// Return the first argument, ignoring the second. Useful with `map`
+/// to replace every element with a constant, or as `always(x)` to make
+/// a constant function.
 def always(a: a, _: b) -> a =
   a
 
+/// A type with no inhabitants. Useful as the error parameter of a
+/// `Result` that can never fail, or as the success parameter of a
+/// computation that runs forever.
 type Never
   = hidden JustOneMore(Never)
 
+/// Eliminator for the empty `Never` type — since no value of type
+/// `Never` can ever exist, this function can claim to produce any type.
 def never(x: Never) -> a =
   select x
     case JustOneMore(n) => never(n)

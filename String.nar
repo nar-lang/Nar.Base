@@ -2,15 +2,20 @@ module Nar.Base.String
 
 infix (<>): (right 5) = append
 
+/// Immutable Unicode string. Concatenate with the `<>` operator.
 alias native String
 
+/// True for the zero-length string.
 def isEmpty(string: String) -> Bool =
   string == ""
 
+/// Number of `Char`s (Unicode codepoints) in the string.
 def native length(s: String) -> Int
 
+/// Reverse the order of characters.
 def native reverse(s: String) -> String
 
+/// `repeat(3, "ab")` produces `"ababab"`. Returns `""` for `n <= 0`.
 def repeat(n: Int, chunk: String) -> String =
   repeatHelp(n, chunk, "")
 
@@ -21,47 +26,63 @@ def hidden repeatHelp(n: Int, chunk: String, result: String) -> String =
     repeatHelp(Bitwise.shiftRightBy(1, n), chunk <> chunk) <|
       if Bitwise.and(n, 1) == 0 then result else result <> chunk
 
+/// Replace every occurrence of `before` with `after` in `string`.
 def replace(before: String, after: String, string: String) -> String =
   join(after, split(before, string))
 
 
 // BUILDING AND SPLITTING
 
+/// Concatenate two strings (use the `<>` operator).
 def native append(a: String, b: String) -> String
 
+/// Concatenate a list of strings into one, with no separator.
 def concat(strings: List[String]) -> String =
   join("", strings)
 
+/// Split a string on every occurrence of `sep`. Empty `sep` is
+/// undefined behaviour.
 def native split(sep: String, string: String) -> List[String]
 
+/// The inverse of [`split`](#split): join `strings` together, placing
+/// `sep` between each pair.
 def native join(sep: String, strings: List[String]) -> String
 
+/// Break the string into whitespace-separated words. Runs of
+/// whitespace are collapsed and leading/trailing whitespace dropped.
 def native words(string: String) -> List[String]
 
+/// Break the string into lines. Recognises `\n`, `\r\n`, and `\r`.
 def native lines(string: String) -> List[String]
 
 // SUBSTRINGS
 
+/// Substring from byte/char offset `begin` (inclusive) to `end`
+/// (exclusive). Negative indices count from the end.
 def native slice(begin: Int, end: Int, s: String) -> String
 
+/// First `n` characters of the string. Empty for `n < 1`.
 def left(n: Int, string: String) -> String =
   if n < 1 then
     ""
   else
     slice (0, n, string)
 
+/// Last `n` characters of the string. Empty for `n < 1`.
 def right(n: Int, string: String) -> String =
   if n < 1 then
     ""
   else
     slice(-n, length(string), string)
 
+/// Drop the first `n` characters.
 def dropLeft(n: Int, string: String) -> String =
   if n < 1 then
     string
   else
     slice(n, length(string), string)
 
+/// Drop the last `n` characters.
 def dropRight(n: Int, string: String) -> String =
   if n < 1 then
     string
@@ -70,76 +91,108 @@ def dropRight(n: Int, string: String) -> String =
 
 // DETECT SUBSTRINGS
 
+/// True when `sub` appears anywhere in `string`.
 def native contains(sub: String, string: String) -> Bool
 
+/// True when `string` starts with `sub`.
 def native startsWith(sub: String, string: String) -> Bool
 
+/// True when `string` ends with `sub`.
 def native endsWith(sub: String, string: String) -> Bool
 
+/// Every starting index at which `sub` occurs in `string`.
 def native indices(sub: String, string: String) -> List[Int]
 
 // FORMATTING
 
+/// Convert the entire string to uppercase (locale-aware).
 def native toUpper(s: String) -> String
 
+/// Convert the entire string to lowercase (locale-aware).
 def native toLower(s: String) -> String
 
+/// Pad `string` symmetrically with `char` until it is `n` characters
+/// long. If the gap is odd, the extra character goes to the left.
 def pad(n: Int, char: Char, string: String) -> String =
   let
     half = Math.toFloat(n - length(string)) / 2.0
   in
     repeat(ceil(half), fromChar(char) <> string <> repeat(floor(half), fromChar(char)))
 
+/// Pad on the left with `char` until the string is `n` characters long.
 def padLeft(n: Int, char: Char, string: String) -> String =
   repeat(n - length(string), fromChar(char) <> string)
 
+/// Pad on the right with `char` until the string is `n` characters long.
 def padRight(n: Int, char: Char, string: String) -> String =
   string <> repeat(n - length(string), fromChar(char))
 
+/// Drop whitespace from both ends.
 def native trim(s: String) -> String
 
+/// Drop whitespace from the left end only.
 def native trimLeft(s: String) -> String
 
+/// Drop whitespace from the right end only.
 def native trimRight(s: String) -> String
 
 // INT CONVERSIONS
 
+/// Parse a decimal integer. Returns `Nothing` if the string is not a
+/// valid integer literal.
 def native toInt(s: String) -> Maybe[Int]
 
+/// Render an integer as a decimal string.
 def native fromInt(n: Int) -> String
 
 // FLOAT CONVERSIONS
 
+/// Parse a decimal floating-point literal. Returns `Nothing` on
+/// failure.
 def native toFloat(s: String) -> Maybe[Float]
 
+/// Render a float as a decimal string.
 def native fromFloat(n: Float) -> String
 
 // LIST CONVERSIONS
 
+/// Decompose the string into a list of its characters.
 def toList(string: String) -> List[Char] =
   foldr((|), [], string)
 
+/// Assemble a string from a list of characters.
 def native fromList(chars: List[Char]) -> String
 
 // CHAR CONVERSIONS
 
+/// Build a one-character string from a `Char`.
 def fromChar(char: Char) -> String =
   cons(char, "")
 
+/// Prepend a single character to a string.
 def native cons(c: Char, s: String) -> String
 
+/// Split off the first character. Returns `Nothing` for the empty
+/// string, otherwise `Just((head, tail))`.
 def native uncons(s: String) -> Maybe[( Char, String )]
 
 // HIGHER-ORDER FUNCTIONS
 
+/// Map a function over every character.
 def native map(f: (Char) -> Char, s: String) -> String
 
+/// Keep only the characters for which `f` returns `True`.
 def native filter(f: (Char) -> Bool, s: String) -> String
 
+/// Left-associative fold over the characters.
 def native foldl(f: (Char,b) -> b, acc: b, s: String) -> b
 
+/// Right-associative fold over the characters.
 def native foldr(f: (Char,b) -> b, acc: b, s: String) -> b
 
+/// True if `f` returns `True` for at least one character.
 def native any(f: (Char) -> Bool, s: String) -> Bool
 
+/// True if `f` returns `True` for every character (vacuously true on
+/// the empty string).
 def native all(f: (Char) -> Bool, s: String) -> Bool

@@ -1,29 +1,37 @@
 module Nar.Base.Char
 
+/// A single Unicode codepoint. Character literals use the `'x'` syntax.
 alias native Char
 
+/// True for ASCII uppercase letters A–Z.
 def isUpper(char: Char) -> Bool =
   let code = toCode(char)
   in code <= 0x5A && 0x41 <= code
 
+/// True for ASCII lowercase letters a–z.
 def isLower (char: Char) -> Bool =
   let code = toCode(char)
   in 0x61 <= code && code <= 0x7A
 
+/// True for any ASCII letter (a–z or A–Z).
 def isAlpha(char: Char) -> Bool =
   isLower(char) || isUpper(char)
 
+/// True for any ASCII letter or decimal digit.
 def isAlphaNum(char: Char) -> Bool =
   isLower(char) || isUpper(char) || isDigit(char)
 
+/// True for ASCII decimal digits 0–9.
 def isDigit(char: Char) -> Bool =
   let code = toCode(char)
   in code <= 0x39 && 0x30 <= code
 
+/// True for ASCII octal digits 0–7.
 def isOctDigit(char: Char) -> Bool =
   let code = toCode(char)
   in code <= 0x37 && 0x30 <= code
 
+/// True for ASCII hexadecimal digits (0–9, a–f, A–F).
 def isHexDigit(char: Char) -> Bool =
   let code = toCode(char)
   in
@@ -31,10 +39,15 @@ def isHexDigit(char: Char) -> Bool =
     || (0x41 <= code && code <= 0x46)
     || (0x61 <= code && code <= 0x66)
 
+/// Convert a character to its uppercase equivalent (locale-aware).
 def native toUpper(char: Char) -> Char
 
+/// Convert a character to its lowercase equivalent (locale-aware).
 def native toLower(char: Char) -> Char
 
+/// Get the Unicode codepoint of a character as an integer.
 def native toCode(char: Char) -> Int
 
+/// Build a character from a Unicode codepoint. Invalid codepoints
+/// return the replacement character.
 def native fromCode(code: Int) -> Char

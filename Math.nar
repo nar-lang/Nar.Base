@@ -5,46 +5,70 @@ infix (-) : (left  6) = sub
 infix (*) : (left  7) = mul
 infix (/) : (left  7) = div
 
+/// 64-bit signed integer.
 alias native Int
 
+/// 64-bit IEEE-754 floating point number.
 alias native Float
 
+/// Numeric addition (the `+` operator). Works on `Int`–`Int` or
+/// `Float`–`Float`; mixing requires an explicit `toFloat`.
 def native add(x: number, y: number) -> number
 
+/// Numeric subtraction (the `-` operator).
 def native sub(x: number, y: number) -> number
 
+/// Numeric multiplication (the `*` operator).
 def native mul(x: number, y: number) -> number
 
+/// Numeric division (the `/` operator). For `Int` this is truncating
+/// integer division; for `Float` it's IEEE-754 division.
 def native div(x: number, y: number) -> number
 
+/// Unary negation: `neg(x) == 0 - x`.
 def native neg(x: number) -> number
 
+/// Convert an `Int` to its nearest `Float`.
 def native toFloat(n: Int) -> Float
 
+/// Round a `Float` to the nearest `Int` (ties round to even).
 def native round(n: Float) -> Int
 
+/// Largest `Int` not greater than `n`.
 def native floor(n: Float) -> Int
 
+/// Smallest `Int` not less than `n`.
 def native ceil(n: Float) -> Int
 
+/// Truncate a `Float` toward zero, returning the integer part.
 def native trunc(n: Float) -> Int
 
+/// `n` raised to the power `pow`.
 def native toPower(pow: number, n: number) -> number
 
+/// Principal (non-negative) square root.
 def native sqrt(n: Float) -> Float
 
+/// Integer remainder of `x / n`. Result has the sign of `x`.
 def native remainderBy(n: Int, x: Int) -> Int
 
+/// Integer modulus of `x` by `n`. Always non-negative when `n > 0`.
 def native modBy(n: Int, x: Int) -> Int
 
+/// Logarithm of `n` in the given `base`.
 def native logBase(base: Float, n: Float) -> Float
 
+/// Absolute value of a number.
 def native abs(x: number) -> number
 
+/// The mathematical constant pi (≈ 3.14159).
 def pi: Float = 3.141592653589793
 
+/// Euler's number, the base of the natural logarithm (≈ 2.71828).
 def e: Float = 2.718281828459045
 
+/// True if `x` is the IEEE-754 not-a-number value.
 def native isNan(x: number) -> Bool
 
+/// True if `x` is positive or negative infinity.
 def native isInf(x: number) -> Bool

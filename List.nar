@@ -3,11 +3,15 @@ module Nar.Base.List
 infix (++): (right 5) = append
 infix (|): (right 5) = cons
 
+/// Immutable singly-linked list. Build with literal syntax
+/// (`[1, 2, 3]`) or with the `cons` (`|`) operator.
 alias native List[a]
 
+/// Build a single-element list: `singleton(x) == [x]`.
 def singleton(value: a) -> List[a] =
   [value]
 
+/// `repeat(n, x)` produces an `n`-element list filled with `x`.
 def repeat(n: Int, value: a) -> List[a] =
   repeatHelp([], n, value)
 
@@ -17,6 +21,8 @@ def hidden repeatHelp(result: List[a], n: Int, value: a) -> List[a] =
   else
     repeatHelp(cons(value, result), n-1, value)
 
+/// Inclusive integer range: `range(1, 4) == [1, 2, 3, 4]`. Empty when
+/// `hi < lo`.
 def range(lo: Int,  hi: Int) -> List[Int] =
   rangeHelp(lo, hi, [])
 
@@ -26,14 +32,19 @@ def hidden rangeHelp(lo: Int, hi: Int, list: List[Int]) -> List[Int] =
   else
     list
 
+/// Prepend `head` to `tail`. Use the `|` operator at call sites.
 def native cons(head: a, tail: List[a]) -> List[a]
 
+/// Apply `f` to every element of `xs`, preserving order.
 def map(f: (a) -> b, xs: List[a]) -> List[b] =
   foldr(\(x, acc) => cons(f(x), acc), [], xs)
 
+/// Apply `f` to each element along with its zero-based index.
 def indexedMap(f: (Int, a) -> b, xs: List[a]) -> List[b] =
   map2(f, range(0, length(xs) - 1), xs)
 
+/// Left-associative fold (tail-recursive). Processes the list head
+/// first, accumulating into `acc`.
 def foldl(func: (a, b) -> b, acc: b, list: List[a]) -> b =
   select list
     case [] =>
@@ -42,6 +53,8 @@ def foldl(func: (a, b) -> b, acc: b, list: List[a]) -> b =
       foldl(func, func(x, acc), xs)
   end
 
+/// Right-associative fold. Processes the list from the tail back, so
+/// it builds a new list in the original order.
 def foldr(fn: (a, b) -> b, acc: b, ls: List[a]) -> b =
     foldrHelper(fn, acc, 0, ls)
 
@@ -75,9 +88,12 @@ def hidden foldrHelper(fn: (a, b) -> b, acc: b, ctr: Int, ls: List[a]) -> b =
       end
   end
 
+/// Keep only the elements for which `isGood` returns `True`.
 def filter(isGood: (a) -> Bool, list: List[a]) -> List[a] =
   foldr(\(x, xs) => if isGood(x) then cons(x, xs) else xs, [], list)
 
+/// Map and filter in one pass: `f` returns `Just(y)` to keep a mapped
+/// value or `Nothing` to drop the element.
 def filterMap(f: (a) -> Maybe[b], xs: List[a]) -> List[b] =
   foldr(maybeCons(f), [], xs)
 
@@ -89,18 +105,24 @@ def maybeCons(f: (a) -> Maybe[b], mx: a, xs: List[b]) -> List[b] =
       xs
   end
 
+/// Number of elements in the list (O(n)).
 def length(xs: List[a]) -> Int =
   foldl(\(_, c) => c + 1, 0, xs)
 
+/// Reverse the order of the list (O(n)).
 def reverse(list: List[a]) -> List[a] =
   foldl(cons, [], list)
 
+/// True if `x` is in `xs`. Element type must support equality.
 def member(x: eq, xs: List[eq]) -> Bool =
   any(\(a) => a == x, xs)
 
+/// True if `isOkay` returns `True` for every element (vacuously true
+/// for the empty list).
 def all(isOkay: (a) -> Bool, list: List[a]) -> Bool =
   not(any(not <~ isOkay, list))
 
+/// True if `isOkay` returns `True` for at least one element.
 def any(isOkay: (a) -> Bool, list: List[a]) -> Bool =
   select list
     case [] =>
@@ -113,6 +135,7 @@ def any(isOkay: (a) -> Bool, list: List[a]) -> Bool =
         any(isOkay, xs)
   end
 
+/// Largest element, or `Nothing` for an empty list.
 def maximum(list: List[cmp]) -> Maybe[cmp] =
   select list
     case x | xs =>
@@ -121,6 +144,7 @@ def maximum(list: List[cmp]) -> Maybe[cmp] =
       Nothing
   end
 
+/// Smallest element, or `Nothing` for an empty list.
 def minimum(list: List[cmp]) -> Maybe[cmp] =
   select list
     case x | xs =>
@@ -129,12 +153,15 @@ def minimum(list: List[cmp]) -> Maybe[cmp] =
       Nothing
   end
 
+/// Sum of every element. Zero for an empty list.
 def sum(numbers: List[number]) -> number =
   foldl((+), 0, numbers)
 
+/// Product of every element. One for an empty list.
 def product(numbers: List[number]) -> number =
   foldl((*), 1, numbers)
 
+/// Append two lists (use the `++` operator). Cost is O(length(xs)).
 def append(xs: List[a], ys: List[a]) -> List[a] =
   select ys
     case [] =>
@@ -143,12 +170,16 @@ def append(xs: List[a], ys: List[a]) -> List[a] =
       foldr(cons, ys, xs)
   end
 
+/// Flatten a list of lists into a single list.
 def concat(lists: List[List[a]]) -> List[a] =
   foldr(append, [], lists)
 
+/// `map(f, xs) |> concat`: apply `f` to each element and concatenate
+/// the resulting lists.
 def concatMap(f: (a) -> List[b], list: List[a]) -> List[b] =
   concat(map(f, list))
 
+/// Insert `sep` between every pair of elements.
 def intersperse(sep: a, xs: List[a]) -> List[a] =
   select xs
     case [] =>
@@ -160,39 +191,51 @@ def intersperse(sep: a, xs: List[a]) -> List[a] =
         cons(hd, spersed)
   end
 
+/// Combine two lists element-wise with `f`. Length of the result is
+/// the length of the shorter input.
 def native map2(f: (a, b) -> r, a: List[a], b: List[b]) -> List[r]
 
+/// Three-list variant of [`map2`](#map2).
 def native map3(f: (a, b, c) -> r, a: List[a], b: List[b], c: List[c]) -> List[r]
 
+/// Four-list variant of [`map2`](#map2).
 def native map4(f: (a, b, c, d) -> r, a: List[a], b: List[b], c: List[c], d: List[d]) -> List[r]
 
+/// Five-list variant of [`map2`](#map2).
 def native map5(f: (a, b, c, d, e) -> r, a: List[a], b: List[b], c: List[c], d: List[d], e: List[e]) -> List[r]
 
+/// Sort by the natural order of the elements (`cmp` constraint).
 def sort(xs: List[a]) -> List[a] =
   sortBy(identity, xs)
 
+/// Sort by a key function. Elements are ordered by `f(x)`.
 def native sortBy(f: (a) -> b, xs: List[a]) -> List[a]
 
+/// Sort with a custom comparator returning an `Order`.
 def native sortWith(f: (a, a) -> Order, xs: List[a]) -> List[a]
 
+/// True if the list has no elements.
 def isEmpty(xs: List[a]) -> Bool =
   select xs
     case [] => True
     case _ => False
   end
 
+/// First element, or `Nothing` for the empty list.
 def head(list: List[a]) -> Maybe[a] =
   select list
     case x | _ => Just(x)
     case [] => Nothing
   end
 
+/// Everything but the first element, or `Nothing` for the empty list.
 def tail(list: List[a]) -> Maybe[List[a]] =
   select list
     case x | xs => Just(xs)
     case [] => Nothing
   end
 
+/// Take the first `n` elements (or fewer if the list is shorter).
 def take(n: Int, list: List[a]) -> List[a] =
   takeFast(0, n, list)
 
@@ -232,6 +275,7 @@ def hidden takeReverse(n: Int, list: List[a], kept: List[a]) -> List[a] =
         takeReverse(n - 1, xs, cons(x, kept))
     end
 
+/// Drop the first `n` elements (or all of them if the list is shorter).
 def drop(n: Int, list: List[a]) -> List[a] =
   if n <= 0 then
     list
@@ -243,6 +287,9 @@ def drop(n: Int, list: List[a]) -> List[a] =
         drop(n-1, xs)
     end
 
+/// Split a list in two by a predicate. Elements satisfying `pred` go
+/// on the left, the rest on the right; relative order is preserved
+/// inside each bucket.
 def partition(pred: (a) -> Bool, list: List[a]) -> ( List[a], List[a] ) =
   let
     step(x, (trues, falses) ) =
@@ -253,6 +300,8 @@ def partition(pred: (a) -> Bool, list: List[a]) -> ( List[a], List[a] ) =
   in
     foldr(step, ( [], [] ), list)
 
+/// Inverse of `map2(pair, ...)`: split a list of pairs into two
+/// parallel lists.
 def unzip(pairs: List[( a, b )]) -> ( List[a], List[b] ) =
   let
     step(( x, y ), ( xs, ys )) =

@@ -1,13 +1,23 @@
 module Nar.Base.Debug
 
+/// Convert any value to a printable string, using the runtime's
+/// built-in formatter. Useful for tracing and `log`.
 def native toString(x: a) -> String
 
+/// Print `msg` along with `a` to the host log stream, then return `a`
+/// unchanged so the call can be threaded through an expression.
 def native log(msg: String, a: a) -> a
 
+/// Crash the program with the given message. Use as a placeholder
+/// while developing code paths that aren't ready yet.
 def native todo(msg: String) -> a
 
+/// Inspect the runtime tag of a value as a `Type` constructor. Useful
+/// when writing generic native helpers.
 def native getType(x: a) -> Type
 
+/// Runtime type tags reported by [`getType`](#gettype). The set is
+/// closed: every Nar value falls into exactly one of these buckets.
 type Type 
   = TypeUnknown
   | TypeUnit

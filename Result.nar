@@ -1,21 +1,28 @@
 module Nar.Base.Result
 
+/// A computation that either succeeded with a `value` or failed with
+/// an `error`. Use this when failure carries useful information; for
+/// plain presence/absence use [`Maybe`](#nar-base-maybe).
 type Result[error, value]
   = Ok(value)
   | Err(error)
 
+/// Unwrap a `Result`, returning `default` for `Err _`.
 def withDefault(default: a, result: Result[x, a]) -> a =
   select result
     case Ok(v) => v
     case Err(_) => default
   end
 
+/// Apply `func` to the success value, propagating `Err` unchanged.
 def map(func: (a) -> value, ra: Result[x, a]) -> Result[x, value] =
   select ra
     case Ok(a) => Ok(func(a))
     case Err(e) => Err(e)
   end
 
+/// Combine two results with a two-argument function. Returns the first
+/// `Err` encountered if either input is an error.
 def map2(func: (a,b) -> value, ra: Result[x, a], rb: Result[x, b]) -> Result[x, value] =
   select ra
     case Err(e) => Err(e)
@@ -26,6 +33,7 @@ def map2(func: (a,b) -> value, ra: Result[x, a], rb: Result[x, b]) -> Result[x, 
       end
   end
 
+/// Like [`map2`](#map2) but for three results.
 def map3(func: (a,b,c) -> value, ra: Result[x, a], rb: Result[x, b], rc: Result[x, c]) -> Result[x, value] =
   select ra
     case Err(e) => Err(e)
@@ -40,6 +48,7 @@ def map3(func: (a,b,c) -> value, ra: Result[x, a], rb: Result[x, b], rc: Result[
       end
   end
 
+/// Like [`map2`](#map2) but for four results.
 def map4(
     func: (a,b,c,d) -> value,
     ra: Result[x, a], rb: Result[x, b], rc: Result[x, c], rd: Result[x, d]
@@ -62,6 +71,7 @@ def map4(
   end
 
 
+/// Like [`map2`](#map2) but for five results.
 def map5(
     func: (a,b,c,d,e) -> value,
     ra: Result[x, a], rb: Result[x, b], rc: Result[x, c], rd: Result[x, d], re: Result[x, e]
@@ -87,30 +97,39 @@ def map5(
       end
   end
 
+/// Chain a computation that may also fail. If `result` is `Ok(x)`,
+/// run `callback(x)`; otherwise propagate the existing `Err`.
 def andThen(callback: (a) -> Result[x, b], result: Result[x,a]) -> Result[x, b] =
   select result
     case Ok(value) => callback(value)
     case Err(msg) => Err(msg)
   end
 
+/// Transform the error value, leaving `Ok` unchanged. Useful for
+/// adapting an error type when crossing module boundaries.
 def mapError(f: (x) -> y, result: Result[x, a]) -> Result[y, a] =
   select result
     case Ok(v) => Ok(v)
     case Err(e) => Err (f(e))
   end
 
+/// Discard the error and produce a `Maybe`: `Ok(v) -> Just(v)`,
+/// `Err(_) -> Nothing`.
 def toMaybe(result: Result[x, a]) -> Maybe[a] =
   select result
     case Ok(v) => Just(v)
     case Err(_) => Nothing
   end
 
+/// Promote a `Maybe` to a `Result`, supplying a fixed error for the
+/// `Nothing` case.
 def fromMaybe(err: x, maybe: Maybe[a]) -> Result[x, a] =
   select maybe
     case Just(v) => Ok(v)
     case Nothing => Err(err)
   end
 
+/// True if the result is `Ok _`.
 def isOk(result: Result[x, a]) -> Bool =
   select result
     case Ok(_) => True

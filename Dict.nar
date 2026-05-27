@@ -4,13 +4,19 @@ type hidden NColor
     = Red
     | Black
 
+/// Persistent ordered map from comparable keys (`cmp`) to values,
+/// implemented as a left-leaning red-black tree. Lookups, insertions,
+/// and deletions are O(log n).
 type Dict[k,v]
     = hidden RBNode(color: NColor, key: k, value: v, left: Dict[k,v], right: Dict[k,v])
     | hidden RBEmpty
 
+/// The empty dictionary.
 def empty: Dict[k,v] =
   RBEmpty
 
+/// Look up the value bound to `targetKey`, or `Nothing` if the key is
+/// absent.
 def get(targetKey: cmp, dict: Dict[cmp,v]) -> Maybe[v] =
   select dict
     case RBEmpty =>
@@ -26,6 +32,7 @@ def get(targetKey: cmp, dict: Dict[cmp,v]) -> Maybe[v] =
       end
   end
 
+/// True when `key` is present in the dictionary.
 def member(key: cmp, dict: Dict[cmp,v]) -> Bool =
   select get(key, dict)
     case Just(_) =>
@@ -34,6 +41,7 @@ def member(key: cmp, dict: Dict[cmp,v]) -> Bool =
       False
   end
 
+/// Number of key/value pairs in the dictionary.
 def size(dict: Dict[k,v]) -> Int =
   sizeHelp(0, dict)
 
@@ -45,6 +53,7 @@ def hidden sizeHelp(n: Int, dict: Dict[k,v]) -> Int =
       sizeHelp(sizeHelp(n+1, right), left)
   end
 
+/// True when the dictionary has no entries.
 def isEmpty(dict: Dict[k,v]) -> Bool =
   select dict
     case RBEmpty =>
@@ -53,6 +62,7 @@ def isEmpty(dict: Dict[k,v]) -> Bool =
       False
   end
 
+/// Insert or replace the binding for `key`.
 def insert(key: cmp, value: v, dict: Dict[cmp,v]) -> Dict[cmp,v] =
   // Root node is always Black
   select insertHelp(key, value, dict)
@@ -110,6 +120,8 @@ def hidden balance(color: NColor, key: k, value: v, left: Dict[k,v], right: Dict
       end
   end
 
+/// Remove the binding for `key`. If the key is absent the dictionary
+/// is returned unchanged.
 def remove(key: k, dict: Dict[k,v]) -> Dict[k,v] =
   // Root node is always Black
   select removeHelp(key, dict)
@@ -301,6 +313,9 @@ def hidden moveRedRight(dict: Dict[k,v]) -> Dict[k,v] =
       dict
   end
 
+/// Update the binding at `targetKey` by passing the current value
+/// (or `Nothing`) to `alter`. Returning `Nothing` from `alter` removes
+/// the key; returning `Just(x)` inserts or replaces it.
 def update(targetKey: k, alter:(Maybe[v]) -> Maybe[v], dict: Dict[k,v]) -> Dict[k,v] =
   select alter(get(targetKey,dict))
     case Just(value) =>
@@ -309,19 +324,29 @@ def update(targetKey: k, alter:(Maybe[v]) -> Maybe[v], dict: Dict[k,v]) -> Dict[
       remove(targetKey, dict)
   end
 
+/// Build a dictionary with exactly one entry.
 def singleton(key: cmp, value: v) -> Dict[k,v] =
   // Root node is always Black
   RBNode(Black, key, value, RBEmpty, RBEmpty)
 
+/// Combine two dictionaries. On key collisions, values from the first
+/// argument win.
 def union(t1: Dict[cmp,v], t2: Dict[cmp,v]) -> Dict[cmp,v] =
   foldl(insert, t2, t1)
 
+/// Keep only the entries from the first dictionary whose key also
+/// appears in the second.
 def intersect(t1: Dict[cmp,v], t2: Dict[cmp,v]) -> Dict[cmp,v] =
   filter(\(k, _) => member(k, t2), t1)
 
+/// Keep only the entries from the first dictionary whose key does NOT
+/// appear in the second.
 def diff(t1: Dict[k,a], t2: Dict[k,b]) -> Dict[k,a] =
   foldl(\(k, _, t) => remove(k, t), t1, t2)
 
+/// Merge two dictionaries with key-aware callbacks. `leftStep` runs
+/// for keys only in the left input, `rightStep` for keys only in the
+/// right, and `bothStep` for keys present in both.
 def merge(
     leftStep:(k, a, r) -> r, bothStep:(k, a, b, r) -> r, rightStep:(k, b, r) -> r,
     leftDict: Dict[k,a], rightDict: Dict[k,b], initialResult: r
@@ -344,6 +369,7 @@ def merge(
     List.foldl(\(( k, v ), result) => leftStep(k, v, result), intermediateResult, leftovers)
 
 
+/// Transform every value, passing the key alongside.
 def map(func:(k,a) -> b, dict: Dict[k,b]) -> Dict[k,b] =
   select dict
     case RBEmpty =>
@@ -352,6 +378,7 @@ def map(func:(k,a) -> b, dict: Dict[k,b]) -> Dict[k,b] =
       RBNode(color, key, func(key, value), map(func, left), map(func, right))
   end
 
+/// Left-to-right fold over the dictionary in ascending key order.
 def foldl(func:(k, v, b) -> b, acc: b, dict: Dict[k,v]) -> b =
   select dict
     case RBEmpty =>
@@ -360,6 +387,8 @@ def foldl(func:(k, v, b) -> b, acc: b, dict: Dict[k,v]) -> b =
       foldl(func, func(key, value, foldl(func, acc, left)), right)
   end
 
+/// Right-to-left fold over the dictionary in ascending key order
+/// (i.e. visits the smallest key last when threading right).
 def foldr(func:(k, v, b) -> b, acc: b, t: Dict[k,v]) -> b =
   select t
     case RBEmpty =>
@@ -368,9 +397,11 @@ def foldr(func:(k, v, b) -> b, acc: b, t: Dict[k,v]) -> b =
       foldr(func, func(key, value, foldr(func, acc, right)), left)
   end
 
+/// Keep only the entries for which `isGood` returns `True`.
 def filter(isGood:(k, v) -> Bool, dict: Dict[k,v]) -> Dict[k,v] =
   foldl(\(k, v, d) => if isGood(k, v) then insert(k, v, d) else d, empty, dict)
 
+/// Split a dictionary in two by a predicate.
 def partition(isGood:(cmp, v) -> Bool, dict:Dict[cmp,v]) -> ( Dict[cmp,v], Dict[cmp,v] ) =
   let
     add(key, value, ( t1, t2 )) =
@@ -381,14 +412,19 @@ def partition(isGood:(cmp, v) -> Bool, dict:Dict[cmp,v]) -> ( Dict[cmp,v], Dict[
   in
     foldl(add, ( empty, empty ), dict)
 
+/// All keys in ascending order.
 def keys(dict: Dict[k,v]) -> List[k] =
   foldr(\(key, value, keyList) => key | keyList, [], dict)
 
+/// All values in ascending key order.
 def values(dict: Dict[k,v]) -> List[v] =
   foldr(\(key, value, valueList) => value | valueList, [], dict)
 
+/// All (key, value) pairs in ascending key order.
 def toList(dict: Dict[k,v]) -> List[( k, v )] =
   foldr(\(key, value, list) => ( key, value ) | list, [], dict)
 
+/// Build a dictionary from a list of pairs. Later entries with the
+/// same key overwrite earlier ones.
 def fromList(assocs: List[( cmp, v )]) -> Dict[cmp,v] =
   List.foldl(\((key, value), dict) => insert(key, value, dict), empty, assocs)

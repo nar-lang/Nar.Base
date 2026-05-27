@@ -4,8 +4,13 @@ def hidden branchFactor: Int = 32
 
 def hidden shiftStep: Int = ceil(logBase(2, Math.toFloat(branchFactor)))
 
+/// Low-bit mask covering one branch-factor step (`0x1F` for the default
+/// 32-wide trie). Exposed mainly for the array implementation itself.
 def bitMask: Int = 0xFFFFFFFF >>> 32 - shiftStep
 
+/// Persistent random-access array, implemented as a bit-mapped trie
+/// with a 32-wide branching factor. `get`/`set` are effectively O(1)
+/// for typical sizes; `push` is amortised O(1).
 type Array[a]
   = hidden ArrayImpl(length: Int, startShift: Int, tree: Tree[a], tail: NativeArray[a])
 
@@ -15,14 +20,19 @@ type hidden Node[a]
 
 alias hidden Tree[a] = NativeArray[Node[a]]
 
+/// The empty array.
 def empty: Array[a] = ArrayImpl(0, shiftStep, NativeArray.empty, NativeArray.empty)
 
+/// True when the array has no elements.
 def isEmpty(ArrayImpl(len, _, _, _): Array[a]) -> Bool =
   len == 0
 
+/// Number of elements (O(1)).
 def length(ArrayImpl(len, _, _, _): Array[a]) -> Int =
   len
 
+/// Build an array of length `len` where the element at index `i` is
+/// `fn(i)`. Returns `empty` for `len <= 0`.
 def initialize(len: Int, fn: (Int) -> a) -> Array[a] =
   if len <= 0 then
     empty
@@ -41,9 +51,11 @@ def hidden initializeHelp(
     let leaf = Leaf <| NativeArray.initialize(branchFactor, fromIndex, fn)
     in initializeHelp(fn, fromIndex - branchFactor, len, leaf | nodeList, tail)
 
+/// `repeat(n, e)` produces an array of length `n` filled with `e`.
 def repeat(n: Int, e: a) -> Array[a] =
   initialize(n, always(e))
 
+/// Build an array from a list, preserving order.
 def fromList(list: List[a]) -> Array[a] =
   select list
     case [] => empty
@@ -58,6 +70,8 @@ def hidden fromListHelp(list: List[a], nodeList: List[Node[a]], nodeListSize: In
     else
       fromListHelp(remainingItems, Leaf(jsArray) | nodeList, nodeListSize + 1)
 
+/// Look up the element at `index`. Returns `Nothing` for out-of-range
+/// indices (including negative).
 def get(index: Int, ArrayImpl(len, startShift, tree, tail):Array[a]) -> Maybe[a] =
   if index < 0 || index >= len then
     Nothing
@@ -77,6 +91,8 @@ def hidden getHelp(shift: Int, index: Int, tree: Tree[a]) -> a =
 def hidden tailIndex(len: Int) -> Int =
     len |> shiftRightZfBy(5) |> shiftLeftBy(5)
 
+/// Replace the element at `index` with `value`. Out-of-range indices
+/// leave the array unchanged.
 def set(index: Int, value: a, (ArrayImpl(len, startShift, tree, tail) as array): Array[a]) -> Array[a] =
   if index < 0 || index >= len then
     array
@@ -97,9 +113,13 @@ def hidden setHelp(shift: Int, index: Int, value: a, tree: Tree[a]) -> Tree[a] =
         in NativeArray.unsafeSet(pos, Leaf(newLeaf), tree)
     end
 
+/// Append a single element to the end of the array.
 def push(a: a, (ArrayImpl(_, _, _, tail) as array): Array[a]) -> Array[a] =
     unsafeReplaceTail(NativeArray.push(a, tail), array)
 
+/// Replace the array's tail buffer with `newTail`. This is a low-level
+/// primitive used by `push` and `append`; the caller is responsible
+/// for keeping the array's invariants intact.
 def unsafeReplaceTail(newTail: NativeArray[a], ArrayImpl(len, startShift, tree, tail): Array[a]) -> Array[a] =
   let originalTailLen = NativeArray.length(tail)
   let newTailLen = NativeArray.length(newTail)
@@ -148,15 +168,18 @@ def hidden insertTailInTree(shift: Int, index: Int, tail: NativeArray[a], tree: 
               in NativeArray.unsafeSet(pos, newSub, tree)
           end
 
+/// Convert the array to a list, preserving order.
 def toList(array: Array[a]) -> List[a] =
   foldr((|), [], array)
 
+/// Like [`toList`](#tolist) but pairs each element with its index.
 def toIndexedList((ArrayImpl(len, _, _, _) as array): Array[a]) -> List[( Int, a )] =
   let helper(entry, ( index, list )) =
     ( index - 1, ( index, entry ) | list )
   in
     Tuple.second(foldr(helper, ( len - 1, [] ), array))
 
+/// Right-associative fold: visit elements from the last to the first.
 def foldr(func: (a, b) -> b, baseCase: b, ArrayImpl(_, _, tree, tail): Array[a]) -> b =
   let helper(node, acc) =
     select node
@@ -167,6 +190,8 @@ def foldr(func: (a, b) -> b, baseCase: b, ArrayImpl(_, _, tree, tail): Array[a])
     NativeArray.foldr(helper, NativeArray.foldr(func, baseCase, tail), tree)
 
 
+/// Left-associative fold (tail-recursive). Visits elements from the
+/// first to the last.
 def foldl(func: (a, b) -> b, baseCase: b, ArrayImpl(_, _, tree, tail): Array[a]) -> b =
   let helper(node, acc) =
     select node
@@ -176,9 +201,12 @@ def foldl(func: (a, b) -> b, baseCase: b, ArrayImpl(_, _, tree, tail): Array[a])
   in
     NativeArray.foldl(func, NativeArray.foldl(helper, baseCase, tree), tail)
 
+/// Keep only the elements for which `isGood` returns `True`.
 def filter(isGood: (a) -> Bool, array: Array[a]) -> Array[a] =
     fromList(foldr(\(x, xs) => if isGood(x) then x | xs else xs, [], array))
 
+/// Apply `func` to every element, building a new array of the same
+/// length.
 def map(func: (a) -> b,  ArrayImpl(len, startShift, tree, tail): Array[a]) -> Array[b] =
   let helper(node) =
     select node
@@ -188,6 +216,7 @@ def map(func: (a) -> b,  ArrayImpl(len, startShift, tree, tail): Array[a]) -> Ar
   in
     ArrayImpl(len, startShift, NativeArray.map(helper, tree), NativeArray.map(func, tail))
 
+/// Apply `func` to every element along with its index.
 def indexedMap(func: (Int, a) -> b, ArrayImpl(len, _, tree, tail): Array[a]) -> Array[b] =
   let helper(node, builder) =
     select node
@@ -209,6 +238,7 @@ def indexedMap(func: (Int, a) -> b, ArrayImpl(len, _, tree, tail): Array[a]) -> 
   in
     builderToArray(True, NativeArray.foldl(helper, initialBuilder, tree))
 
+/// Concatenate two arrays.
 def append(
   (ArrayImpl(_, _, _, aTail) as a): Array[a],
   ArrayImpl(bLen, _, bTree, bTail): Array[a]
@@ -263,6 +293,9 @@ def hidden appendHelpBuilder(tail: NativeArray[a], builder: Builder[a]) -> Build
       , nodeListSize = builder.nodeListSize
       }
 
+/// Take a contiguous range of the array. `from` is inclusive, `to`
+/// is exclusive; negative indices count from the end. Returns `empty`
+/// when the range collapses.
 def slice(from: Int, to: Int, array: Array[a]) -> Array[a] =
   let correctFrom = translateIndex(from, array)
   let correctTo = translateIndex(to, array)

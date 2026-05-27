@@ -1,19 +1,26 @@
 module Nar.Base.Tuple
 
+/// Build a 2-tuple from its two components. Equivalent to writing
+/// `( x, y )` directly; provided for use in pipelines.
 def pair(x: x, y: y) -> ( x, y ) =
   ( x, y )
 
+/// Project the first element of a 2-tuple.
 def first(( x, _ ): ( x, y )) -> x =
   x
 
+/// Project the second element of a 2-tuple.
 def second(( _, y ): ( x, y )) -> y =
   y
 
+/// Transform the first element of a 2-tuple, leaving the second alone.
 def mapFirst(func: (x) -> a, ( x,  y ): ( x, y )) -> ( a, y ) =
   ( func(x), y )
 
+/// Transform the second element of a 2-tuple, leaving the first alone.
 def mapSecond(func: (y) -> b, ( x, y ): ( x, y )) -> ( x, b ) =
   ( x, func(y) )
 
+/// Transform both elements of a 2-tuple with independent functions.
 def mapBoth(funcA: (x) -> a, funcB: (y) -> b, ( x, y ): ( x, y )) -> ( a, b ) =
   ( funcA(x), funcB(y) )

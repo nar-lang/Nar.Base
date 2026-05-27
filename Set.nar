@@ -1,56 +1,81 @@
 module Nar.Base.Set
 
+/// An unordered set of comparable values, implemented on top of
+/// [`Dict`](#nar-base-dict). All operations require the element type
+/// to satisfy the `cmp` constraint.
 type Set[t]
   = hidden SetImpl(Dict[t, ()])
 
+/// The empty set.
 def empty: Set[a] =
   SetImpl(Dict.empty)
 
+/// A set containing exactly one element.
 def singleton(key: cmp) -> Set[cmp] =
   SetImpl(Dict.singleton(key, ()))
 
+/// Insert an element. If it was already present the set is returned
+/// unchanged.
 def insert(key: cmp, (SetImpl(dict)): Set[cmp]) -> Set[cmp] =
   SetImpl(Dict.insert(key, (), dict))
 
+/// Remove an element. If it wasn't present the set is returned
+/// unchanged.
 def remove(key: cmp, (SetImpl(dict)): Set[cmp]) -> Set[cmp] =
   SetImpl(Dict.remove(key, dict))
 
+/// True when the set has no elements.
 def isEmpty(SetImpl(dict): Set[a]) -> Bool =
   Dict.isEmpty(dict)
 
+/// True when `key` is a member of the set.
 def member(key: cmp, (SetImpl(dict)): Set[cmp]) -> Bool =
   Dict.member(key, dict)
 
+/// Number of elements in the set.
 def size((SetImpl(dict)): Set[a]) -> Int =
   Dict.size(dict)
 
+/// Set union: every element that's in either input.
 def union((SetImpl(dict1)): Set[cmp], (SetImpl(dict2)): Set[cmp]) -> Set[cmp] =
   SetImpl(Dict.union(dict1, dict2))
 
+/// Set intersection: elements common to both inputs.
 def intersect((SetImpl(dict1)): Set[cmp], (SetImpl(dict2)): Set[cmp]) -> Set[cmp] =
   SetImpl (Dict.intersect(dict1, dict2))
 
+/// Set difference: elements in the first input that are not in the
+/// second.
 def diff((SetImpl(dict1)): Set[cmp], (SetImpl(dict2)): Set[cmp]) -> Set[cmp] =
   SetImpl (Dict.diff(dict1, dict2))
 
+/// Convert a set to a list of its elements in ascending order.
 def toList((SetImpl(dict)): Set[a]) -> List[a] =
   Dict.keys(dict)
 
+/// Build a set from a list, removing duplicates.
 def fromList(list: List[cmp]) -> Set[cmp] =
   List.foldl(insert, empty, list)
 
+/// Left-associative fold over the set in ascending order.
 def foldl(func:(a,b) -> b, initialState: b, (SetImpl(dict)): Set[a]) -> b =
   Dict.foldl(\(key, _, state) => func(key, state), initialState, dict)
 
+/// Right-associative fold over the set in ascending order.
 def foldr(func:(a,b) -> b, initialState: b, (SetImpl(dict)): Set[a]) -> b =
   Dict.foldr(\(key, _, state) => func(key, state), initialState, dict)
 
+/// Apply `func` to every element. Note that the result type must also
+/// be `cmp`, and duplicates in the mapped values collapse.
 def map(func:(cmp) -> cmp2, set: Set[cmp]) -> Set[cmp2] =
   fromList(foldl(\(x, xs) => func(x) | xs, [], set))
 
+/// Keep only the elements for which `isGood` returns `True`.
 def filter(isGood: (cmp) -> Bool, (SetImpl(dict)): Set[cmp]) -> Set[cmp] =
   SetImpl(Dict.filter(\(key, _) => isGood(key), dict))
 
+/// Split the set in two: elements satisfying `isGood` on the left, the
+/// rest on the right.
 def partition(isGood:(cmp) -> Bool, (SetImpl(dict)): Set[cmp]) -> (Set[cmp], Set[cmp]) =
   let
     (dict1, dict2) =

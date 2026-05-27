@@ -4,6 +4,9 @@ alias hidden Rear[a] = List[a]
 
 alias hidden Front[a] = List[a]
 
+/// FIFO queue built from two lists: the front holds dequeue candidates
+/// in order, the rear holds recently enqueued items in reverse. All
+/// operations are amortized O(1).
 type Queue[a]
     = QueueImpl(Front[a], Rear[a])
 
@@ -13,29 +16,40 @@ def hidden queue(fl: Front[a], rl: Rear[a]) -> Queue[a] =
     case _ => QueueImpl(fl, rl)
   end
 
+/// The empty queue.
 def empty: Queue[a] = QueueImpl([], [])
 
+/// Build a queue holding exactly one element.
 def singleton(a: a) -> Queue[a] =
   QueueImpl([ a ], [])
 
+/// True when the queue has no elements.
 def isEmpty(QueueImpl(fl, rl): Queue[a]) -> Bool =
   List.isEmpty(fl) && List.isEmpty(rl)
 
+/// Number of elements in the queue (O(n)).
 def size(QueueImpl(fl, rl): Queue[a]) -> Int =
   List.length(fl) + List.length(rl)
 
+/// Add an element to the back of the queue.
 def enqueue(a: a, QueueImpl(fl, rl): Queue[a]) -> Queue[a] =
   queue(fl, a | rl)
 
+/// Remove the front element. Returns the popped value (or `Nothing` if
+/// the queue was empty) paired with the queue after removal.
 def dequeue(QueueImpl(fl, rl): Queue[a]) -> ( Maybe[a], Queue[a] ) =
   select fl
     case [] => ( Nothing, QueueImpl([], []) )
     case head | tail => ( Just(head), queue(tail, rl) )
   end
   
+/// Peek at the front element without removing it.
 def front(QueueImpl(fl, _): Queue[a]) -> Maybe[a] =
     List.head(fl)
 
+/// Apply `f` to the front of the queue. If `f` returns `Nothing` the
+/// front element is removed; if `f` returns `Just(x)` the element is
+/// replaced (or, for an empty queue, prepended).
 def updateFront(f: (Maybe[a]) -> Maybe[a], QueueImpl(fl, rl): Queue[a]) -> Queue[a] =
   let update_(maybe, t) =
     select f(maybe)
@@ -48,16 +62,20 @@ def updateFront(f: (Maybe[a]) -> Maybe[a], QueueImpl(fl, rl): Queue[a]) -> Queue
     case [] => QueueImpl(update_(Nothing, []), rl)
   end
 
+/// Treat a list as a queue. The head of the list becomes the front.
 def fromList(list: List[a]) -> Queue[a] =
     QueueImpl(list, [])
 
+/// Flatten a queue back into a list in dequeue order.
 def toList(QueueImpl(fl, rl): Queue[a]) -> List[a] =
     fl ++ List.reverse(rl)
 
+/// Map a function over every element while preserving order.
 def map(fc: (a) -> b, QueueImpl(fl, rl): Queue[a]) -> Queue[b] =
   let map_ = List.map(fc)
   in queue(map_(fl), map_(rl))
 
+/// Keep only the elements for which `fc` returns `True`.
 def filter(fc:(a) -> Bool, QueueImpl(fl, rl): Queue[a]) -> Queue[a] = 
   let f = List.filter(fc)
   in queue(f(fl), f(rl))
